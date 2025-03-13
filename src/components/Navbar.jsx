@@ -95,13 +95,16 @@ function Navbar() {
               </Typography>
 
               {/* Right: Updated Icons */}
-              <Box sx={{ marginLeft: "auto" }}>
+              <Box sx={{ marginLeft: "auto", display: "flex" }}>
                 <IconButton color="inherit" component={Link} to="/cart">
                   <ShoppingCartOutlinedIcon fontSize="large" />
                 </IconButton>
-                <IconButton color="inherit" component={Link} to="/profile">
-                  <Person2OutlinedIcon fontSize="large" />
-                </IconButton>
+                {/* Hide Profile Icon on Mobile */}
+                <Box sx={{ display: { xs: "none", md: "flex" } }}>
+                  <IconButton color="inherit" component={Link} to="/profile">
+                    <Person2OutlinedIcon fontSize="large" />
+                  </IconButton>
+                </Box>
               </Box>
             </Box>
 
@@ -153,34 +156,62 @@ function Navbar() {
         anchor="left"
         open={mobileOpen}
         onClose={handleDrawerToggle}
-        sx={{ "& .MuiDrawer-paper": { width: "100vw", height: "100vh" } }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "#C8A47E", // Warm coffee brown
+            paddingTop: "20px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between", // Push content to top and bottom naturally
+          },
+        }}
       >
+        {/* Close Button & Logo */}
+        {/* Wrapper for Title, Close Button & Nav Items */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            height: "100%",
-            padding: "20px",
+            justifyContent: "start", // Ensures spacing between top content & login button
+            height: "100%", // Takes full height so login stays at bottom
+            paddingX: "36px", // Adds side padding
           }}
         >
-          {/* Close Button */}
+          {/* Close Button & Logo */}
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
+              justifyContent: "space-between", // Keeps title and X button spaced properly
+              paddingBottom: "20px",
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            {/* Left-Aligned "BeanBucks" */}
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 700,
+                fontFamily: "'Quicksand', sans-serif",
+                color: "#5B4233",
+              }}
+            >
               BeanBucks
             </Typography>
-            <IconButton edge="end" onClick={handleDrawerToggle}>
+
+            {/* X Button on Right */}
+            <IconButton
+              edge="end"
+              onClick={handleDrawerToggle}
+              sx={{ color: "#5B4233", padding: "8px" }}
+            >
               <CloseIcon fontSize="large" />
             </IconButton>
           </Box>
 
-          {/* Navigation Links */}
-          <List sx={{ marginTop: "20px", textAlign: "center" }}>
+          {/* Navigation Links Left-Aligned Below "BeanBucks" */}
+          <List sx={{ padding: "0", marginTop: "10px" }}>
             {navItems.map((item) => (
               <ListItem
                 button
@@ -188,14 +219,48 @@ function Navbar() {
                 component={Link}
                 to={item.path}
                 onClick={handleDrawerToggle}
+                sx={{
+                  padding: "10px 0",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  fontFamily: "'Quicksand', sans-serif",
+                  textAlign: "left",
+                  color: "#5B4233",
+                  "&:hover": {
+                    backgroundColor: "#A67C52",
+                    color: "#FFF5E1",
+                  },
+                }}
               >
-                <ListItemText
-                  primary={item.text}
-                  sx={{ fontSize: "20px", fontWeight: "bold" }}
-                />
+                <ListItemText primary={item.text} />
               </ListItem>
             ))}
           </List>
+        </Box>
+
+        {/* Login Button Centered at Bottom */}
+        <Box sx={{ textAlign: "center", marginBottom: "60px" }}>
+          <Button
+            variant="contained"
+            component={Link}
+            to="/profile"
+            onClick={handleDrawerToggle}
+            sx={{
+              width: "80%", // Makes it properly centered
+              fontSize: "20px", // Bigger text for easier readability
+              fontWeight: "bold",
+              fontFamily: "'Quicksand', sans-serif",
+              backgroundColor: "#8D6E63", // Coffee brown
+              color: "#FFF5E1", // Soft cream text
+              borderRadius: "25px",
+              padding: "12px 0",
+              "&:hover": {
+                backgroundColor: "#6D4C41", // Darker brown on hover
+              },
+            }}
+          >
+            Login
+          </Button>
         </Box>
       </Drawer>
     </>
