@@ -12,17 +12,16 @@ import {
   Container,
   Box,
 } from "@mui/material";
-import { Menu as MenuIcon, ShoppingCart, AccountCircle, Close as CloseIcon } from "@mui/icons-material";
+import { Menu as MenuIcon, Close as CloseIcon } from "@mui/icons-material";
+import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { Link } from "react-router-dom";
-
 
 /**
  * Navbar Component
  * Originally created by React Dev Team - https://react-bootstrap.netlify.app/docs/components/navbar/
  * Modified by Jack Henderson
  */
-
-
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -52,11 +51,27 @@ function Navbar() {
         }}
       >
         <Container maxWidth="xl" sx={{ maxWidth: "1500px" }}>
-          <Toolbar sx={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
+          <Toolbar
+            sx={{
+              justifyContent: "space-between",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             {/* MOBILE: Hamburger on Left, Logo Centered, Icons Right */}
-            <Box sx={{ display: { xs: "flex", md: "none" }, width: "100%", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: { xs: "flex", md: "none" },
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
               {/* Left: Hamburger Menu */}
-              <IconButton edge="start" color="inherit" onClick={handleDrawerToggle}>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleDrawerToggle}
+              >
                 <MenuIcon fontSize="large" />
               </IconButton>
 
@@ -64,30 +79,41 @@ function Navbar() {
               <Typography
                 variant="h4"
                 sx={{
-                  fontWeight: "bold",
+                  fontWeight: 700,
                   flexGrow: 1,
                   textAlign: "center",
                   position: "absolute",
                   left: "50%",
                   transform: "translateX(-50%)",
+                  whiteSpace: { xs: "pre-line", md: "nowrap" }, // Splits into two lines on mobile
+                  fontFamily: "'Quicksand', sans-serif",
+                  letterSpacing: "1px",
+                  fontSize: { xs: "32px", sm: "36px", md: "40px", lg: "44px" }, // Responsive font size
                 }}
               >
-                BeanBucks
+                Bean{"\n"}Bucks
               </Typography>
 
-              {/* Right: Cart & Profile Icons */}
+              {/* Right: Updated Icons */}
               <Box sx={{ marginLeft: "auto" }}>
                 <IconButton color="inherit" component={Link} to="/cart">
-                  <ShoppingCart fontSize="large" />
+                  <ShoppingCartOutlinedIcon fontSize="large" />
                 </IconButton>
                 <IconButton color="inherit" component={Link} to="/profile">
-                  <AccountCircle fontSize="large" />
+                  <Person2OutlinedIcon fontSize="large" />
                 </IconButton>
               </Box>
             </Box>
 
             {/* DESKTOP: Logo + Nav Items on Left, Icons on Right */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 3, width: "100%" }}>
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
+                gap: 3,
+                width: "100%",
+              }}
+            >
               {/* Logo */}
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
                 BeanBucks
@@ -101,7 +127,7 @@ function Navbar() {
                     color="inherit"
                     component={Link}
                     to={item.path}
-                    sx={{ fontSize: "18px", fontWeight: "bold" }}
+                    sx={{ fontSize: "16px", fontWeight: "bold" }} //EDIT THIS FOR FONT SIZE IN NAV
                   >
                     {item.text}
                   </Button>
@@ -109,13 +135,13 @@ function Navbar() {
               </Box>
             </Box>
 
-            {/* DESKTOP: Cart & Profile Icons */}
+            {/* DESKTOP: Updated Icons */}
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
               <IconButton color="inherit" component={Link} to="/cart">
-                <ShoppingCart fontSize="large" />
+                <ShoppingCartOutlinedIcon fontSize="large" />
               </IconButton>
               <IconButton color="inherit" component={Link} to="/profile">
-                <AccountCircle fontSize="large" />
+                <Person2OutlinedIcon fontSize="large" />
               </IconButton>
             </Box>
           </Toolbar>
@@ -123,10 +149,28 @@ function Navbar() {
       </AppBar>
 
       {/* Mobile Drawer (Full-Screen) */}
-      <Drawer anchor="left" open={mobileOpen} onClose={handleDrawerToggle} sx={{ "& .MuiDrawer-paper": { width: "100vw", height: "100vh" } }}>
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", padding: "20px" }}>
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        sx={{ "& .MuiDrawer-paper": { width: "100vw", height: "100vh" } }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            padding: "20px",
+          }}
+        >
           {/* Close Button */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="h4" sx={{ fontWeight: "bold" }}>
               BeanBucks
             </Typography>
@@ -138,8 +182,17 @@ function Navbar() {
           {/* Navigation Links */}
           <List sx={{ marginTop: "20px", textAlign: "center" }}>
             {navItems.map((item) => (
-              <ListItem button key={item.text} component={Link} to={item.path} onClick={handleDrawerToggle}>
-                <ListItemText primary={item.text} sx={{ fontSize: "20px", fontWeight: "bold" }} />
+              <ListItem
+                button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                onClick={handleDrawerToggle}
+              >
+                <ListItemText
+                  primary={item.text}
+                  sx={{ fontSize: "20px", fontWeight: "bold" }}
+                />
               </ListItem>
             ))}
           </List>
