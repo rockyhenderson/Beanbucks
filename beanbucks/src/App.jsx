@@ -13,6 +13,9 @@ import Cart from './pages/Cart';
 // Admin Page
 import BeanAdmin from './pages/admin/BeanAdmin';
 
+// Styles
+import './global.css';
+
 function App() {
   return (
     <Router>
