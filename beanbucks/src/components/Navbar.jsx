@@ -51,7 +51,7 @@ function Navbar() {
           boxShadow: "none",
         }}
       >
-        <Container maxWidth="lg" sx={{ maxWidth: "1392px" }}>
+        <Container maxWidth="xl" sx={{ maxWidth: "1500px" }}>
           <Toolbar sx={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
             {/* MOBILE: Hamburger on Left, Logo Centered, Icons Right */}
             <Box sx={{ display: { xs: "flex", md: "none" }, width: "100%", alignItems: "center" }}>

@@ -1,0 +1,27 @@
+
+
+/* Global Heading Styles (Poppins) */
+h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #4A2C2A; /* Coffee Brown */
+    margin-bottom: 20px;
+}
+
+/* Global List Styles (Roboto) */
+li {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    color: #333; /* Dark Gray */
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+/* Optional: Apply Roboto to general body text */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #FAF7F5; /* Light Coffee Background */
+    max-width:1500px;
+    margin: 0 auto;
+}
