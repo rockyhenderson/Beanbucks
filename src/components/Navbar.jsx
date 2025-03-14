@@ -15,7 +15,7 @@ import {
 import { Menu as MenuIcon, Close as CloseIcon } from "@mui/icons-material";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import { Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 /**
  * Navbar Component
@@ -220,14 +220,25 @@ function Navbar() {
                 to={item.path}
                 onClick={handleDrawerToggle}
                 sx={{
-                  padding: "10px 0",
-                  fontSize: "20px",
-                  fontWeight: "bold",
+                  marginLeft: "-14px", // Counteracts padding
+                  padding: "14px 18px", // More relaxed spacing
+                  fontSize: "22px", // Slightly larger for better readability
+                  fontWeight:
+                    location.pathname === item.path ? "bold" : "normal",
                   fontFamily: "'Quicksand', sans-serif",
                   textAlign: "left",
-                  color: "#5B4233",
+                  borderRadius: "14px", // Softer edges
+                  transition: "all 0.3s ease-in-out",
+                  color:
+                    location.pathname === item.path ? "#FFF5E1" : "#5B4233", // Soft cream text for active
+                  backgroundColor:
+                    location.pathname === item.path ? "#B98C66" : "transparent", // Softer brown
+                  boxShadow:
+                    location.pathname === item.path
+                      ? "0px 4px 10px rgba(0, 0, 0, 0.15)"
+                      : "none", // Light shadow for depth
                   "&:hover": {
-                    backgroundColor: "#A67C52",
+                    backgroundColor: "#A67C52", // Slightly darker hover effect
                     color: "#FFF5E1",
                   },
                 }}
