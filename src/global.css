@@ -8,7 +8,10 @@ h1 {
     color: #4A2C2A; /* Coffee Brown */
     margin-bottom: 20px;
 }
+h4{
+    font-family: 'Quicksand', sans-serif !important;
 
+}
 /* Global List Styles (Roboto) */
 li {
     font-family: 'Roboto', sans-serif;
@@ -18,10 +21,3 @@ li {
     margin-bottom: 8px;
 }
 
-/* Optional: Apply Roboto to general body text */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #FAF7F5; /* Light Coffee Background */
-    max-width:1500px;
-    margin: 0 auto;
-}
