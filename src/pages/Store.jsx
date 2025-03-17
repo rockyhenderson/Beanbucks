@@ -1,25 +1,21 @@
-import React from "react";
+import React, { useRef } from "react";
 import "../Store_Style.css"; // Import the styles
+import MapComponent from "../components/MapComponent";
 
 function Store() {
+  const storeListRef = useRef(null); // Reference to the store list section
+
+  const scrollToStoreList = () => {
+    storeListRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <div className="main-page-content">
-      <h1>Find a BeanBucks Store</h1>
-      {/* Search & Geolocation Section */}
-      <div className="section search-section">
-        <input
-          type="text"
-          placeholder="Search for a store..."
-          className="search-bar"
-        />
-        <button className="geo-button">Find Nearest Store</button>
-      </div>
+
       {/* Map Section (Fixed Size, Doesn't Overflow) */}
-      {/* Store & Map Container */}
       <div className="store-container">
         {/* Store List Section */}
-        <div className="section store-list">
-          <p className="click-hint">Click a store card to learn more.</p>
+        <div className="section store-list" ref={storeListRef}>
 
           <div className="store-card">
             <strong>BeanBucks - City Center</strong>
@@ -46,13 +42,26 @@ function Store() {
           </div>
         </div>
 
-        {/* Map Section */}
-        <div className="section map-placeholder">
-          <p>Map Here</p>
+        {/* Map Section with Search Bar (For Mobile) */}
+        <div className="section map-wrapper">
+          {/* Mobile Search & Geolocation Section */}
+          <div className="section search-section mobile-search">
+            <input
+              type="text"
+              placeholder="Search for a store..."
+              className="search-bar"
+            />
+            <button className="geo-button">Find Nearest Store</button>
+          </div>
+          <MapComponent />
         </div>
       </div>
-      <p className="click-hint">Click a store card to learn more.</p>{" "}
-      {/* Hint added here */}
+
+
+      {/* Scroll Arrow */}
+      <div className="scroll-arrow" onClick={scrollToStoreList}>
+        ↓
+      </div>
     </div>
   );
 }
