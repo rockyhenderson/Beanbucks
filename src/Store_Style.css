@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Bordered sections */
+.section {
+  border: 3px solid black;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  background-color: #f8f8f8;
+  overflow: hidden; /* Ensures content stays inside */
+}
+.store-container {
+  display: flex;
+  flex-direction: column-reverse;
+}
+/* Search & Geolocation Section */
+/* Search & Geolocation Section (Wraps Button Below on Small Screens) */
+.search-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Search Bar (Smaller Height & Full Width When Wrapped) */
+.search-bar {
+  flex: 1;
+  padding: 8px; /* Reduced height */
+  border: 2px solid black;
+  border-radius: 5px;
+  min-width: 200px; /* Prevents it from getting too small */
+}
+
+/* Button (Moves Below Search Bar on Small Screens) */
+.geo-button {
+  padding: 8px 15px; /* Matches search bar height */
+  border: 2px solid black;
+  background-color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0; /* Prevents button from shrinking */
+}
+
+/* Ensure Button Moves to New Line When Needed */
+@media (max-width: 400px) {
+  .search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .geo-button {
+    width: 100%;
+  }
+}
+
+/* Map Placeholder (Fixed Size, Doesn't Overflow) */
+.map-placeholder {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: #ddd;
+  border: 3px solid black;
+}
+
+/* Store List (Now Horizontally Scrollable) */
+.store-list {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px;
+  scroll-snap-type: x mandatory;
+}
+
+/* Store Cards (Side by Side Boxes) */
+/* Store Card Text Overflow Handling */
+.store-card {
+  flex: 0 0 250px; /* Fixed width */
+  border: 3px solid black;
+  border-radius: 10px;
+  padding: 15px;
+  background: white;
+  scroll-snap-align: start;
+  min-width: 250px;
+  max-width: 250px; /* Ensures text stays inside */
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* Prevents text from wrapping */
+}
+
+/* Ensures Long Texts Get Cut Off with "..." */
+.store-card p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.click-hint {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* Select Store Button */
+.select-store-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid black;
+  background-color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  /* Desktop Layout */
+  .store-container {
+    display: flex;
+    flex-direction: row;
+    gap: 0; /* Removes gap between store list & map */
+    align-items: stretch;
+    border: 3px solid black; /* Unified border */
+    border-radius: 10px;
+    overflow: hidden; /* Ensures contents stay inside */
+  }
+
+  /* Store List (Now Part of the Same Container) */
+  .store-list {
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+    overflow-y: auto;
+    white-space: normal;
+    scroll-snap-type: y mandatory;
+    border:0;
+    background-color: #f8f8f8;
+    margin-bottom:0;
+    max-width:300px;
+  }
+
+  /* Store Cards */
+  .store-card {
+    padding: 15px;
+    width: 100%; /* All cards take up equal space */
+    min-width: 250px; /* Ensures consistency */
+    max-width: 300px; /* Optional - prevents excessive width */
+    height: auto; /* Automatically adjusts to content */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensures spacing remains even */
+}
+
+
+
+  /* Map (Now Part of the Same Bordered Container) */
+  .map-placeholder {
+    flex: 1; /* Takes up remaining space */
+    height: auto; /* Grows based on content */
+    min-height: 500px; /* Ensures a minimum height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background-color: #ddd;
+    margin-bottom: 0;
+    border: 0;
+}
+}   

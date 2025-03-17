@@ -2,7 +2,7 @@ import React from 'react';
 
 function Order() {
     return (
-        <div>
+        <div class="main-page-content">
             <h1>Place Your Order 🍵</h1>
             <ul>
                 <li>Display a dynamically updated menu based on real-time stock availability and seasonal items.</li>

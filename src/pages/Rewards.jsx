@@ -2,7 +2,7 @@ import React from 'react';
 
 function Rewards() {
     return (
-        <div>
+        <div class="main-page-content">
             <h1>BeanBucks Rewards 🎉</h1>
             <ul>
                 <li>Display total loyalty points earned by the user.</li>
