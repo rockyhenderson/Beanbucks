@@ -2,7 +2,7 @@ import React from 'react';
 
 function Cart() {
     return (
-        <div>
+        <div class="main-page-content">
             <h1>Your Cart 🛒</h1>
             <ul>
                 <li>Display all selected items with customization options (size, milk type, syrups, toppings).</li>

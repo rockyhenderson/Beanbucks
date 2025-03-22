@@ -2,7 +2,7 @@ import React from 'react';
 
 function Admin() {
     return (
-        <div>
+        <div class="main-page-content">
             <h1>Admin Dashboard 🔧🕵️</h1>
             <ul>
                 <li>Allow admins to log in securely with role-based access control.</li>
@@ -13,6 +13,7 @@ function Admin() {
                 <li>Enable baristas to update order status ('Ordered' → 'Ready for Pickup').</li>
                 <li>Track all admin activities (menu updates, stock changes) in an audit log.</li>
                 <li>Ensure secure role-based permissions for sensitive features.</li>
+                <li>Open and close stores when needed</li>
             </ul>
         </div>
     );

@@ -1,0 +1,237 @@
+/* General Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.main-page-content{
+  background-color: #F3E5D8; /* Soft coffee cream */
+  color: #4A3228; /* Rich espresso brown */
+}
+.section {
+  background-color: purple; /* Warm vanilla */
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.store-container {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+/* Store List (Mobile - Horizontal Scrolling) */
+.store-list {
+  margin:0 !important;
+  display: flex;
+  gap: 15px;
+  padding: 10px;
+  scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  white-space: nowrap;
+  background-color: purple; /* Light coffee beige */
+  border-radius: 10px;
+}
+
+/* Store Card Styles */
+.store-card {
+  flex: 0 0 200px; /* Fixed width for mobile */
+  border-radius: 10px;
+  padding: 15px;
+  min-width: 250px;
+  max-width: 250px;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 3px solid green;
+  background: green; /* Soft vanilla */
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1); /* Subtle depth */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.store-card p {
+  color: #5C3D2E; /* Warm coffee brown */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Buttons */
+.select-store-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #8B5E3C;
+  background-color: pink; /* Warm caramel */
+  color: white;
+  transition: background 0.2s ease-in-out;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.select-store-button:hover, .geo-button:hover {
+  background-color: #B6754B; /* Darker roast */
+}
+.search-section {
+  display: flex !important;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-bar {
+  flex: 1;
+  padding: 8px;
+  border: 2px solid #8B5E3C;
+  background: #FFF7ED;
+  color: #4A3228;
+  border-radius: 5px;
+  min-width: 200px;
+}
+
+.geo-button {
+  padding: 10px 15px;
+  border: 2px solid red; /* Rich coffee brown */
+  background-color: red; /* Warm caramel */
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Soft button shadow */
+}
+
+.geo-button:hover {
+  background-color: #B6754B; /* Darker roast */
+  transform: scale(1.05); /* Slight lift effect */
+}
+
+.geo-button:active {
+  background-color: #9C6140; /* Even darker pressed effect */
+  transform: scale(0.98); /* Press-in effect */
+}
+
+
+/* Map Wrapper */
+.map-wrapper {
+  padding: 0;
+  width: 100%;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: #E2C5A1; /* Soft latte color */
+  border: 3px solid #8B5E3C;
+  border-radius: 10px;
+  position: relative;
+}
+
+/* Scroll Arrow */
+.scroll-arrow {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.3s ease-in-out;
+}
+
+.scroll-arrow:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+/* Mobile Search */
+.mobile-search {
+  display: block;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  z-index: 10;
+  background-color: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* === Mobile Layout === */
+@media (max-width: 768px) {
+  .map-wrapper {
+    position: relative;
+  }
+
+  /* Store list remains horizontal */
+  .store-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 10px;
+  }
+
+  .store-card {
+    max-width: 100%;
+  }
+}
+
+/* === Desktop Layout === */
+@media (min-width: 768px) {
+  .scroll-arrow {
+    display: none;
+  }
+
+  .store-container {
+    display: flex;
+    flex-direction: row; /* Side by side layout */
+    align-items: stretch;
+    border: 3px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  /* Store list becomes vertical */
+  .store-list {
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column; /* Vertical cards */
+    height: 100%;
+    max-height: 90vh; /* Matches the map height */
+    overflow-y: auto; /* Enables scrolling if needed */
+    overflow-x: hidden;
+    white-space: normal;
+    scroll-snap-type: y mandatory;
+    border-right: 4px solid black;
+    border-radius: 0 !important;
+    background-color: #f8f8f8;
+    padding-right: 10px;
+  }
+
+  /* Store cards adjust to full width */
+  .store-card {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Map aligns with the store list */
+  .map-wrapper {
+    flex: 1;
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background-color: #ddd;
+    margin-bottom: 0;
+    border: 0;
+  }
+}

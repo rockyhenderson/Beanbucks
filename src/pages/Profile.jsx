@@ -2,7 +2,7 @@ import React from 'react';
 
 function Profile() {
     return (
-        <div>
+        <div class="main-page-content">
             <h1>Welcome to Your BeanBucks Profile ☕</h1>
             <ul>
                 <li>Allow users to register and log in using their email and password.</li>
