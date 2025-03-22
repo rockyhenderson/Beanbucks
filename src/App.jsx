@@ -9,11 +9,20 @@ import Rewards from './pages/Rewards';
 import Store from './pages/Store';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
-import Footer from "./components/Footer";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
 
+
+
+//Components
+import DevToolsPanel from "./components/DevToolsPanel";
+import Footer from "./components/Footer";
+import Toast from "./components/Toast";
 
 // Admin Page
 import BeanAdmin from './pages/admin/BeanAdmin';
+import Quarry from "./pages/admin/Quarry";
+
 
 // Styles
 import './global.css';
@@ -34,8 +43,12 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/admin" element={<BeanAdmin />} />
+        <Route path="/quarry" element={<Quarry />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
       <Footer/>
+      <DevToolsPanel />
     </Router>
   );
 }
