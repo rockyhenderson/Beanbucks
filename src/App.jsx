@@ -16,6 +16,10 @@ import BeanAdmin from './pages/admin/BeanAdmin';
 // Styles
 import './global.css';
 
+// Mapbox
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+
 function App() {
   return (
     <Router>
