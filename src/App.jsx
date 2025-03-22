@@ -9,6 +9,8 @@ import Rewards from './pages/Rewards';
 import Store from './pages/Store';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
+import Footer from "./components/Footer";
+
 
 // Admin Page
 import BeanAdmin from './pages/admin/BeanAdmin';
@@ -33,6 +35,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/admin" element={<BeanAdmin />} />
       </Routes>
+      <Footer/>
     </Router>
   );
 }
