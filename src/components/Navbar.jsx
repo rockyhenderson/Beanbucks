@@ -16,22 +16,31 @@ import { Menu as MenuIcon, Close as CloseIcon } from "@mui/icons-material";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useLocation, Link } from "react-router-dom";
+import LoginIcon from "@mui/icons-material/Login";
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const rawUser = sessionStorage.getItem("user");
+  const user = rawUser ? JSON.parse(rawUser) : null;
+  const isLoggedIn = !!user;
+  const userRole = user?.role || null;
+  
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-
+  
   const navItems = [
     { text: "Home", path: "/" },
     { text: "Order", path: "/order" },
     { text: "Rewards", path: "/rewards" },
     { text: "Stores", path: "/store" },
-    { text: "BeanAdmin", path: "/admin" },
+    ...(userRole === "admin" || userRole === "manager"
+      ? [{ text: "BeanAdmin", path: "/admin" }]
+      : []),
   ];
+  
 
   return (
     <>
@@ -92,7 +101,8 @@ function Navbar() {
                   component={Link}
                   to="/cart"
                   sx={{
-                    color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
+                    color:
+                      location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
                     backgroundColor:
                       location.pathname === "/cart"
                         ? "rgba(255,255,255,0.2)"
@@ -111,7 +121,10 @@ function Navbar() {
                     component={Link}
                     to="/profile"
                     sx={{
-                      color: location.pathname === "/profile" ? "#FFE7D2" : "#FFFFFF",
+                      color:
+                        location.pathname === "/profile"
+                          ? "#FFE7D2"
+                          : "#FFFFFF",
                       backgroundColor:
                         location.pathname === "/profile"
                           ? "rgba(255,255,255,0.2)"
@@ -202,11 +215,14 @@ function Navbar() {
               </IconButton>
               <IconButton
                 component={Link}
-                to="/profile"
+                to={isLoggedIn ? "/profile" : "/login"}
                 sx={{
-                  color: location.pathname === "/profile" ? "#FFE7D2" : "#FFFFFF",
+                  color:
+                    location.pathname === "/profile" && isLoggedIn
+                      ? "#FFE7D2"
+                      : "#FFFFFF",
                   backgroundColor:
-                    location.pathname === "/profile"
+                    location.pathname === "/profile" && isLoggedIn
                       ? "rgba(255,255,255,0.2)"
                       : "transparent",
                   borderRadius: "50%",
@@ -216,7 +232,11 @@ function Navbar() {
                   },
                 }}
               >
-                <Person2OutlinedIcon fontSize="large" />
+                {isLoggedIn ? (
+                  <Person2OutlinedIcon fontSize="large" />
+                ) : (
+                  <LoginIcon fontSize="large" />
+                )}
               </IconButton>
             </Box>
           </Toolbar>
@@ -313,12 +333,12 @@ function Navbar() {
           </List>
         </Box>
 
-        {/* Login Button at Bottom */}
+        {/* Login/Profile Button at Bottom */}
         <Box sx={{ textAlign: "center", marginBottom: "60px" }}>
           <Button
             variant="contained"
             component={Link}
-            to="/profile"
+            to={isLoggedIn ? "/profile" : "/login"}
             onClick={handleDrawerToggle}
             sx={{
               width: "80%",
@@ -334,7 +354,7 @@ function Navbar() {
               },
             }}
           >
-            Login
+            {isLoggedIn ? "Profile" : "Login"}
           </Button>
         </Box>
       </Drawer>
