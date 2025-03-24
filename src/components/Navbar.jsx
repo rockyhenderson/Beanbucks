@@ -17,20 +17,14 @@ import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useLocation, Link } from "react-router-dom";
 
-/**
- * Navbar Component
- * Originally created by React Dev Team - https://react-bootstrap.netlify.app/docs/components/navbar/
- * Modified by Jack Henderson
- */
-
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  // Navigation Links
   const navItems = [
     { text: "Home", path: "/" },
     { text: "Order", path: "/order" },
@@ -44,8 +38,8 @@ function Navbar() {
       <AppBar
         position="static"
         sx={{
-          backgroundColor: "white",
-          color: "black",
+          backgroundColor: "var(--primary)",
+          color: "#FFFFFF",
           padding: "10px 0",
           boxShadow: "none",
         }}
@@ -58,7 +52,7 @@ function Navbar() {
               alignItems: "center",
             }}
           >
-            {/* MOBILE: Hamburger on Left, Logo Centered, Icons Right */}
+            {/* MOBILE */}
             <Box
               sx={{
                 display: { xs: "flex", md: "none" },
@@ -66,7 +60,6 @@ function Navbar() {
                 alignItems: "center",
               }}
             >
-              {/* Left: Hamburger Menu */}
               <IconButton
                 edge="start"
                 color="inherit"
@@ -75,7 +68,6 @@ function Navbar() {
                 <MenuIcon fontSize="large" />
               </IconButton>
 
-              {/* Center: Logo */}
               <Typography
                 variant="h4"
                 sx={{
@@ -85,30 +77,59 @@ function Navbar() {
                   position: "absolute",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  whiteSpace: { xs: "pre-line", md: "nowrap" }, // Splits into two lines on mobile
+                  whiteSpace: { xs: "pre-line", md: "nowrap" },
                   fontFamily: "'Quicksand', sans-serif",
                   letterSpacing: "1px",
-                  fontSize: { xs: "32px", sm: "36px", md: "40px", lg: "44px" }, // Responsive font size
+                  fontSize: { xs: "32px", sm: "36px", md: "40px", lg: "44px" },
+                  color: "#FFF",
                 }}
               >
                 Bean{"\n"}Bucks
               </Typography>
 
-              {/* Right: Updated Icons */}
               <Box sx={{ marginLeft: "auto", display: "flex" }}>
-                <IconButton color="inherit" component={Link} to="/cart">
+                <IconButton
+                  component={Link}
+                  to="/cart"
+                  sx={{
+                    color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
+                    backgroundColor:
+                      location.pathname === "/cart"
+                        ? "rgba(255,255,255,0.2)"
+                        : "transparent",
+                    borderRadius: "50%",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    },
+                  }}
+                >
                   <ShoppingCartOutlinedIcon fontSize="large" />
                 </IconButton>
-                {/* Hide Profile Icon on Mobile */}
                 <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                  <IconButton color="inherit" component={Link} to="/profile">
+                  <IconButton
+                    component={Link}
+                    to="/profile"
+                    sx={{
+                      color: location.pathname === "/profile" ? "#FFE7D2" : "#FFFFFF",
+                      backgroundColor:
+                        location.pathname === "/profile"
+                          ? "rgba(255,255,255,0.2)"
+                          : "transparent",
+                      borderRadius: "50%",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                      },
+                    }}
+                  >
                     <Person2OutlinedIcon fontSize="large" />
                   </IconButton>
                 </Box>
               </Box>
             </Box>
 
-            {/* DESKTOP: Logo + Nav Items on Left, Icons on Right */}
+            {/* DESKTOP */}
             <Box
               sx={{
                 display: { xs: "none", md: "flex" },
@@ -117,20 +138,41 @@ function Navbar() {
                 width: "100%",
               }}
             >
-              {/* Logo */}
-              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  fontFamily: "'Quicksand', sans-serif",
+                  color: "#FFF",
+                }}
+              >
                 BeanBucks
               </Typography>
 
-              {/* Navigation Links */}
               <Box sx={{ display: "flex", gap: 3 }}>
                 {navItems.map((item) => (
                   <Button
                     key={item.text}
-                    color="inherit"
                     component={Link}
                     to={item.path}
-                    sx={{ fontSize: "16px", fontWeight: "bold" }} //EDIT THIS FOR FONT SIZE IN NAV
+                    sx={{
+                      fontSize: "16px",
+                      fontWeight:
+                        location.pathname === item.path ? 900 : "bold",
+                      fontFamily: "'Poppins', sans-serif",
+                      color: "#FFFFFF",
+                      backgroundColor:
+                        location.pathname === item.path
+                          ? "rgba(255,255,255,0.25)"
+                          : "transparent",
+                      borderRadius: "20px",
+                      px: 2,
+                      py: 0.8,
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.15)",
+                      },
+                    }}
                   >
                     {item.text}
                   </Button>
@@ -138,12 +180,42 @@ function Navbar() {
               </Box>
             </Box>
 
-            {/* DESKTOP: Updated Icons */}
+            {/* Icons Right (Desktop) */}
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <IconButton color="inherit" component={Link} to="/cart">
+              <IconButton
+                component={Link}
+                to="/cart"
+                sx={{
+                  color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
+                  backgroundColor:
+                    location.pathname === "/cart"
+                      ? "rgba(255,255,255,0.2)"
+                      : "transparent",
+                  borderRadius: "50%",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  },
+                }}
+              >
                 <ShoppingCartOutlinedIcon fontSize="large" />
               </IconButton>
-              <IconButton color="inherit" component={Link} to="/profile">
+              <IconButton
+                component={Link}
+                to="/profile"
+                sx={{
+                  color: location.pathname === "/profile" ? "#FFE7D2" : "#FFFFFF",
+                  backgroundColor:
+                    location.pathname === "/profile"
+                      ? "rgba(255,255,255,0.2)"
+                      : "transparent",
+                  borderRadius: "50%",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  },
+                }}
+              >
                 <Person2OutlinedIcon fontSize="large" />
               </IconButton>
             </Box>
@@ -151,7 +223,7 @@ function Navbar() {
         </Container>
       </AppBar>
 
-      {/* Mobile Drawer (Full-Screen) */}
+      {/* MOBILE DRAWER */}
       <Drawer
         anchor="left"
         open={mobileOpen}
@@ -160,58 +232,52 @@ function Navbar() {
           "& .MuiDrawer-paper": {
             width: "100vw",
             height: "100vh",
-            backgroundColor: "#C8A47E", // Warm coffee brown
+            backgroundColor: "var(--background)",
             paddingTop: "20px",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between", // Push content to top and bottom naturally
+            justifyContent: "space-between",
           },
         }}
       >
-        {/* Close Button & Logo */}
-        {/* Wrapper for Title, Close Button & Nav Items */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "start", // Ensures spacing between top content & login button
-            height: "100%", // Takes full height so login stays at bottom
-            paddingX: "36px", // Adds side padding
+            justifyContent: "start",
+            height: "100%",
+            paddingX: "36px",
           }}
         >
-          {/* Close Button & Logo */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between", // Keeps title and X button spaced properly
+              justifyContent: "space-between",
               paddingBottom: "20px",
             }}
           >
-            {/* Left-Aligned "BeanBucks" */}
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 700,
                 fontFamily: "'Quicksand', sans-serif",
-                color: "#5B4233",
+                color: "var(--drawer-text)",
               }}
             >
               BeanBucks
             </Typography>
 
-            {/* X Button on Right */}
             <IconButton
               edge="end"
               onClick={handleDrawerToggle}
-              sx={{ color: "#5B4233", padding: "8px" }}
+              sx={{ color: "var(--drawer-text)", padding: "8px" }}
             >
               <CloseIcon fontSize="large" />
             </IconButton>
           </Box>
 
-          {/* Navigation Links Left-Aligned Below "BeanBucks" */}
-          <List sx={{ padding: "0", marginTop: "10px" }}>
+          <List sx={{ padding: 0, marginTop: "10px" }}>
             {navItems.map((item) => (
               <ListItem
                 button
@@ -220,26 +286,24 @@ function Navbar() {
                 to={item.path}
                 onClick={handleDrawerToggle}
                 sx={{
-                  marginLeft: "-14px", // Counteracts padding
-                  padding: "14px 18px", // More relaxed spacing
-                  fontSize: "22px", // Slightly larger for better readability
+                  padding: "14px 18px",
+                  fontSize: "22px",
                   fontWeight:
                     location.pathname === item.path ? "bold" : "normal",
                   fontFamily: "'Quicksand', sans-serif",
-                  textAlign: "left",
-                  borderRadius: "14px", // Softer edges
-                  transition: "all 0.3s ease-in-out",
                   color:
-                    location.pathname === item.path ? "#FFF5E1" : "#5B4233", // Soft cream text for active
-                  backgroundColor:
-                    location.pathname === item.path ? "#B98C66" : "transparent", // Softer brown
-                  boxShadow:
                     location.pathname === item.path
-                      ? "0px 4px 10px rgba(0, 0, 0, 0.15)"
-                      : "none", // Light shadow for depth
+                      ? "var(--primary)"
+                      : "var(--drawer-text)",
+                  backgroundColor:
+                    location.pathname === item.path
+                      ? "var(--drawer-active)"
+                      : "transparent",
+                  borderRadius: "14px",
+                  transition: "all 0.3s ease-in-out",
                   "&:hover": {
-                    backgroundColor: "#A67C52", // Slightly darker hover effect
-                    color: "#FFF5E1",
+                    backgroundColor: "var(--drawer-hover)",
+                    color: "var(--primary)",
                   },
                 }}
               >
@@ -249,7 +313,7 @@ function Navbar() {
           </List>
         </Box>
 
-        {/* Login Button Centered at Bottom */}
+        {/* Login Button at Bottom */}
         <Box sx={{ textAlign: "center", marginBottom: "60px" }}>
           <Button
             variant="contained"
@@ -257,16 +321,16 @@ function Navbar() {
             to="/profile"
             onClick={handleDrawerToggle}
             sx={{
-              width: "80%", // Makes it properly centered
-              fontSize: "20px", // Bigger text for easier readability
+              width: "80%",
+              fontSize: "20px",
               fontWeight: "bold",
               fontFamily: "'Quicksand', sans-serif",
-              backgroundColor: "#8D6E63", // Coffee brown
-              color: "#FFF5E1", // Soft cream text
+              backgroundColor: "var(--primary)",
+              color: "var(--button-text)",
               borderRadius: "25px",
               padding: "12px 0",
               "&:hover": {
-                backgroundColor: "#6D4C41", // Darker brown on hover
+                backgroundColor: "#d44f00",
               },
             }}
           >
@@ -279,4 +343,3 @@ function Navbar() {
 }
 
 export default Navbar;
-//test

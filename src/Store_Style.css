@@ -4,10 +4,6 @@
   padding: 0;
   box-sizing: border-box;
 }
-.main-page-content{
-  background-color: #F3E5D8; /* Soft coffee cream */
-  color: #4A3228; /* Rich espresso brown */
-}
 .section {
   background-color: purple; /* Warm vanilla */
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
