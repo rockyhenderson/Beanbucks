@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import Cart from './pages/Cart';
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import OrderCategory from "./pages/OrderCategory";
 
 
 
@@ -46,6 +47,7 @@ function App() {
         <Route path="/quarry" element={<Quarry />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/order/:type" element={<OrderCategory />} />
       </Routes>
       <Footer/>
       <DevToolsPanel />

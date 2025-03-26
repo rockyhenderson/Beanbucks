@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -7,18 +7,126 @@ import {
   Typography,
   Link as MuiLink,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Toast from "../components/Toast";
+import "../Toast_Style.css";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://ec2-52-31-217-246.eu-west-1.compute.amazonaws.com/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        const user = data.user;
+
+        // Translate numeric role to string
+        const roleMap = {
+          1: "customer",
+          2: "admin",
+          3: "manager",
+        };
+
+        // Build the session user object (first name only)
+        const sessionUser = {
+          id: user.id,
+          name: user.first_name,
+          role: roleMap[user.role] || "unknown",
+          email: user.email 
+        };
+        
+
+        // Store it in session storage
+        sessionStorage.setItem("user", JSON.stringify(sessionUser));
+
+        // Show success toast
+        setToast({
+          type: "success",
+          title: "Login Successful!",
+          message: `Welcome back, ${sessionUser.name} 👋`,
+        });
+
+        // Short delay before redirecting
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        const isPasswordError = data.error?.toLowerCase().includes("password");
+        const isEmailError = data.error?.toLowerCase().includes("email");
+
+        setToast({
+          type: "error",
+          title: isPasswordError
+            ? "Wrong Password"
+            : isEmailError
+            ? "Wrong Email"
+            : "Login Failed",
+          message: data.error || "Something went wrong during login.",
+        });
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setToast({
+        type: "error",
+        title: "Server Error",
+        message: "Unable to connect. Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
         backgroundColor: "var(--background)",
         color: "var(--text)",
-        minHeight: "auto", // Fit content
+        minHeight: "auto",
         padding: "2rem 1rem",
       }}
     >
+      {toast && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            animation: "slideDown 0.3s ease-out",
+          }}
+        >
+          <Toast
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </Box>
+      )}
+
       <Container maxWidth="xs">
         <Typography
           variant="h4"
@@ -33,13 +141,18 @@ function Login() {
           Log In to BeanBucks
         </Typography>
 
-        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
           <TextField
             label="Email Address"
-            variant="outlined"
-            fullWidth
-            required
             type="email"
+            value={email}
+            required
+            fullWidth
+            onChange={(e) => setEmail(e.target.value)}
             sx={{
               input: { color: "var(--text)" },
               label: { color: "var(--text)" },
@@ -52,10 +165,11 @@ function Login() {
 
           <TextField
             label="Password"
-            variant="outlined"
-            fullWidth
-            required
             type="password"
+            value={password}
+            required
+            fullWidth
+            onChange={(e) => setPassword(e.target.value)}
             sx={{
               input: { color: "var(--text)" },
               label: { color: "var(--text)" },
@@ -82,8 +196,10 @@ function Login() {
           </MuiLink>
 
           <Button
+            type="submit"
             variant="contained"
             fullWidth
+            disabled={loading}
             sx={{
               backgroundColor: "var(--primary)",
               color: "var(--button-text)",
@@ -96,7 +212,7 @@ function Login() {
               },
             }}
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </Button>
         </Box>
 
@@ -106,7 +222,10 @@ function Login() {
           sx={{ mt: 2, color: "var(--text)" }}
         >
           Don’t have an account?{" "}
-          <Link to="/register" style={{ color: "var(--accent)", textDecoration: "underline" }}>
+          <Link
+            to="/register"
+            style={{ color: "var(--accent)", textDecoration: "underline" }}
+          >
             Register here
           </Link>
         </Typography>

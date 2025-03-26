@@ -42,7 +42,8 @@ const TOAST_STYLES = {
   },
 };
 
-function Toast({ type = "error", title = "Header", onClose }) {
+function Toast({ type = "error", title = "Header", message, onClose }) {
+
   const styles = TOAST_STYLES[type] || TOAST_STYLES.error;
   const [progress, setProgress] = useState(100);
 
@@ -84,7 +85,7 @@ function Toast({ type = "error", title = "Header", onClose }) {
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Typography
           variant="h6"
-          sx={{ fontSize: "18px", fontWeight: 600, display: "flex", alignItems: "center" }}
+          sx={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center" }}
         >
           <span style={{ marginRight: "8px" }}>{styles.emoji}</span> {title}
         </Typography>
@@ -94,8 +95,8 @@ function Toast({ type = "error", title = "Header", onClose }) {
       </Box>
 
       {/* Body */}
-      <Typography variant="body2" sx={{ fontSize: "12px", mt: 1 }}>
-        {styles.message}
+      <Typography variant="body2" sx={{ fontSize: "16px", mt: 1 }}>
+      {message || styles.message}
       </Typography>
 
       {/* Countdown Progress */}

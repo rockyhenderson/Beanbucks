@@ -53,4 +53,49 @@
   .profile__list a:hover {
     color: darkorange;
   }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .profile__logout-modal {
+    background: var(--card);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .profile__logout-modal h2 {
+    color: var(--heading-color);
+    margin-bottom: 1rem;
+  }
+  
+  .profile__logout-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .profile__input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    margin: 1rem 0;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--text);
+  }
   

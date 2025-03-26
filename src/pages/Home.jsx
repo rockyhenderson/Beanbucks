@@ -1,8 +1,11 @@
 import React from "react";
+import HomepageCTA from "../components/HomepageCTA";
+import "../Home_Style.css";
 
 function Home() {
   return (
-    <div class="main-page-content">
+    <div class="home">
+      <HomepageCTA />
       <h1>Welcome to BeanBucks Home ☕</h1>
 
       <div class="temp-component-box">
