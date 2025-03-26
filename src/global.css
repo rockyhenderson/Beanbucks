@@ -20,7 +20,7 @@
     --text: #161620;
     --card: #FFFFFF;
     --accent: #5A4A42;
-    --button-text: #161620;
+    --button-text: #FFFFFF;
     --heading-color: #4A2C2A; /* Coffee Brown */
     --body-text: #333333;
     --list-text: #333333;
@@ -37,7 +37,7 @@ body {
     margin: 0;
     padding: 0;
   }
-  
+
   /* ==== Headings ==== */
   
   /* h1 – Page titles / Hero headers */

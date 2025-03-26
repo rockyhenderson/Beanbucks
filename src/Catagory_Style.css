@@ -1,0 +1,59 @@
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 1.5rem;
+  padding: 2rem 0;
+  height: calc(100vh - 172px); /* fills browser minus navbar + h1 */
+  box-sizing: border-box;
+}
+
+/* Base card styles */
+.category-box {
+  background-color: var(--card);
+  border: 2px solid var(--component-border);
+  border-radius: 16px;
+  color: var(--heading-color);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Hover effect */
+.category-box:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Make tall cards fill remaining height */
+.category-box.tall {
+  height: 100%; /* let the grid handle height */
+}
+
+/* Wide card spans full row, fixed height */
+.category-box.wide {
+  grid-column: span 3;
+  height: 120px;
+}
+
+/* 📱 Mobile layout */
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .category-box.tall,
+  .category-box.wide {
+    grid-column: span 1;
+    height: 120px;
+  }
+}

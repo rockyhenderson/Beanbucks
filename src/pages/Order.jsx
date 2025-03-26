@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useState } from "react";
+import useFetchWithRetry from "../utils/useFetchWithRetry";
+import RetryFallback from "../components/RetryFallback";
+import DrinkCard from "../components/DrinkCard";
+import CategoryCard from "../components/CategoryCard"; 
+import "../Order_Style.css";
 
 function Order() {
-    return (
-        <div class="main-page-content">
-            <h1>Place Your Order 🍵</h1>
-            <ul>
-                <li>Display a dynamically updated menu based on real-time stock availability and seasonal items.</li>
-                <li>Allow users to customize drinks (size, milk type, syrups, toppings) with dynamic pricing.</li>
-                <li>Provide allergen warnings when selected drinks contain known allergens.</li>
-                <li>Allow users to select a preferred store for pickup with geolocation services.</li>
-                <li>Enable users to schedule a pickup time when placing an order.</li>
-                <li>Display real-time order progress, updated by baristas.</li>
-            </ul>
+  const { data: drinks, error, retry } = useFetchWithRetry("http://localhost:3001/api/drinks");
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  if (error) return <RetryFallback onRetry={retry} />;
+  if (!drinks) return <p>Loading drinks...</p>;
+
+  const filteredDrinks = activeCategory
+    ? drinks.filter((drink) => drink.template_id === activeCategory)
+    : [];
+
+  return (
+    <div className="orders">
+      <h1>Menu</h1>
+
+      {/* Fixed category layout */}
+      <CategoryCard onSelect={setActiveCategory} />
+
+      {/* Drinks shown after selecting a category */}
+      {activeCategory && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-4">
+          {filteredDrinks.map((drink) => (
+            <DrinkCard key={drink.name} drink={drink} />
+          ))}
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default Order;

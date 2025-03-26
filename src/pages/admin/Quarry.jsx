@@ -2,6 +2,11 @@ import React from "react";
 import { Box, Typography, Divider, Link as MuiLink } from "@mui/material";
 import { Link } from "react-router-dom";
 import Toast from "../../components/Toast";
+import DrinkCard from "../../components/DrinkCard";
+import CategoryCard from "../../components/CategoryCard";
+import RetryFallback from "../../components/RetryFallback";
+import { Button } from "@mui/material";
+
 
 function Quarry() {
   return (
@@ -81,6 +86,46 @@ function Quarry() {
       </Box>
 
       <Divider sx={{ my: 4 }} />
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Drink Components
+      </Typography>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4, mb: 4 }}>
+        {/* Category Preview */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            CategoryCard
+          </Typography>
+          <CategoryCard
+            label="Seasonal Specials"
+            image="https://via.placeholder.com/100"
+            isActive={true}
+            onClick={() => console.log("Clicked category")}
+          />
+        </Box>
+
+        {/* Drink Preview */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            DrinkCard
+          </Typography>
+          <DrinkCard
+            drink={{
+              name: "Toasted White Chocolate Mocha",
+              price: 4.8,
+              stock_status: 1,
+            }}
+          />
+        </Box>
+      </Box>
+      <Divider sx={{ my: 4 }} />
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Error Fallback
+      </Typography>
+
+      <Box>
+        <RetryFallback onRetry={() => console.log("Retry clicked")} />
+      </Box>
 
       <Typography variant="h5" sx={{ mb: 1 }}>
         Coming Soon...
