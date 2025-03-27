@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.7",
+    "mapbox": "^1.0.0-beta10",
     "mapbox-gl": "^3.10.0",
     "react-router-dom": "^7.3.0"
   }
