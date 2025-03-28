@@ -119,3 +119,19 @@ body {
     height: auto;
     display: block;
   }
+
+  /* Reusable button base */
+.btn {
+  transition: transform 0.15s ease;
+  transform: scale(1);
+}
+
+/* Hover = slight scale up */
+.btn:hover {
+  transform: scale(1.05);
+}
+
+/* Click = slight scale down */
+.btn:active {
+  transform: scale(0.95);
+}

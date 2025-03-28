@@ -24,7 +24,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        "http://ec2-52-31-217-246.eu-west-1.compute.amazonaws.com/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
+        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
         {
           method: "POST",
           headers: {

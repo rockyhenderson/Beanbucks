@@ -4,28 +4,32 @@ import { useNavigate } from "react-router-dom";
 import "../Profile_Style.css";
 import Toast from "../components/Toast";
 import "../Toast_Style.css";
+import SingleInputModal from "../components/SingleInputModal";
+import TwoChoicesModal from "../components/TwoChoices";
 
 function Profile() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [confirmPasswordChange, setConfirmPasswordChange] = useState(false);
   const [toast, setToast] = useState(null);
-  const isValidEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const [showPromoModal, setShowPromoModal] = useState(false);
+
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("user"); // Clear user session
-    navigate("/login"); // Redirect to login page
+    sessionStorage.removeItem("user");
+    navigate("/login");
   };
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   return (
     <>
       <div className="profile">
         <h1 className="profile__title">Profile</h1>
 
-        {/* Profile Settings Section */}
+        {/* Profile Sections */}
         <div className="profile__card">
           <h2 className="profile__card-title">Your Profile</h2>
           <ul className="profile__list">
@@ -40,15 +44,23 @@ function Profile() {
                 Change Email
               </a>
             </li>
-
             <li>
-              <a href="#">Change Password</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowPasswordModal(true);
+                  setConfirmPasswordChange(false);
+                }}
+              >
+                Change Password
+              </a>
             </li>
             <li>
-              <a href="#">Order History</a>
+              <a href="#">Order History ❌</a>
             </li>
             <li>
-              <a href="#">Allergen Preferences</a>
+              <a href="#">Allergen Preferences ❌</a>
             </li>
             <li>
               <a
@@ -64,190 +76,255 @@ function Profile() {
           </ul>
         </div>
 
-        {/* Contact Preferences */}
+        {/* Other Cards */}
         <div className="profile__card">
           <h2 className="profile__card-title">Contact Preferences</h2>
           <ul className="profile__list">
             <li>
-              <a href="#">Notification Settings</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowNotificationModal(true);
+                  setToast({
+                    type: "info",
+                    title: "Heads up!",
+                    message: "Notifications aren’t implemented yet.",
+                  });
+                }}
+              >
+                Notification Settings
+              </a>
             </li>
+
             <li>
-              <a href="#">Promotional Emails</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowPromoModal(true);
+                  setToast({
+                    type: "info",
+                    title: "Just so you know...",
+                    message: "Promotional emails aren’t implemented yet.",
+                  });
+                }}
+              >
+                Promotional Emails
+              </a>
             </li>
           </ul>
         </div>
 
-        {/* Store & Payment Info */}
         <div className="profile__card">
           <h2 className="profile__card-title">Account Settings</h2>
           <ul className="profile__list">
             <li>
-              <a href="#">Preferred Store</a>
+              <a href="#">Preferred Store ❌</a>
             </li>
             <li>
-              <a href="#">Payment Methods</a>
+              <a href="#">Payment Methods ❌</a>
             </li>
           </ul>
         </div>
 
-        {/* Legal */}
         <div className="profile__card">
           <h2 className="profile__card-title">Support & Legal</h2>
           <ul className="profile__list">
             <li>
-              <a href="#">Terms and Conditions</a>
+              <a href="#">Terms and Conditions ❌</a>
             </li>
             <li>
-              <a href="#">Cookie Policy</a>
+              <a href="#">Cookie Policy ❌</a>
             </li>
             <li>
-              <a href="#">Privacy Policy</a>
+              <a href="#">Privacy Policy ❌</a>
             </li>
           </ul>
         </div>
+
+        {/* Logout Modal */}
         {showModal && (
-          <div className="modal-overlay">
-            <div className="profile__logout-modal">
-              <h2>Are you sure you want to log out?</h2>
-              <div className="profile__logout-actions">
-                <button
-                  className="btn btn--primary"
-                  onClick={() => {
-                    sessionStorage.removeItem("user");
-                    setShowModal(false);
-                    navigate("/login");
-                  }}
-                >
-                  Yes, log me out
-                </button>
-                <button
-                  className="btn btn--outline"
-                  onClick={() => setShowModal(false)}
-                >
-                  No, stay logged in
-                </button>
-              </div>
-            </div>
-          </div>
+          <TwoChoicesModal
+            title="Are you sure you want to log out?"
+            confirmLabel="Yes, log me out"
+            cancelLabel="No, stay logged in"
+            onConfirm={handleLogout}
+            onCancel={() => setShowModal(false)}
+          />
         )}
+
+        {/* Email Modal */}
         {showEmailModal && (
-          <div className="modal-overlay">
-            <div className="profile__logout-modal">
-              <h2>Change Your Email</h2>
-              <input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder={
-                  JSON.parse(sessionStorage.getItem("user"))?.email ||
-                  "Enter new email"
+          <SingleInputModal
+            title="Change Your Email"
+            inputType="email"
+            placeholder={
+              JSON.parse(sessionStorage.getItem("user"))?.email ||
+              "Enter new email"
+            }
+            validate={isValidEmail}
+            errorMessage="That doesn't look like a proper email address."
+            onCancel={() => {
+              setShowEmailModal(false);
+            }}
+            onSubmit={(trimmedEmail) => {
+              const user = JSON.parse(sessionStorage.getItem("user"));
+              const currentEmail = user.email.trim().toLowerCase();
+
+              if (trimmedEmail === currentEmail) {
+                setToast({
+                  type: "warning",
+                  title: "No Change Detected",
+                  message: "That’s already your current email.",
+                });
+                return;
+              }
+
+              fetch(
+                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_email.php",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: user.id,
+                    new_email: trimmedEmail,
+                  }),
                 }
-                className="profile__input"
-              />
-
-              <div className="profile__logout-actions">
-                <button
-                  className="btn btn--primary"
-                  onClick={() => {
-                    const user = JSON.parse(sessionStorage.getItem("user"));
-                    if (!user || !newEmail) return;
-
-                    const trimmedNewEmail = newEmail.trim().toLowerCase();
-                    const currentEmail = user.email.trim().toLowerCase();
-
-                    // ✅ Check: is it the same email?
-                    if (trimmedNewEmail === currentEmail) {
-                      setToast({
-                        type: "warning",
-                        title: "No Change Detected",
-                        message: "That’s already your current email.",
-                      });
-                      return;
-                    }
-
-                    // ✅ Check: is it a valid email format?
-                    const isValidEmail = (email) =>
-                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-                    if (!isValidEmail(trimmedNewEmail)) {
-                        setToast({
-                          type: "warning",
-                          title: "Invalid Email",
-                          message: "That doesn't look like a proper email address.",
-                        });
-                        return;
-                      }
-                      
-
-                    // ✅ Now it's safe to fire the request
-                    fetch(
-                      "http://ec2-52-31-217-246.eu-west-1.compute.amazonaws.com/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_email.php",
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          id: user.id,
-                          new_email: trimmedNewEmail,
-                        }),
-                      }
-                    )
-                      .then((res) => res.json())
-                      .then((data) => {
-                        if (data.success) {
-                          setShowEmailModal(false);
-                          setNewEmail("");
-
-                          const updatedUser = {
-                            ...user,
-                            email: trimmedNewEmail,
-                          };
-                          sessionStorage.setItem(
-                            "user",
-                            JSON.stringify(updatedUser)
-                          );
-
-                          setToast({
-                            type: "success",
-                            title: "Email Updated",
-                            message: "Your email was successfully changed.",
-                          });
-                        } else {
-                          setToast({
-                            type: "error",
-                            title: "Update Failed",
-                            message:
-                              data.error ||
-                              "Something went wrong while updating your email.",
-                          });
-                        }
-                      })
-                      .catch((err) => {
-                        console.error("Email update error:", err);
-                        setToast({
-                          type: "error",
-                          title: "Network Error",
-                          message:
-                            "Couldn't reach the server. Please try again.",
-                        });
-                      });
-                  }}
-                >
-                  Save
-                </button>
-
-                <button
-                  className="btn btn--outline"
-                  onClick={() => {
+              )
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.success) {
+                    const updatedUser = { ...user, email: trimmedEmail };
+                    sessionStorage.setItem("user", JSON.stringify(updatedUser));
                     setShowEmailModal(false);
-                    setNewEmail("");
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+                    setToast({
+                      type: "success",
+                      title: "Email Updated",
+                      message: "Your email was successfully changed.",
+                    });
+                  } else {
+                    setToast({
+                      type: "error",
+                      title: "Update Failed",
+                      message:
+                        data.error ||
+                        "Something went wrong while updating your email.",
+                    });
+                  }
+                })
+                .catch((err) => {
+                  console.error("Email update error:", err);
+                  setToast({
+                    type: "error",
+                    title: "Network Error",
+                    message: "Couldn't reach the server. Please try again.",
+                  });
+                });
+            }}
+          />
         )}
+
+        {/* Password Modal */}
+        {showPasswordModal && (
+          <SingleInputModal
+            title="Change Your Password"
+            inputType="password"
+            placeholder="Enter new password"
+            validate={(val) => val.length >= 6}
+            errorMessage="Password must be at least 6 characters."
+            onCancel={() => {
+              setShowPasswordModal(false);
+              setConfirmPasswordChange(false);
+            }}
+            onSubmit={(newPassword) => {
+              const user = JSON.parse(sessionStorage.getItem("user"));
+
+              if (!confirmPasswordChange) {
+                setConfirmPasswordChange(true);
+                setToast({
+                  type: "warning",
+                  title: "Are You Sure?",
+                  message:
+                    "This change is permanent. Click save again to confirm.",
+                });
+                return;
+              }
+
+              fetch(
+                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_password.php",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: user.id,
+                    new_password: newPassword,
+                  }),
+                }
+              )
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.success) {
+                    setShowPasswordModal(false);
+                    setConfirmPasswordChange(false);
+                    setToast({
+                      type: "success",
+                      title: "Password Updated",
+                      message: "Your password has been successfully changed.",
+                    });
+                  } else {
+                    setToast({
+                      type: "error",
+                      title: "Update Failed",
+                      message:
+                        data.error ||
+                        "Something went wrong while updating your password.",
+                    });
+                  }
+                })
+                .catch((err) => {
+                  console.error("Password update error:", err);
+                  setToast({
+                    type: "error",
+                    title: "Network Error",
+                    message: "Couldn't reach the server. Please try again.",
+                  });
+                });
+            }}
+          />
+        )}
+        {/* Notificatoins Modal */}
+        {showNotificationModal && (
+          <TwoChoicesModal
+            title="Notification Settings"
+            confirmLabel="Subscribe to Notifications"
+            cancelLabel="Unsubscribe"
+            onConfirm={() => {
+              setShowNotificationModal(false);
+            }}
+            onCancel={() => {
+              setShowNotificationModal(false);
+            }}
+          />
+        )}
+        {/* Promotions Modal */}
+        {showPromoModal && (
+          <TwoChoicesModal
+            title={`Subscribe with ${
+              JSON.parse(sessionStorage.getItem("user"))?.email || "your email"
+            }`}
+            confirmLabel="Subscribe"
+            cancelLabel="Unsubscribe"
+            onConfirm={() => {
+              setShowPromoModal(false);
+            }}
+            onCancel={() => {
+              setShowPromoModal(false);
+            }}
+          />
+        )}
+
+        {/* Toast */}
         {toast && (
           <div
             style={{
