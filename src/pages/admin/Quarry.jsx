@@ -1,14 +1,18 @@
-import React from "react";
-import { Box, Typography, Divider, Link as MuiLink } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Typography, Divider, Link as MuiLink, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import Toast from "../../components/Toast";
 import DrinkCard from "../../components/DrinkCard";
 import CategoryCard from "../../components/CategoryCard";
 import RetryFallback from "../../components/RetryFallback";
-import { Button } from "@mui/material";
+import InfoDisplayModal from "../../components/InfoDisplayModal";
+import SingleInputModal from "../../components/SingleInputModal";
+import TwoChoicesModal from "../../components/TwoChoices";
 
 
 function Quarry() {
+  const [modalType, setModalType] = useState(null);
+
   return (
     <Box
       sx={{
@@ -133,6 +137,65 @@ function Quarry() {
       <Typography variant="body2">
         Cards, Buttons, Inputs, Forms, etc.
       </Typography>
+      <Divider sx={{ my: 4 }} />
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Modal Components
+      </Typography>
+
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 3 }}>
+        <Button variant="contained" onClick={() => setModalType("input")}>
+          Open SingleInputModal
+        </Button>
+        <Button variant="contained" onClick={() => setModalType("two")}>
+          Open TwoChoicesModal
+        </Button>
+        <Button variant="contained" onClick={() => setModalType("info")}>
+          Open InfoDisplayModal
+        </Button>
+      </Box>
+
+      {/* Render selected modal */}
+      {modalType === "input" && (
+        <SingleInputModal
+          title="Enter Something"
+          inputType="text"
+          placeholder="Type here..."
+          validate={(val) => val.length > 0}
+          errorMessage="Can't be empty"
+          onCancel={() => setModalType(null)}
+          onSubmit={(val) => {
+            alert("Submitted: " + val);
+            setModalType(null);
+          }}
+        />
+      )}
+
+      {modalType === "two" && (
+        <TwoChoicesModal
+          title="Are you sure?"
+          confirmLabel="Yes"
+          cancelLabel="No"
+          onConfirm={() => {
+            alert("Confirmed!");
+            setModalType(null);
+          }}
+          onCancel={() => setModalType(null)}
+        />
+      )}
+
+      {modalType === "info" && (
+        <InfoDisplayModal
+          title="Example Info Modal"
+          onClose={() => setModalType(null)}
+        >
+          <p>This is a static info modal preview for the quarry.</p>
+          <ul>
+            <li>Expandable content area</li>
+            <li>Back arrow top-right</li>
+            <li>Reusable for help/info</li>
+          </ul>
+        </InfoDisplayModal>
+      )}
     </Box>
   );
 }

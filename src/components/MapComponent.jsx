@@ -1,61 +1,147 @@
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import InfoDisplayModal from "./InfoDisplayModal";
+import "../MapComponent_Style.css";
 
-// 🔹 Set your Mapbox API access token (replace with your own key)
-mapboxgl.accessToken = "pk.eyJ1Ijoicm9ja3loZW5kZXJzb24iLCJhIjoiY204Y3hsajk1MjJtcDJscXVoNHBxczVxeSJ9.fwvphAwtGJD_UiHR-beXvA";
+mapboxgl.accessToken =
+  "pk.eyJ1Ijoicm9ja3loZW5kZXJzb24iLCJhIjoiY204Y3hsajk1MjJtcDJscXVoNHBxczVxeSJ9.fwvphAwtGJD_UiHR-beXvA";
 
 const MapComponent = () => {
-  // 🔹 Create a reference for the map container div
   const mapContainerRef = useRef(null);
-
-  // 🔹 Store state to hold fetched store locations
   const [stores, setStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState(null);
 
-  /**
-   * 🔹 Fetches store data from the API when the component mounts
-   */
   useEffect(() => {
-    fetch("http://webdev.edinburghcollege.ac.uk/~HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php")
-      .then((response) => response.json()) // Parse the JSON response
-      .then((data) => {
-        setStores(data); // Store the fetched data in state
-      })
-      .catch((error) => console.error("Error fetching store data:", error)); // Handle errors
-  }, []); // Runs only once when the component mounts
+    fetch(
+      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
+    )
+      .then((res) => res.json())
+      .then((data) => setStores(data))
+      .catch((err) => console.error("Failed to fetch stores:", err));
+  }, []);
 
-  /**
-   * 🔹 Initializes the Mapbox map and adds store markers when store data is available
-   */
+  const isStoreCurrentlyOpen = (store) => {
+    if (!store?.is_open) return false; //same as if (!store || store.is_open !== true) return false;
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const [openHour, openMinute] = store.open_time.split(":").map(Number);
+    const [closeHour, closeMinute] = store.close_time.split(":").map(Number);
+
+    const openMinutes = openHour * 60 + openMinute;
+    const closeMinutes = closeHour * 60 + closeMinute;
+
+    return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+  };
+
   useEffect(() => {
-    if (!mapContainerRef.current || stores.length === 0) return; // If map container doesn't exist or no stores, exit
+    if (!mapContainerRef.current || stores.length === 0) return;
 
-    // 🔹 Initialize Mapbox map
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current, // Bind map to the div ref
-      style: "mapbox://styles/mapbox/light-v10", // Map style (light theme)
-      center: [-4.2026, 56.4907], // Set center (Scotland)
-      zoom: 6, // Initial zoom level
-      pitchWithRotate: false, // Prevents tilting when rotating the map
-      dragRotate: false, // Disables manual rotation by user
-      maxPitch: 0, // Forces the map to stay flat (2D mode)
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/light-v10",
+      center: [-4.2026, 56.4907],
+      zoom: 6,
+      pitchWithRotate: false,
+      dragRotate: false,
+      maxPitch: 0,
     });
 
-    // 🔹 Loop through all stores and add a marker for each one
     stores.forEach((store) => {
-      new mapboxgl.Marker() // Create a new marker
-        .setLngLat([store.longitude, store.latitude]) // Set marker position using store coordinates
-        .setPopup(new mapboxgl.Popup().setHTML( // Create a popup with store details
-          `<h3>${store.store_name}</h3><p>${store.address}</p>`
-        ))
-        .addTo(map); // Add marker to the map
+      const isOpen = isStoreCurrentlyOpen(store);
+
+      const popupNode = document.createElement("div");
+      popupNode.style.fontFamily = "sans-serif";
+      popupNode.style.minWidth = "200px";
+
+      popupNode.innerHTML = `
+        <h3 style="margin: 0 0 0.3rem;">${store.store_name}</h3>
+        <p style="margin: 0 0 0.5rem;">
+          <strong style="color: ${isOpen ? "#00FF90" : "#FF5A5A"};">
+            ${isOpen ? "Open" : "Closed"}
+          </strong><br/>
+          ${store.open_time} - ${store.close_time}
+        </p>
+      `;
+
+      const btn = document.createElement("button");
+      btn.textContent = "Learn More";
+      btn.style.padding = "0.5rem 1rem";
+      btn.style.background = "#FD6100";
+      btn.style.border = "none";
+      btn.style.color = "white";
+      btn.style.borderRadius = "6px";
+      btn.style.cursor = "pointer";
+      btn.disabled = !isOpen; // Disable button if the store is closed or outside operating hours
+
+      // Apply dulling effect if the store is closed
+      btn.style.opacity = isOpen ? 1 : 0.5;  // Make it dull if the store is closed
+
+      btn.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("openStoreModal", { detail: store })
+        );
+      });
+
+      popupNode.appendChild(btn);
+
+      new mapboxgl.Marker()
+        .setLngLat([store.longitude, store.latitude])
+        .setPopup(new mapboxgl.Popup().setDOMContent(popupNode))
+        .addTo(map);
     });
 
-    // 🔹 Cleanup function to remove the map when the component unmounts
     return () => map.remove();
-  }, [stores]); // Runs whenever the store list changes
+  }, [stores]);
 
-  // 🔹 Return the map container div (Mapbox will render the map inside this)
-  return <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />;
+  useEffect(() => {
+    const handler = (e) => setSelectedStore(e.detail);
+    window.addEventListener("openStoreModal", handler);
+    return () => window.removeEventListener("openStoreModal", handler);
+  }, []);
+
+  return (
+    <>
+      <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
+      {selectedStore && (
+        <InfoDisplayModal
+          title={selectedStore.store_name}
+          onClose={() => setSelectedStore(null)}
+          onConfirm={() =>
+            alert(`Store "${selectedStore.store_name}" selected!`)
+          }
+        >
+          <p>
+            <strong>Address:</strong> {selectedStore.address}
+          </p>
+          <p>
+            <strong>Open Hours:</strong> {selectedStore.open_time} –{" "}
+            {selectedStore.close_time}
+          </p>
+          <p>
+            <strong>Status:</strong>{" "}
+            <span
+              style={{
+                color: isStoreCurrentlyOpen(selectedStore)
+                  ? "#00FF90"
+                  : "#FF5A5A",
+                fontWeight: 600,
+              }}
+            >
+              {isStoreCurrentlyOpen(selectedStore) ? "Open" : "Closed"}
+            </span>
+          </p>
+          <p>
+            <strong>Latitude:</strong> {selectedStore.latitude}
+          </p>
+          <p>
+            <strong>Longitude:</strong> {selectedStore.longitude}
+          </p>
+        </InfoDisplayModal>
+      )}
+    </>
+  );
 };
 
 export default MapComponent;

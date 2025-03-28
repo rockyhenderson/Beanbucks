@@ -1,0 +1,15 @@
+/* Increase the size of the close button in Mapbox popups */
+.mapboxgl-popup-close-button {
+    font-size: 24px; /* Adjust size here */
+    width: 40px; /* Adjust button width */
+    height: 40px; /* Adjust button height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .mapboxgl-popup-close-button svg {
+    width: 18px; /* Adjust the icon size */
+    height: 18px; /* Adjust the icon size */
+  }
+  
