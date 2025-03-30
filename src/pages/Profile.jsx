@@ -1,14 +1,25 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Brightness4Icon from "@mui/icons-material/Brightness4"; // mon
+import Brightness7Icon from "@mui/icons-material/Brightness7"; // sun
 
 import "../Profile_Style.css";
 import Toast from "../components/Toast";
 import "../Toast_Style.css";
 import SingleInputModal from "../components/SingleInputModal";
 import TwoChoicesModal from "../components/TwoChoices";
+import InfoDisplayModal from "../components/InfoDisplayModal";
+import PreferredStoreCard from "../components/PreferredStoreCard";
+
 
 function Profile() {
   const navigate = useNavigate();
+  const [theme, setTheme] = useState("light");
+  const [showStoreModal, setShowStoreModal] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -24,11 +35,52 @@ function Profile() {
     navigate("/login");
   };
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const toggleTheme = () => {
+    const html = document.documentElement;
+    const current = html.getAttribute("data-theme") || "light";
+    const next = current === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    setTheme(next); // 👈 this updates the icon
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", saved);
+    setTheme(saved);
+  }, []);
 
   return (
     <>
       <div className="profile">
-        <h1 className="profile__title">Profile</h1>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h1 className="profile__title">Profile</h1>
+          <Tooltip title="Toggle Theme">
+            <IconButton
+              onClick={toggleTheme}
+              sx={{
+                backgroundColor: "var(--card)",
+                color: "var(--text)",
+                border: "2px solid var(--primary)",
+                borderRadius: "50%",
+                padding: "8px",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  backgroundColor: "var(--primary)",
+                  color: "#fff",
+                },
+              }}
+            >
+              {theme === "dark" ? <Brightness4Icon /> : <Brightness7Icon />}
+            </IconButton>
+          </Tooltip>
+        </div>
 
         {/* Profile Sections */}
         <div className="profile__card">
@@ -121,8 +173,17 @@ function Profile() {
           <h2 className="profile__card-title">Account Settings</h2>
           <ul className="profile__list">
             <li>
-              <a href="#">Preferred Store ❌</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowStoreModal(true);
+                }}
+              >
+                Preferred Store
+              </a>
             </li>
+
             <li>
               <a
                 href="#"
@@ -338,6 +399,20 @@ function Profile() {
             }}
           />
         )}
+        {showStoreModal && (
+          <InfoDisplayModal
+            title="Your Preferred Store"
+            onClose={() => setShowStoreModal(false)}
+            confirmLabel="Change Store"
+            onConfirm={() => {
+              setShowStoreModal(false);
+              navigate("/store");
+            }}
+          >
+            <PreferredStoreCard />
+          </InfoDisplayModal>
+        )}
+
         {ShowPaymentModal && (
           <TwoChoicesModal
             title="Payment Modal"

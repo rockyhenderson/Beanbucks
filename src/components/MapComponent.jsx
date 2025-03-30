@@ -171,12 +171,18 @@ const MapComponent = ({
         if (closestStore) {
           const distanceMiles = toMiles(shortestDistance).toFixed(1);
           showToast({
+            type: "success",
+            title: "Store Found",
+            message: `Found ${closestStore.store_name} (${distanceMiles} miles away).`,
+          });
+
+          setSelectedStore(closestStore);
+        } else {
+          showToast({
             type: "warning",
             title: "No Stores Found",
             message: "No open stores near your location.",
           });
-          
-          setSelectedStore(closestStore);
         }
       },
       () => {
@@ -185,7 +191,6 @@ const MapComponent = ({
           title: "Location Error",
           message: "Unable to retrieve your location.",
         });
-        
       }
     );
   };

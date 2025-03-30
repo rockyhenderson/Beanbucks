@@ -10,6 +10,7 @@ import SingleInputModal from "../../components/SingleInputModal";
 import TwoChoicesModal from "../../components/TwoChoices";
 
 
+
 function Quarry() {
   const [modalType, setModalType] = useState(null);
 
