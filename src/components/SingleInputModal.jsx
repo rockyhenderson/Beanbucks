@@ -43,9 +43,26 @@ function SingleInputModal({
             placeholder={placeholder}
             className="profile__input"
             style={{
-              borderColor: hasError ? "red" : undefined,
+              width: "100%",
+              padding: "0.75rem 1rem",
+              fontSize: "1rem",
+              borderRadius: "6px",
+              border: hasError
+                ? "2px solid #E51A3C" 
+                : "2px solid #FD6100", 
+              outline: "none",
+              backgroundColor: "#fefaf7",
+              color: "var(--text)",
+              fontFamily: "inherit",
+              boxSizing: "border-box",
+              transition: "border 0.2s ease, box-shadow 0.2s ease",
             }}
+            onFocus={(e) =>
+              (e.target.style.boxShadow = "0 0 0 3px rgba(253, 97, 0, 0.2)")
+            }
+            onBlur={(e) => (e.target.style.boxShadow = "none")}
           />
+
           {isPassword && (
             <div
               style={{

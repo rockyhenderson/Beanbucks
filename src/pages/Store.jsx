@@ -2,11 +2,22 @@ import React, { useEffect, useState } from "react";
 import { useMediaQuery } from "@mui/material";
 import MapComponent from "../components/MapComponent";
 import InfoDisplayModal from "../components/InfoDisplayModal";
+import Toast from "../components/Toast";
 
 function Store() {
+  const [toast, setToast] = useState(null);
+
   const isDesktop = useMediaQuery("(min-width: 900px)");
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mapAction, setMapAction] = useState(null);
+  const showToast = ({ type, title, message }) => {
+    setToast({ type, title, message });
+    setTimeout(() => setToast(null), 4000);
+  };
+  
 
   const isStoreCurrentlyOpen = (store) => {
     if (!store?.is_open) return false;
@@ -43,6 +54,26 @@ function Store() {
         flexDirection: isDesktop ? "row" : "column",
       }}
     >
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            animation: "slideDown 0.3s ease-out",
+          }}
+        >
+          <Toast
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
+
       {isDesktop && (
         <div
           style={{
@@ -150,6 +181,10 @@ function Store() {
           <input
             type="text"
             placeholder="Search for a store..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // Allows click to register
             style={{
               flexGrow: 1,
               padding: "0.75rem 1rem",
@@ -160,8 +195,74 @@ function Store() {
               fontSize: "1rem",
             }}
           />
+
+          {/* 🔽 Search Suggestions Dropdown */}
+          {showDropdown && searchQuery && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 0.5rem)",
+                left: 0,
+                right: 0,
+                backgroundColor: "var(--card)",
+                borderRadius: "8px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                padding: "0.5rem",
+                maxHeight: "200px",
+                overflowY: "auto",
+                zIndex: 999,
+              }}
+            >
+              {stores.filter((store) =>
+                `${store.store_name} ${store.address}`
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase())
+              ).length > 0 ? (
+                stores
+                  .filter((store) =>
+                    `${store.store_name} ${store.address}`
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
+                  )
+                  .map((store) => (
+                    <div
+                      key={store.id}
+                      onClick={() => {
+                        setSelectedStore(store);
+                        setShowDropdown(false);
+                        setSearchQuery("");
+                      }}
+                      style={{
+                        padding: "0.5rem",
+                        cursor: "pointer",
+                        borderRadius: "6px",
+                        transition: "0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor =
+                          "var(--background)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "transparent")
+                      }
+                    >
+                      <strong>{store.store_name}</strong>
+                      <div style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+                        {store.address}
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div style={{ padding: "0.5rem", opacity: 0.6 }}>
+                  No stores found.
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             className="btn btn--primary"
+            onClick={() => setMapAction("LOCATE_NEAREST")}
             style={{
               padding: "0.75rem 1.5rem",
               fontWeight: 600,
@@ -176,7 +277,13 @@ function Store() {
         </div>
 
         <div style={{ width: "100%", height: "100%" }}>
-          <MapComponent />
+          <MapComponent
+            externalTrigger={mapAction}
+            clearTrigger={() => setMapAction(null)}
+            setSelectedStore={setSelectedStore}
+            selectedStore={selectedStore}
+            showToast={showToast}
+          />
         </div>
       </div>
 
@@ -184,6 +291,11 @@ function Store() {
         <InfoDisplayModal
           title={selectedStore.store_name}
           onClose={() => setSelectedStore(null)}
+          onConfirm={() => {
+            sessionStorage.setItem("selectedStoreId", selectedStore.id);
+            setSelectedStore(null);
+          }}
+          confirmLabel="Select This Store"
         >
           <p>
             <strong>Address:</strong> {selectedStore.address}

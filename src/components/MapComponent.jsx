@@ -6,10 +6,15 @@ import "../MapComponent_Style.css";
 mapboxgl.accessToken =
   "pk.eyJ1Ijoicm9ja3loZW5kZXJzb24iLCJhIjoiY204Y3hsajk1MjJtcDJscXVoNHBxczVxeSJ9.fwvphAwtGJD_UiHR-beXvA";
 
-const MapComponent = () => {
+const MapComponent = ({
+  externalTrigger,
+  clearTrigger,
+  setSelectedStore,
+  selectedStore,
+  showToast,
+}) => {
   const mapContainerRef = useRef(null);
   const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState(null);
 
   useEffect(() => {
     fetch(
@@ -20,8 +25,15 @@ const MapComponent = () => {
       .catch((err) => console.error("Failed to fetch stores:", err));
   }, []);
 
+  useEffect(() => {
+    if (externalTrigger === "LOCATE_NEAREST") {
+      handleLocateNearestStore();
+      clearTrigger(); // Reset after handling
+    }
+  }, [externalTrigger]);
+
   const isStoreCurrentlyOpen = (store) => {
-    if (!store?.is_open) return false; //same as if (!store || store.is_open !== true) return false;
+    if (!store?.is_open) return false;
 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -73,10 +85,8 @@ const MapComponent = () => {
       btn.style.color = "white";
       btn.style.borderRadius = "6px";
       btn.style.cursor = "pointer";
-      btn.disabled = !isOpen; // Disable button if the store is closed or outside operating hours
-
-      // Apply dulling effect if the store is closed
-      btn.style.opacity = isOpen ? 1 : 0.5;  // Make it dull if the store is closed
+      btn.disabled = !isOpen;
+      btn.style.opacity = isOpen ? 1 : 0.5;
 
       btn.addEventListener("click", () => {
         window.dispatchEvent(
@@ -99,7 +109,86 @@ const MapComponent = () => {
     const handler = (e) => setSelectedStore(e.detail);
     window.addEventListener("openStoreModal", handler);
     return () => window.removeEventListener("openStoreModal", handler);
-  }, []);
+  }, [setSelectedStore]);
+
+  const handleLocateNearestStore = () => {
+    if (!navigator.geolocation) {
+      showToast({
+        title: "Geolocation Error",
+        type: "error",
+        message: "Geolocation is not supported by your browser.",
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+
+        const openStores = stores.filter(isStoreCurrentlyOpen);
+        if (openStores.length === 0) {
+          showToast({
+            title: "No Stores Found",
+            type: "warning",
+            message: "No open stores near your location.",
+          });
+          return;
+        }
+
+        const toMiles = (meters) => meters * 0.000621371;
+
+        const haversineDistance = (lat1, lon1, lat2, lon2) => {
+          const R = 6371e3;
+          const φ1 = (lat1 * Math.PI) / 180;
+          const φ2 = (lat2 * Math.PI) / 180;
+          const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+          const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+          const a =
+            Math.sin(Δφ / 2) ** 2 +
+            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return R * c;
+        };
+
+        let closestStore = null;
+        let shortestDistance = Infinity;
+
+        openStores.forEach((store) => {
+          const dist = haversineDistance(
+            userLat,
+            userLon,
+            store.latitude,
+            store.longitude
+          );
+          if (dist < shortestDistance) {
+            shortestDistance = dist;
+            closestStore = store;
+          }
+        });
+
+        if (closestStore) {
+          const distanceMiles = toMiles(shortestDistance).toFixed(1);
+          showToast({
+            type: "warning",
+            title: "No Stores Found",
+            message: "No open stores near your location.",
+          });
+          
+          setSelectedStore(closestStore);
+        }
+      },
+      () => {
+        showToast({
+          type: "error",
+          title: "Location Error",
+          message: "Unable to retrieve your location.",
+        });
+        
+      }
+    );
+  };
 
   return (
     <>
@@ -108,9 +197,11 @@ const MapComponent = () => {
         <InfoDisplayModal
           title={selectedStore.store_name}
           onClose={() => setSelectedStore(null)}
-          onConfirm={() =>
-            alert(`Store "${selectedStore.store_name}" selected!`)
-          }
+          onConfirm={() => {
+            sessionStorage.setItem("selectedStoreId", selectedStore.id);
+            setSelectedStore(null);
+          }}
+          confirmLabel="Select This Store"
         >
           <p>
             <strong>Address:</strong> {selectedStore.address}

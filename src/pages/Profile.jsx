@@ -15,6 +15,7 @@ function Profile() {
   const [confirmPasswordChange, setConfirmPasswordChange] = useState(false);
   const [toast, setToast] = useState(null);
   const [showPromoModal, setShowPromoModal] = useState(false);
+  const [ShowPaymentModal, setShowPaymentModal] = useState(false);
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -123,7 +124,21 @@ function Profile() {
               <a href="#">Preferred Store ❌</a>
             </li>
             <li>
-              <a href="#">Payment Methods ❌</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowPaymentModal(true);
+                  setToast({
+                    type: "info",
+                    title: "Just so you know...",
+                    message:
+                      "You litteraly cant pay here as its a mock website.",
+                  });
+                }}
+              >
+                Payment Methods
+              </a>
             </li>
           </ul>
         </div>
@@ -320,6 +335,19 @@ function Profile() {
             }}
             onCancel={() => {
               setShowPromoModal(false);
+            }}
+          />
+        )}
+        {ShowPaymentModal && (
+          <TwoChoicesModal
+            title="Payment Modal"
+            confirmLabel="I do somthing important"
+            cancelLabel="I dont do anything important"
+            onConfirm={() => {
+              setShowPaymentModal(false);
+            }}
+            onCancel={() => {
+              setShowPaymentModal(false);
             }}
           />
         )}
