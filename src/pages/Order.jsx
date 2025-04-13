@@ -1,37 +1,43 @@
-import React, { useState } from "react";
-import useFetchWithRetry from "../utils/useFetchWithRetry";
-import RetryFallback from "../components/RetryFallback";
-import DrinkCard from "../components/DrinkCard";
-import CategoryCard from "../components/CategoryCard"; 
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CategoryCard from "../components/CategoryCard";
+import TwoChoicesModal from "../components/TwoChoices";
 import "../Order_Style.css";
 
 function Order() {
-  const { data: drinks, error, retry } = useFetchWithRetry("http://localhost:3001/api/drinks");
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [hasStore, setHasStore] = useState(false);
+  const navigate = useNavigate();
 
-  if (error) return <RetryFallback onRetry={retry} />;
-  if (!drinks) return <p>Loading drinks...</p>;
+  useEffect(() => {
+    const storedStore = sessionStorage.getItem("selectedStoreId");
+    setHasStore(!!storedStore);
 
-  const filteredDrinks = activeCategory
-    ? drinks.filter((drink) => drink.template_id === activeCategory)
-    : [];
+    document.body.style.overflow = storedStore ? "auto" : "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
+  const handleSelectStore = () => navigate("/store");
+  const handleGoHome = () => navigate("/");
 
   return (
-    <div className="orders">
-      <h1>Menu</h1>
-
-      {/* Fixed category layout */}
-      <CategoryCard onSelect={setActiveCategory} />
-
-      {/* Drinks shown after selecting a category */}
-      {activeCategory && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-4">
-          {filteredDrinks.map((drink) => (
-            <DrinkCard key={drink.name} drink={drink} />
-          ))}
-        </div>
+    <>
+      {!hasStore && (
+        <TwoChoicesModal
+          title="Please select a store before ordering"
+          confirmLabel="Select Store"
+          cancelLabel="Home"
+          onConfirm={handleSelectStore}
+          onCancel={handleGoHome}
+        />
       )}
-    </div>
+
+      <div className={`orders ${!hasStore ? "rewards--blurred" : ""}`}>
+        <h1>Menu</h1>
+        <CategoryCard />
+      </div>
+    </>
   );
 }
 

@@ -1,68 +1,89 @@
+/* 📱 Mobile-first: Vertical layout */
 .drink-card {
-    background-color: var(--card);
-    color: var(--text);
-    border-radius: 1rem;
-    padding: 0;
-    display: flex;
+  background-color: var(--card);
+  color: var(--text);
+  border-radius: 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 160px;
+  transition: transform 0.2s ease;
+}
+
+.drink-card:hover {
+  transform: translateY(-2px);
+}
+
+.drink-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.drink-card-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.drink-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  margin-top: 0.25rem;
+}
+
+.drink-card-price {
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.drink-card button {
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  align-self: stretch;
+}
+
+.drink-card button:hover {
+  opacity: 0.95;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+/* 🖥️ Desktop: Horizontal layout */
+@media screen and (min-width: 768px) {
+  .drink-card {
     flex-direction: row;
-    overflow: hidden;
     width: 320px;
     height: 160px;
-    transition: transform 0.2s ease;
   }
-  
-  
-  .drink-card:hover {
-    transform: translateY(-2px);
-  }
-  
+
   .drink-card img {
     width: 100px;
     height: 100%;
-    object-fit: cover;
-    display: block;
-    flex-shrink: 0;
   }
-  
+
   .drink-card-content {
-    padding: 1rem 1rem 1rem 0.75rem; /* 🧠 Right padding added */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    padding: 1rem 1rem 1rem 0.75rem;
     gap: 0.25rem;
-    flex: 1;
-    height: 100%;
-    box-sizing: border-box;
   }
-  
-  .drink-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--heading-color);
-    margin-top: 0.25rem; /* ✅ Extra breathing room */
-  }
-  
-  .drink-card-price {
-    font-size: 0.95rem;
-    color: var(--accent);
-  }
-  
+
   .drink-card button {
-    background-color: var(--primary);
-    color: #ffffff;
-    border: none;
-    padding: 0.45rem 1rem;
-    font-weight: 600;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
     width: fit-content;
-    align-self: flex-start; /* ✅ Prevent overflow */
+    align-self: flex-start;
   }
-  
-  .drink-card button:hover {
-    opacity: 0.95;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-  }
-  
+}

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import "../Rewards_Style.css";
+import TwoChoicesModal from "../components/TwoChoices"; 
+import { useNavigate } from 'react-router-dom';
 
 function Rewards() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Check sessionStorage on load
         const storedUser = sessionStorage.getItem("user");
         if (storedUser) {
             try {
@@ -20,35 +22,29 @@ function Rewards() {
             setIsLoggedIn(false);
         }
 
-        // Handle scroll lock
-        if (!isLoggedIn) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-
+        document.body.style.overflow = isLoggedIn ? 'auto' : 'hidden';
         return () => {
             document.body.style.overflow = 'auto';
         };
     }, [isLoggedIn]);
 
+    const handleLogin = () => navigate("/login");
+    const handleRegister = () => navigate("/register");
+
     return (
         <>
             {!isLoggedIn && (
-                <div className="rewards__lock-overlay">
-                    <div className="rewards__lock-box">
-                        <h2>Please log in to access rewards</h2>
-                        <p>You need to be signed in to view your loyalty points and perks.</p>
-                        <div className="rewards__lock-cta">
-                            <a href="/login" className="btn btn--primary">Login</a>
-                            <a href="/register" className="btn btn--outline">Register</a>
-                        </div>
-                    </div>
-                </div>
+                <TwoChoicesModal
+                    title="Please log in to access rewards"
+                    confirmLabel="Login"
+                    cancelLabel="Register"
+                    onConfirm={handleLogin}
+                    onCancel={handleRegister}
+                />
             )}
 
             <div className={`rewards ${!isLoggedIn ? 'rewards--blurred' : ''}`}>
-                <h1>BeanBucks Rewards</h1>
+                <h1>Rewards</h1>
 
                 {/* Points Overview */}
                 <section className="rewards__points-card">

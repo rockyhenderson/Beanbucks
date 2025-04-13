@@ -1,3 +1,5 @@
+// I MADE the SQL query run first for this page before loading, and if it goes wrong it gives the error message for the full page
+// since every component is rendered conditionally off the fetch request, the map and the sidebar, it all needs to hinge on one.
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import InfoDisplayModal from "./InfoDisplayModal";
@@ -7,23 +9,17 @@ mapboxgl.accessToken =
   "pk.eyJ1Ijoicm9ja3loZW5kZXJzb24iLCJhIjoiY204Y3hsajk1MjJtcDJscXVoNHBxczVxeSJ9.fwvphAwtGJD_UiHR-beXvA";
 
 const MapComponent = ({
+  stores,
   externalTrigger,
   clearTrigger,
   setSelectedStore,
   selectedStore,
   showToast,
+  setJustSelectedStore, 
 }) => {
   const mapContainerRef = useRef(null);
-  const [stores, setStores] = useState([]);
 
-  useEffect(() => {
-    fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
-    )
-      .then((res) => res.json())
-      .then((data) => setStores(data))
-      .catch((err) => console.error("Failed to fetch stores:", err));
-  }, []);
+
 
   useEffect(() => {
     if (externalTrigger === "LOCATE_NEAREST") {
@@ -171,7 +167,7 @@ const MapComponent = ({
         if (closestStore) {
           const distanceMiles = toMiles(shortestDistance).toFixed(1);
           showToast({
-            type: "success",
+            type: "info",
             title: "Store Found",
             message: `Found ${closestStore.store_name} (${distanceMiles} miles away).`,
           });
@@ -204,6 +200,7 @@ const MapComponent = ({
           onClose={() => setSelectedStore(null)}
           onConfirm={() => {
             sessionStorage.setItem("selectedStoreId", selectedStore.id);
+            setJustSelectedStore(selectedStore); 
             setSelectedStore(null);
           }}
           confirmLabel="Select This Store"

@@ -16,7 +16,7 @@
   }
   
   html[data-theme="light"] {
-    --background: #F5F1EC;
+    --background: #FFF9F4;
     --text: #161620;
     --card: #FFFFFF;
     --accent: #5A4A42;
@@ -134,4 +134,7 @@ body {
 /* Click = slight scale down */
 .btn:active {
   transform: scale(0.95);
+}
+body.modal-open {
+  overflow: hidden;
 }

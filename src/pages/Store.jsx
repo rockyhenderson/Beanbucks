@@ -3,12 +3,23 @@ import { useMediaQuery } from "@mui/material";
 import MapComponent from "../components/MapComponent";
 import InfoDisplayModal from "../components/InfoDisplayModal";
 import Toast from "../components/Toast";
+import useFetchWithRetry from "../utils/useFetchWithRetry";
+import RetryFallback from "../components/RetryFallback";
+import TwoChoicesModal from "../components/TwoChoices";
 
 function Store() {
+  const {
+    data: stores,
+    error,
+    retry,
+    isLoading,
+  } = useFetchWithRetry(
+    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
+  );
   const [toast, setToast] = useState(null);
+  const [justSelectedStore, setJustSelectedStore] = useState(null);
 
   const isDesktop = useMediaQuery("(min-width: 900px)");
-  const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -17,7 +28,6 @@ function Store() {
     setToast({ type, title, message });
     setTimeout(() => setToast(null), 4000);
   };
-  
 
   const isStoreCurrentlyOpen = (store) => {
     if (!store?.is_open) return false;
@@ -33,15 +43,9 @@ function Store() {
 
     return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
   };
-
-  useEffect(() => {
-    fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
-    )
-      .then((res) => res.json())
-      .then((data) => setStores(data))
-      .catch((err) => console.error("Failed to fetch stores:", err));
-  }, []);
+  if (error) return <RetryFallback onRetry={retry} />;
+  if (isLoading) return <p style={{ padding: "2rem" }}>Loading stores...</p>;
+  if (!stores) return null;
 
   return (
     <div
@@ -137,6 +141,16 @@ function Store() {
                   <button
                     className="btn btn--primary"
                     disabled={!isStoreCurrentlyOpen(store)}
+                    onClick={() => {
+                      sessionStorage.setItem("selectedStoreId", store.id);
+                      setToast({
+                        type: "success",
+                        title: "Store Selected!",
+                        message: `You selected ${store.store_name}!`,
+                      });
+                      setSelectedStore(null);
+                      setJustSelectedStore(store);
+                    }}
                     style={{
                       opacity: isStoreCurrentlyOpen(store) ? 1 : 0.5,
                       cursor: isStoreCurrentlyOpen(store)
@@ -278,14 +292,27 @@ function Store() {
 
         <div style={{ width: "100%", height: "100%" }}>
           <MapComponent
+            stores={stores}
             externalTrigger={mapAction}
             clearTrigger={() => setMapAction(null)}
             setSelectedStore={setSelectedStore}
             selectedStore={selectedStore}
             showToast={showToast}
+            setJustSelectedStore={setJustSelectedStore}
           />
         </div>
       </div>
+      {justSelectedStore && (
+        <TwoChoicesModal
+          title={`You've selected ${justSelectedStore.store_name}.`}
+          confirmLabel="Go to Order Page"
+          cancelLabel="Change Store"
+          onConfirm={() => {
+            window.location.href = "/order"; // redirect
+          }}
+          onCancel={() => setJustSelectedStore(null)} // just close modal
+        />
+      )}
 
       {selectedStore && (
         <InfoDisplayModal
@@ -293,7 +320,13 @@ function Store() {
           onClose={() => setSelectedStore(null)}
           onConfirm={() => {
             sessionStorage.setItem("selectedStoreId", selectedStore.id);
+            setToast({
+              type: "success",
+              title: "Store Selected!",
+              message: `You selected ${selectedStore.store_name}!`,
+            });
             setSelectedStore(null);
+            setJustSelectedStore(store);
           }}
           confirmLabel="Select This Store"
         >

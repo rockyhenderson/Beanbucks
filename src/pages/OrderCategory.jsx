@@ -1,25 +1,174 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useRef, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import useFetchWithRetry from "../utils/useFetchWithRetry";
+import RetryFallback from "../components/RetryFallback";
+import DrinkCard from "../components/DrinkCard";
+import "../Order_Style.css";
+import DrinkModal from "../components/DrinkModal";
+import FilterSidebar from "../components/FilterSidebar";
 
 const categoryMap = {
   hot: "Hot Drinks",
   cold: "Cold Drinks",
   food: "Food",
-  seasonal: "Seasonal",
-  all: "All Items",
 };
 
-function OrderCatagoery() {
+function OrderCategory() {
   const { type } = useParams();
   const label = categoryMap[type];
+  const [selectedDrink, setSelectedDrink] = useState(null);
+  const [activeCategories, setActiveCategories] = useState([]);
+  const scrollRefs = useRef({});
+  const navigate = useNavigate();
+
+  const selectedStoreId = sessionStorage.getItem("selectedStoreId");
+
+  // Redirect if no store is selected
+  useEffect(() => {
+    if (!selectedStoreId) {
+      navigate("/order", { replace: true });
+    }
+  }, [selectedStoreId, navigate]);
+
+  const {
+    data: drinks,
+    error,
+    retry,
+    isLoading,
+  } = useFetchWithRetry(
+    selectedStoreId
+      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_drinks.php?store_id=${selectedStoreId}`
+      : null
+  );
+
+  const filteredDrinks =
+    drinks?.filter((drink) => drink.category === type) || [];
+
+  // Extract all tags
+  const allTags = Array.from(
+    new Set(filteredDrinks.map((drink) => drink.tags || "Other"))
+  );
+
+  // Set default checked tags ONCE
+  useEffect(() => {
+    if (allTags.length && activeCategories.length === 0) {
+      setActiveCategories(allTags);
+    }
+  }, [allTags]);
+  const [priceFilter, setPriceFilter] = useState({ min: "", max: "" });
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Group drinks by tag and filter out unchecked ones
+  // Group drinks by tag, applying category + price filters
+  const groupedDrinks = filteredDrinks
+    .filter((drink) => {
+      const tag = drink.tags || "Other";
+      const price = parseFloat(drink.price);
+      const matchesCategory = activeCategories.includes(tag);
+      const matchesPrice =
+        (!priceFilter.min || price >= parseFloat(priceFilter.min)) &&
+        (!priceFilter.max || price <= parseFloat(priceFilter.max));
+      const matchesSearch =
+        !searchTerm ||
+        drink.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesCategory && matchesPrice && matchesSearch;
+    })
+    .reduce((acc, drink) => {
+      const tag = drink.tags || "Other";
+      if (!acc[tag]) acc[tag] = [];
+      acc[tag].push(drink);
+      return acc;
+    }, {});
+
+  // Scroll dragging behavior for drink carousels
+  useEffect(() => {
+    Object.values(scrollRefs.current).forEach((ref) => {
+      if (!ref) return;
+
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+
+      const onMouseDown = (e) => {
+        isDown = true;
+        ref.classList.add("dragging");
+        startX = e.clientX;
+        scrollLeft = ref.scrollLeft;
+      };
+
+      const onMouseMove = (e) => {
+        if (!isDown) return;
+        const x = e.clientX;
+        const walk = (x - startX) * 1.2;
+        ref.scrollLeft = scrollLeft - walk;
+      };
+
+      const onMouseUp = () => {
+        isDown = false;
+        ref.classList.remove("dragging");
+      };
+
+      ref.addEventListener("mousedown", onMouseDown);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+
+      return () => {
+        ref.removeEventListener("mousedown", onMouseDown);
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+    });
+  }, [filteredDrinks]);
 
   if (!label) return <p>Category not found.</p>;
+  if (error)
+    return <RetryFallback onRetry={retry} message="Failed to load drinks." />;
+  if (isLoading || !drinks) return <p>Loading drinks...</p>;
 
   return (
-    <div className="main-page-content">
-      <h1>{label} here ☕</h1>
+    <div className="order-category-page">
+      <div className="order-category-header">
+        <h1>{label}</h1>
+      </div>
+
+      <div className="order-content">
+        <FilterSidebar
+          drinks={filteredDrinks}
+          onFilterChange={(filters) => {
+            setActiveCategories(filters.categories);
+            setPriceFilter({ min: filters.priceMin, max: filters.priceMax });
+            setSearchTerm(filters.search); // 👈 add this
+          }}
+        />
+
+        <div className="drink-groups">
+          {Object.entries(groupedDrinks).map(([tag, drinksInGroup]) => (
+            <div key={tag} className="drink-group">
+              <h2>{tag.charAt(0).toUpperCase() + tag.slice(1)}</h2>
+              <div
+                className="drink-grid"
+                ref={(el) => (scrollRefs.current[tag] = el)}
+              >
+                {drinksInGroup.map((drink) => (
+                  <DrinkCard
+                    key={drink.id}
+                    drink={drink}
+                    onClick={() => setSelectedDrink(drink)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <DrinkModal
+        drink={selectedDrink}
+        onClose={() => setSelectedDrink(null)}
+      />
     </div>
   );
 }
 
-export default OrderCatagoery;
+export default OrderCategory;
