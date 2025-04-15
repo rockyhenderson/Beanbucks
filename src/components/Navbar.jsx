@@ -25,7 +25,11 @@ function Navbar() {
   const user = rawUser ? JSON.parse(rawUser) : null;
   const isLoggedIn = !!user;
   const userRole = user?.role || null;
-  
+
+  // Hide Navbar on admin routes
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
