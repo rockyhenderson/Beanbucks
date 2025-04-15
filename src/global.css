@@ -78,6 +78,9 @@ body {
     color: var(--heading-color);
     margin: 0.8rem 0 0.5rem;
   }
+  h5, h6 {
+    color: var(--heading-color);
+  }
   
   /* ==== Paragraphs ==== */
   p {
@@ -137,4 +140,14 @@ body {
 }
 body.modal-open {
   overflow: hidden;
+}
+html > body > .MuiDataGrid-columnHeaderTitle {
+  color: red !important;
+}
+.MuiDataGrid-root .MuiDataGrid-container--top [role="row"],
+.MuiDataGrid-root .MuiDataGrid-container--bottom [role="row"] {
+  background-color: var(--card) !important;
+}
+.MuiDataGrid-footerContainer{
+  display: none !important;
 }

@@ -23,11 +23,11 @@ function AdminNavbar() {
 
   const navItems = [
     { text: "Overview", path: "/admin" },
-    { text: "Manage Menu", path: "/admin/menu" },
-    { text: "Users", path: "/admin/users" },
-    { text: "BaristaPortal", path: "/admin/barista" },
-    { text: "Store Options", path: "/admin/stores" },
-    { text: "Logs", path: "/admin/logs" },
+    { text: "Manage Menu", path: "/admin/managemenu" },
+    { text: "Users", path: "/admin/manageusers" },
+    { text: "BaristaPortal", path: "/admin/baristaPortal" },
+    { text: "Store Options", path: "/admin/managestores" },
+    { text: "Logs", path: "/admin/adminlogs" },
     { text: "Back to main site", path: "/" },
   ];
 
@@ -69,6 +69,7 @@ function AdminNavbar() {
             sx={{
               borderRadius: "12px",
               padding: "12px 18px",
+              paddingLeft: "0px",
               marginBottom: "8px",
               backgroundColor:
                 location.pathname === item.path
@@ -100,40 +101,72 @@ function AdminNavbar() {
 
   return (
     <>
-      {/* MOBILE - Appbar Toggle */}
-      {isMobile && (
-        <Box sx={{ padding: "10px 20px", background: "var(--background)" }}>
-          <IconButton onClick={toggleDrawer}>
-            <MenuIcon fontSize="large" />
-          </IconButton>
-        </Box>
-      )}
+      <>
+        {/* MOBILE - Appbar Toggle */}
+        {isMobile && (
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              padding: "10px 20px",
+              background: "var(--background)",
+              zIndex: 1200,
+            }}
+          >
+            <IconButton onClick={toggleDrawer}>
+              <MenuIcon fontSize="large" />
+            </IconButton>
+          </Box>
+        )}
 
-      {/* MOBILE Drawer */}
-      {isMobile && (
-        <Drawer anchor="left" open={open} onClose={toggleDrawer}>
-          <NavContent onClick={toggleDrawer} />
-        </Drawer>
-      )}
+        {/* MOBILE Drawer */}
+        {isMobile && (
+          <Drawer
+            anchor="left"
+            open={open}
+            onClose={toggleDrawer}
+            PaperProps={{
+              sx: {
+                height: "100%",
+                backgroundColor: "var(--background)",
+              },
+            }}
+          >
+            <NavContent onClick={toggleDrawer} />
+          </Drawer>
+        )}
 
-      {/* DESKTOP Sidebar */}
-      {!isMobile && (
-        <Box
-          sx={{
-            position: "relative",
-            top: 0,
-            left: 0,
-            width: "250px",
-            height: "100vh",
-            backgroundColor: "var(--background)",
-            borderRight: "1px solid #444",
-            boxShadow: "2px 0 6px rgba(0,0,0,0.2)",
-            zIndex: 1000,
-          }}
-        >
-          <NavContent />
-        </Box>
-      )}
+        {/* DESKTOP Spacer Layer */}
+        {!isMobile && (
+          <Box
+            sx={{
+              width: "250px",
+              height: "100vh",
+              flexShrink: 0,
+            }}
+          />
+        )}
+
+        {/* DESKTOP Fixed Sidebar on top */}
+        {!isMobile && (
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "250px",
+              height: "100vh",
+              backgroundColor: "var(--background)",
+              borderRight: "1px solid #444",
+              zIndex: 1000,
+            }}
+          >
+            <NavContent />
+          </Box>
+        )}
+      </>
     </>
   );
 }
