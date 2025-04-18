@@ -112,7 +112,7 @@ function AdminNavbar() {
               width: "100%",
               padding: "10px 20px",
               background: "var(--background)",
-              zIndex: 1200,
+              zIndex: 1000,
             }}
           >
             <IconButton onClick={toggleDrawer}>

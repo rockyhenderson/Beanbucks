@@ -24,6 +24,7 @@ import Cart from "./pages/Cart";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import OrderCategory from "./pages/OrderCategory";
+import ResetPassword from "./pages/ResetPassword"; // ✅ Import the ResetPassword page
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -44,7 +45,6 @@ function AppContent() {
   const isDesktop = useMediaQuery("(min-width:900px)");
 
   return isAdminRoute && isDesktop ? (
-    // Admin layout with sidebar on desktop
     <div style={{ display: "flex" }}>
       <AdminNavbar />
       <div style={{ flex: 1 }}>
@@ -59,6 +59,7 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/order/:type" element={<OrderCategory />} />
+          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Here */}
 
           {/* Admin Routes */}
           <Route path="/admin" element={<BeanAdmin />} />
@@ -74,10 +75,8 @@ function AppContent() {
       </div>
     </div>
   ) : (
-    // Normal layout or admin mobile (drawer)
     <>
       {isAdminRoute ? <AdminNavbar /> : <Navbar />}
-
       <Routes>
         {/* Regular Routes */}
         <Route path="/" element={<Home />} />
@@ -89,6 +88,7 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/order/:type" element={<OrderCategory />} />
+        <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Also here */}
 
         {/* Admin Routes */}
         <Route path="/admin" element={<BeanAdmin />} />
@@ -99,7 +99,6 @@ function AppContent() {
         <Route path="/admin/adminlogs" element={<AdminLogs />} />
         <Route path="/quarry" element={<Quarry />} />
       </Routes>
-
       <Footer />
       <DevToolsPanel />
     </>
