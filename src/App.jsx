@@ -25,6 +25,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import OrderCategory from "./pages/OrderCategory";
 import ResetPassword from "./pages/ResetPassword"; // ✅ Import the ResetPassword page
+import VerifyCode from "./pages/VerifyCode"; // ✅ Import the VerifyCode page
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -59,7 +60,8 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/order/:type" element={<OrderCategory />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Here */}
+          <Route path="/reset-password" element={<ResetPassword />} /> 
+          <Route path="/verify-code" element={<VerifyCode />} /> 
 
           {/* Admin Routes */}
           <Route path="/admin" element={<BeanAdmin />} />
@@ -88,7 +90,8 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/order/:type" element={<OrderCategory />} />
-        <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Also here */}
+        <Route path="/reset-password" element={<ResetPassword />} /> 
+        <Route path="/verify-code" element={<VerifyCode />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<BeanAdmin />} />

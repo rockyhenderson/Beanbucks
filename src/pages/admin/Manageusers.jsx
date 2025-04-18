@@ -166,6 +166,9 @@ function UserTable({
             disableRowSelectionOnClick
             hideFooterPagination
             onRowClick={onRowClick}
+            getRowClassName={(params) =>
+              params.row.isVerified === 0 ? "row-unverified" : ""
+            }
             localeText={{
               noRowsLabel: "No user data with this search criteria",
             }}
@@ -319,66 +322,63 @@ function ManageUsers() {
     }
   };
   const handleCreateUser = async (newUser) => {
-
-
     const role =
       showCreateModal === "admin" ? 2 : showCreateModal === "manager" ? 3 : 1;
 
+    try {
+      console.log("🟡 [CreateUser] Sending request to backend...");
+      console.log("📦 Payload:", {
+        first_name: newUser.firstName,
+        last_name: newUser.lastName,
+        email: newUser.email,
+        loyalty_points: newUser.loyaltyPoints,
+        role,
+      });
+
+      const response = await fetch(
+        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/create_user.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: newUser.firstName,
+            last_name: newUser.lastName,
+            email: newUser.email,
+            loyalty_points: newUser.loyaltyPoints,
+            role,
+          }),
+        }
+      );
+
+      const raw = await response.text();
+      console.log("📨 Raw response from server:", raw);
+
+      let result;
       try {
-        console.log("🟡 [CreateUser] Sending request to backend...");
-        console.log("📦 Payload:", {
-          first_name: newUser.firstName,
-          last_name: newUser.lastName,
-          email: newUser.email,
-          loyalty_points: newUser.loyaltyPoints,
-          role,
-        });
-      
-        const response = await fetch(
-          "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/create_user.php",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              first_name: newUser.firstName,
-              last_name: newUser.lastName,
-              email: newUser.email,
-              loyalty_points: newUser.loyaltyPoints,
-              role,
-            }),
-          }
-        );
-      
-        const raw = await response.text();
-        console.log("📨 Raw response from server:", raw);
-      
-        let result;
-        try {
-          result = JSON.parse(raw);
-          console.log("✅ Parsed JSON:", result);
-        } catch (err) {
-          console.error("❌ Failed to parse JSON:", err);
-          throw new Error("Invalid JSON from server.");
-        }
-      
-        if (result.error) {
-          console.warn("⚠️ Backend Error:", result.error);
-          throw new Error(result.error);
-        }
-      
-        if (result.success) {
-          console.log("✅ User creation successful:", result.success);
-          retry(); // Refresh data
-          return result.success;
-        }
-      
-        console.warn("❓ Unexpected backend response");
-        throw new Error("Unknown error occurred");
+        result = JSON.parse(raw);
+        console.log("✅ Parsed JSON:", result);
       } catch (err) {
-        console.error("🚨 CreateUser Catch:", err);
-        throw err;
+        console.error("❌ Failed to parse JSON:", err);
+        throw new Error("Invalid JSON from server.");
       }
-      
+
+      if (result.error) {
+        console.warn("⚠️ Backend Error:", result.error);
+        throw new Error(result.error);
+      }
+
+      if (result.success) {
+        console.log("✅ User creation successful:", result.success);
+        retry(); // Refresh data
+        return result.success;
+      }
+
+      console.warn("❓ Unexpected backend response");
+      throw new Error("Unknown error occurred");
+    } catch (err) {
+      console.error("🚨 CreateUser Catch:", err);
+      throw err;
+    }
   };
 
   return (

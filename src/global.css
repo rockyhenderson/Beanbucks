@@ -151,3 +151,6 @@ html > body > .MuiDataGrid-columnHeaderTitle {
 .MuiDataGrid-footerContainer{
   display: none !important;
 }
+.row-unverified {
+  background-color: rgba(255, 234, 138, 0.4) !important; /* light yellow */
+}
