@@ -102,8 +102,7 @@ function Profile() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setShowPasswordModal(true);
-                  setConfirmPasswordChange(false);
+                  navigate("/verify-code");
                 }}
               >
                 Change Password
@@ -313,59 +312,9 @@ function Profile() {
               setShowPasswordModal(false);
               setConfirmPasswordChange(false);
             }}
-            onSubmit={(newPassword) => {
-              const user = JSON.parse(sessionStorage.getItem("user"));
-
-              if (!confirmPasswordChange) {
-                setConfirmPasswordChange(true);
-                setToast({
-                  type: "warning",
-                  title: "Are You Sure?",
-                  message:
-                    "This change is permanent. Click save again to confirm.",
-                });
-                return;
-              }
-
-              fetch(
-                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_password.php",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    id: user.id,
-                    new_password: newPassword,
-                  }),
-                }
-              )
-                .then((res) => res.json())
-                .then((data) => {
-                  if (data.success) {
-                    setShowPasswordModal(false);
-                    setConfirmPasswordChange(false);
-                    setToast({
-                      type: "success",
-                      title: "Password Updated",
-                      message: "Your password has been successfully changed.",
-                    });
-                  } else {
-                    setToast({
-                      type: "error",
-                      title: "Update Failed",
-                      message:
-                        data.error ||
-                        "Something went wrong while updating your password.",
-                    });
-                  }
-                })
-                .catch((err) => {
-                  console.error("Password update error:", err);
-                  setToast({
-                    type: "error",
-                    title: "Network Error",
-                    message: "Couldn't reach the server. Please try again.",
-                  });
-                });
+            onSubmit={() => {
+              setShowPasswordModal(false);
+              navigate("/verify-code");
             }}
           />
         )}

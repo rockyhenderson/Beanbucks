@@ -30,10 +30,7 @@ function Login() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+          body: JSON.stringify({ email, password }),
         }
       );
 
@@ -42,33 +39,31 @@ function Login() {
       if (data.success) {
         const user = data.user;
 
-        // Translate numeric role to string
         const roleMap = {
           1: "customer",
           2: "admin",
           3: "manager",
         };
 
-        // Build the session user object (first name only)
         const sessionUser = {
           id: user.id,
           name: user.first_name,
           role: roleMap[user.role] || "unknown",
-          email: user.email 
+          email: user.email,
         };
-        
 
-        // Store it in session storage
         sessionStorage.setItem("user", JSON.stringify(sessionUser));
 
-        // Show success toast
+        // Clear reset_email and reset_email_time from sessionStorage
+        sessionStorage.removeItem("reset_email");
+        sessionStorage.removeItem("reset_email_time");
+
         setToast({
           type: "success",
           title: "Login Successful!",
           message: `Welcome back, ${sessionUser.name} 👋`,
         });
 
-        // Short delay before redirecting
         setTimeout(() => {
           navigate("/");
         }, 1000);
@@ -180,20 +175,20 @@ function Login() {
             }}
           />
 
-          <MuiLink
-            component={Link}
-            to="/forgot"
-            underline="hover"
-            sx={{
-              alignSelf: "flex-end",
-              fontSize: "0.9rem",
-              color: "var(--accent)",
-              textAlign: "center",
-              margin: "auto",
-            }}
-          >
-            Forgot password?
-          </MuiLink>
+          <Typography align="center" sx={{ mt: 1 }}>
+            <MuiLink
+              component={Link}
+              to="/verify-code"
+              underline="hover"
+              sx={{
+                fontSize: "0.9rem",
+                color: "var(--accent)",
+                textDecoration: "underline",
+              }}
+            >
+              Forgot your password?
+            </MuiLink>
+          </Typography>
 
           <Button
             type="submit"

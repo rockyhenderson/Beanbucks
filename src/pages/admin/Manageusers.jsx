@@ -291,18 +291,44 @@ function ManageUsers() {
 
   const handleDeleteConfirm = async () => {
     try {
+      const adminId = JSON.parse(sessionStorage.getItem("user"))?.id; // Get admin's ID from session storage
+      console.log("🟡 [DeleteUser] Admin ID:", adminId);
+
+      if (!adminId) {
+        setToast({
+          type: "error",
+          title: "Authentication Error",
+          message: "Admin ID not found. Please log in again.",
+        });
+        return;
+      }
+
+      const payload = { id: deleteTarget.id, admin_id: adminId }; // Prepare payload
+      console.log("📦 [DeleteUser] Payload:", payload);
+
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/delete_user.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: deleteTarget.id }),
+          body: JSON.stringify(payload),
         }
       );
 
-      const result = await response.json();
+      const raw = await response.text();
+      console.log("📨 [DeleteUser] Raw response from server:", raw);
+
+      let result;
+      try {
+        result = JSON.parse(raw);
+        console.log("✅ [DeleteUser] Parsed JSON:", result);
+      } catch (err) {
+        console.error("❌ [DeleteUser] Failed to parse JSON:", err);
+        throw new Error("Invalid JSON from server.");
+      }
 
       if (response.ok && result.success) {
+        console.log("✅ [DeleteUser] User deletion successful:", result.success);
         setToast({
           type: "success",
           title: "User Deleted",
@@ -311,9 +337,11 @@ function ManageUsers() {
         setDeleteTarget(null);
         retry();
       } else {
+        console.warn("⚠️ [DeleteUser] Backend Error:", result.error);
         throw new Error(result.error || "Unknown error");
       }
     } catch (err) {
+      console.error("🚨 [DeleteUser] Catch:", err);
       setToast({
         type: "error",
         title: "Delete Failed",
@@ -321,6 +349,7 @@ function ManageUsers() {
       });
     }
   };
+  
   const handleCreateUser = async (newUser) => {
     const role =
       showCreateModal === "admin" ? 2 : showCreateModal === "manager" ? 3 : 1;
