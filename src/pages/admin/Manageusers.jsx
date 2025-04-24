@@ -242,8 +242,13 @@ function ManageUsers() {
   const managers = rows.filter((u) => u.role === 3);
 
   const handleRowClick = (params) => setSelectedUser(params.row);
-
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  const admin_id = user?.id;
+  
   const handleEditSave = async (updatedData) => {
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const admin_id = user?.id;
+  
     try {
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/update_user.php",
@@ -255,18 +260,19 @@ function ManageUsers() {
             first_name: updatedData.firstName,
             last_name: updatedData.lastName,
             email: updatedData.email,
-            loyalty_points: updatedData.loyaltyPoints,
+            loyaltyPoints: updatedData.loyaltyPoints,
+            admin_id, // ✅ added for admin logging
           }),
         }
       );
-
+  
       const result = await response.json();
       console.log("Update response:", result);
-
+  
       if (result.error) {
         throw new Error(result.error);
       }
-
+  
       if (response.ok && result.success) {
         setToast({
           type: "success",
@@ -286,6 +292,7 @@ function ManageUsers() {
       });
     }
   };
+  
 
   const handleDeleteClick = (user) => setDeleteTarget(user);
 
@@ -328,7 +335,10 @@ function ManageUsers() {
       }
 
       if (response.ok && result.success) {
-        console.log("✅ [DeleteUser] User deletion successful:", result.success);
+        console.log(
+          "✅ [DeleteUser] User deletion successful:",
+          result.success
+        );
         setToast({
           type: "success",
           title: "User Deleted",
@@ -349,7 +359,7 @@ function ManageUsers() {
       });
     }
   };
-  
+
   const handleCreateUser = async (newUser) => {
     const role =
       showCreateModal === "admin" ? 2 : showCreateModal === "manager" ? 3 : 1;
@@ -363,7 +373,9 @@ function ManageUsers() {
         loyalty_points: newUser.loyaltyPoints,
         role,
       });
-
+      const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+      const admin_id = user?.id;
+      
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/create_user.php",
         {
@@ -375,6 +387,7 @@ function ManageUsers() {
             email: newUser.email,
             loyalty_points: newUser.loyaltyPoints,
             role,
+            admin_id, // ✅ Pass the logged-in admin's ID here
           }),
         }
       );

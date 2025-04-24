@@ -111,7 +111,6 @@ function AdminNavbar() {
               left: 0,
               width: "100%",
               padding: "10px 20px",
-              background: "var(--background)",
               zIndex: 1000,
             }}
           >
@@ -158,7 +157,6 @@ function AdminNavbar() {
               left: 0,
               width: "250px",
               height: "100vh",
-              backgroundColor: "var(--background)",
               borderRight: "1px solid #444",
               zIndex: 1000,
             }}

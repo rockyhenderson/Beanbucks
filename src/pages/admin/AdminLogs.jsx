@@ -92,7 +92,7 @@ function AdminLogs() {
         <RetryFallback onRetry={retry} />
       ) : (
         <>
-          <Box sx={{ marginBottom: 2, maxWidth: 300 }}>
+          <Box sx={{ marginBottom: 2, maxWidth: 300 }}>6
             <TextField
               fullWidth
               size="small"

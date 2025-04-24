@@ -48,9 +48,31 @@ function DevToolsPanel() {
 
     if (role === "none") return;
 
+    // Assign correct user data based on selected role
+    const userMap = {
+      admin: {
+        id: 31,
+        name: "MASTER ADMIN",
+        email: "masteradmin@beanbucks.com",
+      },
+      manager: {
+        id: 32,
+        name: "MASTERMANAGER",
+        email: "mastermanager@beanbucks.com",
+      },
+      customer: {
+        id: 33,
+        name: "MASTER USER",
+        email: "masteruser@beanbucks.com",
+      },
+    };
+
+    const userData = userMap[role];
+
     const mockUser = {
-      id: 999,
-      name: "Dev User",
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
       role,
     };
 
@@ -135,7 +157,7 @@ function DevToolsPanel() {
 
         {/* Role Switcher */}
         <Box sx={{ mt: 2 }}>
-        <Typography
+          <Typography
             variant="body2"
             sx={{
               mb: 1,
@@ -171,13 +193,13 @@ function DevToolsPanel() {
             >
               {roles.map((role) => (
                 <MenuItem key={role} value={role}>
-                  {role === "none" ? "Not Logged In" : role.charAt(0).toUpperCase() + role.slice(1)}
+                  {role === "none"
+                    ? "Not Logged In"
+                    : role.charAt(0).toUpperCase() + role.slice(1)}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-
-         
         </Box>
       </Box>
 
