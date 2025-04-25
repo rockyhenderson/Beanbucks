@@ -11,6 +11,7 @@ body {
   
   .order-category-page {
     padding: 1rem 0;
+    padding-top:0;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -125,6 +126,18 @@ body {
   .rewards__points-subtext {
     color: var(--body-text);
     font-size: 0.95rem;
+  }
+  .flat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    padding: 1rem 0;
+  }
+  
+  .flat-grid > * {
+    flex: 1 1 250px; /* grow/shrink, min width */
+    max-width: 300px;
   }
   
   .rewards__redeem-section {
@@ -244,7 +257,6 @@ body {
     color: var(--primary);
   }
   .order-category-header{
-    width:100%;
     height:auto;
     margin-left:2rem;
   }

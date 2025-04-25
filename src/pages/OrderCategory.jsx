@@ -142,25 +142,16 @@ function OrderCategory() {
           }}
         />
 
-        <div className="drink-groups">
-          {Object.entries(groupedDrinks).map(([tag, drinksInGroup]) => (
-            <div key={tag} className="drink-group">
-              <h2>{tag.charAt(0).toUpperCase() + tag.slice(1)}</h2>
-              <div
-                className="drink-grid"
-                ref={(el) => (scrollRefs.current[tag] = el)}
-              >
-                {drinksInGroup.map((drink) => (
-                  <DrinkCard
-                    key={drink.id}
-                    drink={drink}
-                    onClick={() => setSelectedDrink(drink)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+<div className="drink-grid flat-grid">
+  {Object.values(groupedDrinks).flat().map((drink) => (
+    <DrinkCard
+      key={drink.id}
+      drink={drink}
+      onClick={() => setSelectedDrink(drink)}
+    />
+  ))}
+</div>
+
       </div>
 
       <DrinkModal
