@@ -11,6 +11,13 @@ import IcecreamIcon from "@mui/icons-material/Icecream"; // Whipped Cream
 import AcUnitIcon from "@mui/icons-material/AcUnit"; // Flakes
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions"; // Marshmallows
 import CookieIcon from "@mui/icons-material/Cookie"; // Chocolate Chips
+import useFetchWithRetry from "../utils/useFetchWithRetry";
+import RetryFallback from "../components/RetryFallback";
+import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
+import Toast from "../components/Toast";  
+
+
+const storeId = sessionStorage.getItem("selectedStoreId");
 
 const DrinkModal = ({ drink, onClose }) => {
   const [shots, setShots] = useState(1);
@@ -24,6 +31,22 @@ const DrinkModal = ({ drink, onClose }) => {
     Mocha: 0,
     "Pumpkin Spice": 0,
   });
+  const {
+    data: availableCustomizations,
+    error: customizationsError,
+    retry: retryCustomizations,
+    isLoading: isLoadingCustomizations,
+  } = useFetchWithRetry(
+    storeId
+      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_store_customizations.php?store_id=${storeId}`
+      : null
+  );
+  const isOptionEnabled = (type, name) => {
+    if (!availableCustomizations) return false;
+    return availableCustomizations.some(
+      (option) => option.type === type && option.name === name
+    );
+  };
   const [selectedToppings, setSelectedToppings] = useState([]);
   const handleToppingToggle = (topping) => {
     if (selectedToppings.includes(topping)) {
@@ -85,142 +108,203 @@ const DrinkModal = ({ drink, onClose }) => {
 
           <div className="modal-right">
             <h2>{drink.name}</h2>
-            <div className="drink-options">
-              {/*MAIN OPTIONS*/}
-              <div className="main-options">
-                {/* Size */}
-                <div className="option-group">
-                  <h3>Size</h3>
-                  <div className="size-options">
-                    {[
-                      { label: "Small", size: "1.5rem" },
-                      { label: "Medium", size: "2.2rem" },
-                      { label: "Large", size: "3rem" },
-                    ].map(({ label, size }) => (
-                      <button
-                        key={label}
-                        className={`size-btn ${
-                          selectedSize === label ? "selected" : ""
-                        }`}
-                        onClick={() => setSelectedSize(label)}
-                      >
-                        <CoffeeIcon style={{ fontSize: size }} />
-                        <span>{label}</span>
-                      </button>
-                    ))}
+
+            {customizationsError ? (
+              <RetryFallback
+                onRetry={retryCustomizations}
+                isLoading={isLoadingCustomizations}
+                message="Failed to load customization options. Please try again!"
+              />
+            ) : (
+              <div className="drink-options">
+                {/* MAIN OPTIONS */}
+                <div className="main-options">
+                  {/* Size */}
+                  <div className="option-group">
+                    <h3>Size</h3>
+                    <div className="size-options">
+                      {[
+                        { label: "Small", size: "1.5rem" },
+                        { label: "Medium", size: "2.2rem" },
+                        { label: "Large", size: "3rem" },
+                      ].map(({ label, size }) => {
+                        const disabled = !isOptionEnabled("size", label);
+                        return (
+                          <button
+                            key={label}
+                            className={`size-btn ${
+                              selectedSize === label ? "selected" : ""
+                            } ${disabled ? "disabled" : ""}`}
+                            onClick={() => {
+                              if (!disabled) {
+                                setSelectedSize(label);
+                              }
+                            }}
+                          >
+                            {disabled ? (
+                              <DoNotDisturbIcon style={{ fontSize: size }} />
+                            ) : (
+                              <CoffeeIcon style={{ fontSize: size }} />
+                            )}
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Milk */}
+                  <div className="option-group">
+                    <h3>Milk</h3>
+                    <div className="milk-options">
+                      {[
+                        { label: "Whole", Icon: AgricultureIcon },
+                        { label: "Oat", Icon: SpaIcon },
+                        { label: "Soy", Icon: SpaIcon },
+                        { label: "Almond", Icon: EmojiNatureIcon },
+                      ].map(({ label, Icon }) => {
+                        const disabled = !isOptionEnabled("milk", label);
+                        return (
+                          <button
+                            key={label}
+                            className={`milk-btn ${
+                              selectedMilk === label ? "selected" : ""
+                            } ${disabled ? "disabled" : ""}`}
+                            onClick={() => {
+                              if (!disabled) {
+                                setSelectedMilk(label);
+                              }
+                            }}
+                          >
+                            {disabled ? (
+                              <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
+                            ) : (
+                              <Icon style={{ fontSize: "2rem" }} />
+                            )}
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Beans */}
+                  <div className="option-group">
+                    <h3>Beans</h3>
+                    <div className="bean-options">
+                      {[
+                        { label: "Normal", Icon: CoffeeIcon },
+                        { label: "Decaf", Icon: LocalCafeIcon },
+                      ].map(({ label, Icon }) => {
+                        const disabled = !isOptionEnabled("beans", label);
+                        return (
+                          <button
+                            key={label}
+                            className={`bean-btn ${
+                              selectedBean === label ? "selected" : ""
+                            } ${disabled ? "disabled" : ""}`}
+                            onClick={() => {
+                              if (!disabled) {
+                                setSelectedBean(label);
+                              }
+                            }}
+                          >
+                            {disabled ? (
+                              <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
+                            ) : (
+                              <Icon style={{ fontSize: "2rem" }} />
+                            )}
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                {/* Milk */}
-                <div className="option-group">
-                  <h3>Milk</h3>
-                  <div className="milk-options">
-                    {[
-                      { label: "Whole", Icon: AgricultureIcon },
-                      { label: "Oat", Icon: SpaIcon },
-                      { label: "Soy", Icon: SpaIcon },
-                      { label: "Almond", Icon: EmojiNatureIcon },
-                    ].map(({ label, Icon }) => (
-                      <button
-                        key={label}
-                        className={`milk-btn ${
-                          selectedMilk === label ? "selected" : ""
-                        }`}
-                        onClick={() => setSelectedMilk(label)}
-                      >
-                        <Icon style={{ fontSize: "2rem" }} />
-                        <span>{label}</span>
+                {/* ADVANCED OPTIONS */}
+                <div className="advanced-options">
+                  {/* Shot Amount */}
+                  <div className="option-group">
+                    <h3>Shot Amount</h3>
+                    <div className="stepper">
+                      <button onClick={() => setShots(Math.max(1, shots - 1))}>
+                        -
                       </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Beans */}
-                <div className="option-group">
-                  <h3>Beans</h3>
-                  <div className="bean-options">
-                    {[
-                      { label: "Normal", Icon: CoffeeIcon },
-                      { label: "Decaf", Icon: LocalCafeIcon },
-                    ].map(({ label, Icon }) => (
-                      <button
-                        key={label}
-                        className={`bean-btn ${
-                          selectedBean === label ? "selected" : ""
-                        }`}
-                        onClick={() => setSelectedBean(label)}
-                      >
-                        <Icon style={{ fontSize: "2rem" }} />
-                        <span>{label}</span>
+                      <span>{shots}</span>
+                      <button onClick={() => setShots(Math.min(8, shots + 1))}>
+                        +
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-              {/* ADVANCE DROPDOWN */}
-              <div className="advanced-options">
-                {/* Shot Amount */}
-                <div className="option-group">
-                  <h3>Shot Amount</h3>
-                  <div className="stepper">
-                    <button onClick={() => setShots(Math.max(1, shots - 1))}>
-                      -
-                    </button>
-                    <span>{shots}</span>
-                    <button onClick={() => setShots(Math.min(8, shots + 1))}>
-                      +
-                    </button>
-                  </div>
-                </div>
-                {/* Syrup */}
-                <div className="option-group">
-                  <h3>Syrup</h3>
-                  <div className="syrup-stepper-list">
-                    {Object.keys(syrupCounts).map((syrup) => (
-                      <div key={syrup} className="syrup-stepper-item">
-                        <span>{syrup}</span>
-                        <div className="stepper">
-                          <button onClick={() => decreaseSyrup(syrup)}>
-                            -
-                          </button>
-                          <span>{syrupCounts[syrup]}</span>
-                          <button onClick={() => increaseSyrup(syrup)}>
-                            +
-                          </button>
-                        </div>
+
+                  {/* Syrup */}
+                  {availableCustomizations?.some((c) => c.type === "syrup") && (
+                    <div className="option-group">
+                      <h3>Syrup</h3>
+                      <div className="syrup-stepper-list">
+                        {Object.keys(syrupCounts).map(
+                          (syrup) =>
+                            isOptionEnabled("syrup", syrup) && (
+                              <div key={syrup} className="syrup-stepper-item">
+                                <span>{syrup}</span>
+                                <div className="stepper">
+                                  <button onClick={() => decreaseSyrup(syrup)}>
+                                    -
+                                  </button>
+                                  <span>{syrupCounts[syrup]}</span>
+                                  <button onClick={() => increaseSyrup(syrup)}>
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                  )}
 
-                {/* Toppings */}
-                {/* Toppings */}
-                <div className="option-group">
-                  <h3>Toppings</h3>
-                  <div className="topping-boxes">
-                    {[
-                      { label: "Whipped Cream", Icon: IcecreamIcon },
-                      { label: "Flakes", Icon: AcUnitIcon },
-                      { label: "Marshmallows", Icon: EmojiEmotionsIcon },
-                      { label: "Cinnamon", Icon: SpaIcon },
-                      { label: "Chocolate Chips", Icon: CookieIcon },
-                    ].map(({ label, Icon }) => (
-                      <button
-                        key={label}
-                        className={`topping-box ${
-                          selectedToppings.includes(label) ? "selected" : ""
-                        }`}
-                        onClick={() => handleToppingToggle(label)}
-                      >
-                        <Icon className="topping-icon" />
-                        <span>{label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {/* Toppings */}
+                  {availableCustomizations?.some(
+                    (c) => c.type === "topping"
+                  ) && (
+                    <div className="option-group">
+                      <h3>Toppings</h3>
+                      <div className="topping-boxes">
+                        {[
+                          { label: "Whipped Cream", Icon: IcecreamIcon },
+                          { label: "Flakes", Icon: AcUnitIcon },
+                          { label: "Marshmallows", Icon: EmojiEmotionsIcon },
+                          { label: "Cinnamon", Icon: SpaIcon },
+                          { label: "Chocolate Chips", Icon: CookieIcon },
+                        ].map(({ label, Icon }) => {
+                          const disabled = !isOptionEnabled("topping", label);
+                          return (
+                            !disabled && (
+                              <button
+                                key={label}
+                                className={`topping-box ${
+                                  selectedToppings.includes(label)
+                                    ? "selected"
+                                    : ""
+                                }`}
+                                onClick={() => handleToppingToggle(label)}
+                              >
+                                <Icon className="topping-icon" />
+                                <span>{label}</span>
+                              </button>
+                            )
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
+
         <button className="add-to-cart-btn">Add to Cart</button>
       </div>
     </div>

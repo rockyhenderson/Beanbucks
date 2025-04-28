@@ -43,44 +43,49 @@ function DevToolsPanel() {
   const handleRoleChange = (event) => {
     const role = event.target.value;
     setSelectedRole(role);
-
+  
     sessionStorage.clear();
-
+  
     if (role === "none") return;
-
+  
     // Assign correct user data based on selected role
     const userMap = {
       admin: {
         id: 31,
         name: "MASTER ADMIN",
         email: "masteradmin@beanbucks.com",
+        store_id: 1, // ✅ Assign store_id: 1 for admins
       },
       manager: {
         id: 32,
         name: "MASTERMANAGER",
         email: "mastermanager@beanbucks.com",
+        store_id: 1, // ✅ Assign store_id: 1 for managers
       },
       customer: {
         id: 33,
         name: "MASTER USER",
         email: "masteruser@beanbucks.com",
+        store_id: null, // ✅ Customers don't have a store_id
       },
     };
-
+  
     const userData = userMap[role];
-
+  
     const mockUser = {
       id: userData.id,
       name: userData.name,
       email: userData.email,
       role,
+      ...(userData.store_id !== null && { store_id: userData.store_id }), // ✅ Only include if not null
     };
-
+  
     sessionStorage.setItem("token", "mock-dev-token");
     sessionStorage.setItem("user", JSON.stringify(mockUser));
-
+  
     window.location.reload(); // Refresh to apply changes
   };
+  
 
   return (
     <Box

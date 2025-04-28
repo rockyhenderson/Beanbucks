@@ -50,9 +50,14 @@ function Login() {
           name: user.first_name,
           role: roleMap[user.role] || "unknown",
           email: user.email,
+          ...(user.store_id !== undefined && { store_id: user.store_id }), // ✅ Only add if it exists
+          allergens: user.allergens || [], // ✅ Save allergens too, empty array if none
         };
-
+        
+        
+        
         sessionStorage.setItem("user", JSON.stringify(sessionUser));
+        
 
         // Clear reset_email and reset_email_time from sessionStorage
         sessionStorage.removeItem("reset_email");

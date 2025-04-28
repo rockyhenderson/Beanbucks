@@ -24,8 +24,9 @@ import Cart from "./pages/Cart";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import OrderCategory from "./pages/OrderCategory";
-import ResetPassword from "./pages/ResetPassword"; // ✅ Import the ResetPassword page
-import VerifyCode from "./pages/VerifyCode"; // ✅ Import the VerifyCode page
+import ResetPassword from "./pages/ResetPassword"; // 
+import VerifyCode from "./pages/VerifyCode";
+import AdminStock from "./pages/admin/AdminStock"; 
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -70,6 +71,7 @@ function AppContent() {
           <Route path="/admin/baristaPortal" element={<BaristaPortal />} />
           <Route path="/admin/managestores" element={<ManageStores />} />
           <Route path="/admin/adminlogs" element={<AdminLogs />} />
+          <Route path="/admin/adminstock" element={<AdminStock />} />
           <Route path="/quarry" element={<Quarry />} />
         </Routes>
         <Footer />
@@ -100,6 +102,7 @@ function AppContent() {
         <Route path="/admin/baristaPortal" element={<BaristaPortal />} />
         <Route path="/admin/managestores" element={<ManageStores />} />
         <Route path="/admin/adminlogs" element={<AdminLogs />} />
+        <Route path="/admin/adminstock" element={<AdminStock />} />
         <Route path="/quarry" element={<Quarry />} />
       </Routes>
       <Footer />

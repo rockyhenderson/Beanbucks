@@ -1,6 +1,5 @@
 import React from "react";
-import heroImage from "../assets/HeroImg.png"; // rename the file you downloaded to this
-// ⬆️ make sure this matches the actual filename in your /assets folder
+import heroImage from "../assets/FILLER_HERO_IMG.jpg"; 
 
 const HomepageCTA = ({
   drink = {
@@ -17,7 +16,7 @@ const HomepageCTA = ({
         minHeight: "70vh",
         backgroundImage: `url(${heroImage})`,
         backgroundSize: "cover",
-        backgroundPosition: "top", // ← CHANGE THIS TO CHANGE THE POSITION OF THE IMAGE
+        backgroundPosition: "center", // ← CHANGE THIS TO CHANGE THE POSITION OF THE IMAGE
         backgroundRepeat: "no-repeat",
         display: "flex",
         justifyContent: "flex-start",

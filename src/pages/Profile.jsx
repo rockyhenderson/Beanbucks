@@ -13,7 +13,7 @@ import SingleInputModal from "../components/SingleInputModal";
 import TwoChoicesModal from "../components/TwoChoices";
 import InfoDisplayModal from "../components/InfoDisplayModal";
 import PreferredStoreCard from "../components/PreferredStoreCard";
-
+import AllergenModal from "../components/AllergenModal";
 
 function Profile() {
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ function Profile() {
   const [toast, setToast] = useState(null);
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [ShowPaymentModal, setShowPaymentModal] = useState(false);
+  const [showAllergenModal, setShowAllergenModal] = useState(false);
+  const [selectedAllergens, setSelectedAllergens] = useState([]); // optional: store user selections
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -112,8 +114,17 @@ function Profile() {
               <a href="#">Order History ❌</a>
             </li>
             <li>
-              <a href="#">Allergen Preferences ❌</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowAllergenModal(true);
+                }}
+              >
+                Allergen Preferences
+              </a>
             </li>
+
             <li>
               <a
                 href="#"
@@ -372,6 +383,21 @@ function Profile() {
             }}
             onCancel={() => {
               setShowPaymentModal(false);
+            }}
+          />
+        )}
+        {showAllergenModal && (
+          <AllergenModal
+            open={showAllergenModal}
+            onClose={() => setShowAllergenModal(false)}
+            initialSelected={selectedAllergens}
+            onSave={(updatedAllergens) => {
+              setSelectedAllergens(updatedAllergens);
+              setToast({
+                type: "success",
+                title: "Preferences Updated",
+                message: "Your allergen preferences have been saved!",
+              });
             }}
           />
         )}

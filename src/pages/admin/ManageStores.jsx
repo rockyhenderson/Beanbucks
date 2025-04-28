@@ -79,7 +79,7 @@ function ManageStores() {
       Array.isArray(unassignedGroup.staff) &&
       unassignedGroup.staff.length > 0
     ) {
-      console.log("🕳️ Unassigned staff:", unassignedGroup.staff);
+      console.log("Unassigned staff:", unassignedGroup.staff);
       setToast({
         type: "warning",
         title: "Unassigned Staff",
@@ -91,7 +91,7 @@ function ManageStores() {
   const handleReassign = async (userId, newStoreId) => {
     const admin = JSON.parse(sessionStorage.getItem("user"));
     const adminId = admin?.id;
-  
+
     try {
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/update_user_store.php",
@@ -101,13 +101,13 @@ function ManageStores() {
           body: JSON.stringify({
             user_id: userId,
             store_id: newStoreId,
-            admin_id: adminId, // ✅ pass the admin ID
+            admin_id: adminId,
           }),
         }
       );
-  
+
       const result = await response.json();
-  
+
       if (result.success) {
         setToast({
           type: "success",
@@ -128,7 +128,6 @@ function ManageStores() {
       });
     }
   };
-  
 
   const handleToggleStore = (storeId, isOpen) => {
     setConfirmToggle({ storeId, isOpen });
@@ -266,6 +265,15 @@ function ManageStores() {
             This section allows for managing store availability and operating
             hours.
           </p>
+          <ul>
+            <li>ADD PERMISION FOR MANAGERS AND ADMINS.</li>
+            <li>
+              CHANGE THE CLOSE AND OPEN TOGGLE SO IF AN ADMIN TOGGLES A STORE
+              CLOSED IT HAS TO VERIFY WITH THE MANAGER THAT THEY WANT TO CLOSE
+              IT.
+            </li>
+            <li>ADD A NEW STORE BUTTON?</li>
+          </ul>
 
           {isLoading ? (
             <p>Loading store data...</p>
@@ -289,6 +297,7 @@ function ManageStores() {
                         border: "1px solid var(--component-border)",
                         borderRadius: "10px",
                         overflow: "auto",
+                        backgroundColor: "var(--card)",
                       }}
                     >
                       <Box
@@ -302,9 +311,9 @@ function ManageStores() {
                           sx={{ cursor: "pointer" }}
                         >
                           <Typography variant="h6">
-                            🏬 {store.store_name}
+                            {store.store_name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="var(--body-text)">
                             {staffCount} staff
                           </Typography>
                         </Box>
@@ -351,16 +360,31 @@ function ManageStores() {
 
                           {/* Store Status Toggle (Open/Close) */}
                           <Chip
-                            icon={isOpen ? <CheckCircleIcon /> : <CancelIcon />}
+                            icon={
+                              isOpen ? (
+                                <CheckCircleIcon
+                                  sx={{ color: "var(--text) !important" }}
+                                />
+                              ) : (
+                                <CancelIcon
+                                  sx={{ color: "var(--text) !important" }}
+                                />
+                              )
+                            }
                             label={isOpen ? "Open" : "Closed"}
                             variant="outlined"
                             sx={{
                               fontWeight: 600,
-                              color: isOpen ? "green" : "gray",
-                              borderColor: isOpen ? "green" : "gray",
+                              color: isOpen
+                                ? "var(--success)"
+                                : "var(--danger)",
+                              borderColor: isOpen
+                                ? "var(--success)"
+                                : "var(--danger)",
                               cursor: "pointer",
-                              flex: 1, // Make chip expand and take the available width
-                              minWidth: "100px", // Ensure the chip has a minimum width
+                              flex: 1,
+                              minWidth: "100px",
+                              borderWidth: "3px",
                             }}
                             onClick={() =>
                               handleToggleStore(store.store_id, isOpen)
@@ -434,7 +458,18 @@ function ManageStores() {
                                         e.target.value
                                       )
                                     }
-                                    sx={{ minWidth: 140 }}
+                                    sx={{
+                                      minWidth: 140,
+                                      color: "var(--body-text)", // Set text color to body text
+                                      borderColor: "var(--component-border)", // Set border color to border variable
+                                      "& .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "var(--component-border)", // Ensure the border uses the variable
+                                      },
+                                      "&:hover .MuiOutlinedInput-notchedOutline":
+                                        {
+                                          borderColor: "var(--primary)", // Optional: Change border color on hover
+                                        },
+                                    }}
                                   >
                                     {stores.map((s) => (
                                       <MenuItem
@@ -466,8 +501,9 @@ function ManageStores() {
                 sx={{
                   padding: 2,
                   border: "1px dashed var(--component-border)",
-                  backgroundColor: "#fff8e1",
+                  backgroundColor: "var(--warning)",
                   overflow: "auto",
+                  color: "black",
                 }}
               >
                 <Typography variant="h6" sx={{ marginBottom: 1 }}>
@@ -520,7 +556,7 @@ function ManageStores() {
                     ))}
                   </Stack>
                 ) : (
-                  <Typography sx={{ fontStyle: "italic", color: "#999" }}>
+                  <Typography sx={{ fontStyle: "italic", color: "#000" }}>
                     No unassigned staff.
                   </Typography>
                 )}

@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 998;
 }
 
 .drink-modal-content {
@@ -424,10 +424,10 @@ h3{
   transition: color 0.2s ease;
 }
 .add-to-cart-btn {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  padding: 0.75rem 1.75rem;
+  position: fixed; /* Fix the button to the viewport */
+  bottom: 1rem; /* Distance from the bottom */
+  right: 1rem; /* Distance from the right */
+  padding: 0.75rem 1.5rem; /* Adjust padding for a balanced size */
   background-color: var(--primary);
   color: white;
   border: none;
@@ -438,6 +438,8 @@ h3{
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.1s ease, background-color 0.2s ease;
+  width: auto; /* Ensure the button width is based on its content */
+  max-width: none; /* Remove any width restrictions */
 }
 
 .add-to-cart-btn:hover {
@@ -448,4 +450,49 @@ h3{
   background-color: var(--primary-dark);
   transform: scale(0.97);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .add-to-cart-btn {
+    bottom: 1rem; /* Keep it at the bottom */
+    right: 1rem; /* Keep it in the bottom-right corner */
+    left: auto; /* Ensure it doesn't stretch across the screen */
+    width: auto; /* Maintain content-based width */
+  }
+}
+/* Makes disabled options look clearly SOLD OUT */
+
+.size-btn.disabled,
+.milk-btn.disabled,
+.bean-btn.disabled,
+.topping-box.disabled {
+  position: relative;
+  opacity: 0.5;
+  pointer-events: none; /* stop clicks */
+}
+
+
+
+/* Tooltip on hover (we will fake hover with a 'disabled-hover' div) */
+.disabled-hover {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: red;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.size-btn.disabled:hover .disabled-hover,
+.milk-btn.disabled:hover .disabled-hover,
+.bean-btn.disabled:hover .disabled-hover,
+.topping-box.disabled:hover .disabled-hover {
+  opacity: 1;
 }
