@@ -6,7 +6,7 @@ import {
   IconButton,
   Tooltip,
   Button,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -45,14 +45,48 @@ const AllergenModal = ({ open, onClose, onSave }) => {
         : [...prevSelected, allergen]
     );
   };
-
   const handleSave = () => {
-    onSave(selectedAllergens);
-    onClose();
+    const user = JSON.parse(sessionStorage.getItem("user"));
+
+    fetch(
+      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_allergens.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          allergens: selectedAllergens,
+        }),
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          // ✅ update sessionStorage
+          const updatedUser = { ...user, allergens: selectedAllergens };
+          sessionStorage.setItem("user", JSON.stringify(updatedUser));
+
+          // ✅ tell parent
+          onSave(selectedAllergens);
+        } else {
+          alert("Failed to update allergens.");
+        }
+      })
+      .catch((err) => {
+        console.error("Allergen update failed:", err);
+        alert("Something went wrong while saving.");
+      })
+      .finally(() => {
+        onClose();
+      });
   };
 
   const handleTryClose = () => {
-    if (window.confirm("Are you sure you want to leave? Your allergen preferences will not be saved.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to leave? Your allergen preferences will not be saved."
+      )
+    ) {
       onClose();
     }
   };
@@ -68,6 +102,7 @@ const AllergenModal = ({ open, onClose, onSave }) => {
           width: isMobile ? "100vw" : "60%",
           height: isMobile ? "100vh" : "auto",
           margin: isMobile ? 0 : "auto",
+          mt: isMobile ? 0 : 10, // ✅ adds margin-top ONLY on desktop
           overflowY: isMobile ? "scroll" : "auto",
           display: "flex",
           flexDirection: "column",
@@ -167,14 +202,18 @@ const AllergenModal = ({ open, onClose, onSave }) => {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    backgroundColor: isSelected ? "var(--success)" : "var(--danger)",
+                    backgroundColor: isSelected
+                      ? "var(--success)"
+                      : "var(--danger)",
                     color: "var(--button-text)",
                     borderRadius: "30px",
                     px: 2,
                     textTransform: "none",
                     fontWeight: "bold",
                     "&:hover": {
-                      backgroundColor: isSelected ? "var(--success)" : "var(--danger)",
+                      backgroundColor: isSelected
+                        ? "var(--success)"
+                        : "var(--danger)",
                       opacity: 0.9,
                     },
                   }}
@@ -207,16 +246,10 @@ const AllergenModal = ({ open, onClose, onSave }) => {
             mb: isMobile ? 4 : 0,
           }}
         >
-          <button
-            className="btn btn--primary"
-            onClick={handleSave}
-          >
+          <button className="btn btn--primary" onClick={handleSave}>
             Save
           </button>
-          <button
-            className="btn btn--outline"
-            onClick={handleTryClose}
-          >
+          <button className="btn btn--outline" onClick={handleTryClose}>
             Cancel
           </button>
         </Box>

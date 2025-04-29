@@ -40,6 +40,10 @@ function ManageStores() {
     close_time: "",
     store_id: null,
   });
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const isManager = user?.role === "manager";
+  const isAdmin = user?.role === "admin";
+  const userStoreId = user?.store_id;
 
   const {
     data: stores,
@@ -333,22 +337,27 @@ function ManageStores() {
 
                           {/* Edit Icon for Time */}
                           <Tooltip title="Edit Store Hours">
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleEditHours(
-                                  store.store_id,
-                                  store.open_time,
-                                  store.close_time
-                                )
-                              }
-                              sx={{
-                                color: "var(--primary)",
-                                alignSelf: "flex-start",
-                              }} // Align to top in mobile view
-                            >
-                              <EditIcon />
-                            </IconButton>
+                            {isManager ||
+                            (isAdmin && userStoreId === store.store_id) ? (
+                              <Tooltip title="Edit Store Hours">
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleEditHours(
+                                      store.store_id,
+                                      store.open_time,
+                                      store.close_time
+                                    )
+                                  }
+                                  sx={{
+                                    color: "var(--primary)",
+                                    alignSelf: "flex-start",
+                                  }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                            ) : null}
                           </Tooltip>
 
                           {/* Divider between time and store status */}
@@ -375,19 +384,40 @@ function ManageStores() {
                             variant="outlined"
                             sx={{
                               fontWeight: 600,
-                              color: isOpen
-                                ? "var(--success)"
-                                : "var(--danger)",
-                              borderColor: isOpen
-                                ? "var(--success)"
-                                : "var(--danger)",
-                              cursor: "pointer",
+                              color:
+                                isManager ||
+                                (isAdmin && userStoreId === store.store_id)
+                                  ? isOpen
+                                    ? "var(--success)"
+                                    : "var(--danger)"
+                                  : "gray",
+                              borderColor:
+                                isManager ||
+                                (isAdmin && userStoreId === store.store_id)
+                                  ? isOpen
+                                    ? "var(--success)"
+                                    : "var(--danger)"
+                                  : "gray",
+                              cursor:
+                                isManager ||
+                                (isAdmin && userStoreId === store.store_id)
+                                  ? "pointer"
+                                  : "not-allowed",
                               flex: 1,
                               minWidth: "100px",
                               borderWidth: "3px",
+                              opacity:
+                                isManager ||
+                                (isAdmin && userStoreId === store.store_id)
+                                  ? 1
+                                  : 0.5,
                             }}
-                            onClick={() =>
-                              handleToggleStore(store.store_id, isOpen)
+                            onClick={
+                              isManager ||
+                              (isAdmin && userStoreId === store.store_id)
+                                ? () =>
+                                    handleToggleStore(store.store_id, isOpen)
+                                : undefined
                             }
                           />
 
@@ -449,37 +479,40 @@ function ManageStores() {
                                       <strong>{roleLabels[user.role]}</strong>
                                     </Typography>
                                   </Box>
-                                  <Select
-                                    size="small"
-                                    value={store.store_id}
-                                    onChange={(e) =>
-                                      handleReassign(
-                                        user.user_id,
-                                        e.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      minWidth: 140,
-                                      color: "var(--body-text)", // Set text color to body text
-                                      borderColor: "var(--component-border)", // Set border color to border variable
-                                      "& .MuiOutlinedInput-notchedOutline": {
-                                        borderColor: "var(--component-border)", // Ensure the border uses the variable
-                                      },
-                                      "&:hover .MuiOutlinedInput-notchedOutline":
-                                        {
-                                          borderColor: "var(--primary)", // Optional: Change border color on hover
+                                  {isManager && (
+                                    <Select
+                                      size="small"
+                                      value={store.store_id}
+                                      onChange={(e) =>
+                                        handleReassign(
+                                          user.user_id,
+                                          e.target.value
+                                        )
+                                      }
+                                      sx={{
+                                        minWidth: 140,
+                                        color: "var(--body-text)",
+                                        borderColor: "var(--component-border)",
+                                        "& .MuiOutlinedInput-notchedOutline": {
+                                          borderColor:
+                                            "var(--component-border)",
                                         },
-                                    }}
-                                  >
-                                    {stores.map((s) => (
-                                      <MenuItem
-                                        key={s.store_id ?? "none"}
-                                        value={s.store_id ?? null}
-                                      >
-                                        {s.store_name || "Unassigned"}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
+                                        "&:hover .MuiOutlinedInput-notchedOutline":
+                                          {
+                                            borderColor: "var(--primary)",
+                                          },
+                                      }}
+                                    >
+                                      {stores.map((s) => (
+                                        <MenuItem
+                                          key={s.store_id ?? "none"}
+                                          value={s.store_id ?? null}
+                                        >
+                                          {s.store_name || "Unassigned"}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  )}
                                 </Box>
                               ))}
                             </Stack>
