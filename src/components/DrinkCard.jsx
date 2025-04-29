@@ -1,6 +1,5 @@
 import React from 'react';
 import noImage from '../assets/no_image_found.png';
-import '../Drink_style.css';
 const DrinkCard = ({ drink, onClick }) => {
   const image = drink.image || noImage;
 
