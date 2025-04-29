@@ -35,6 +35,7 @@ function ManageStores() {
   const [toast, setToast] = useState(null);
   const [confirmToggle, setConfirmToggle] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmCloseRequest, setConfirmCloseRequest] = useState(null);
   const [currentStoreHours, setCurrentStoreHours] = useState({
     open_time: "",
     close_time: "",
@@ -52,6 +53,14 @@ function ManageStores() {
     retry,
   } = useFetchWithRetry(
     "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/read_store_staff.php"
+  );
+  const {
+    data: pendingRequests,
+    error: pendingError,
+    isLoading: pendingLoading,
+    retry: retryPending,
+  } = useFetchWithRetry(
+    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/read_store_close_requests.php"
   );
 
   const toggleCard = (storeId) => {
@@ -91,6 +100,29 @@ function ManageStores() {
       });
     }
   }, [stores]);
+  // ✅ Show info toast when there are incoming close requests
+  useEffect(() => {
+    if (isManager && pendingRequests?.requests?.length > 0) {
+      setToast({
+        type: "info",
+        title: "Store Close Request",
+        message: `There are ${pendingRequests.requests.length} pending store close request(s).`,
+      });
+    }
+  }, [pendingRequests, isManager]);
+
+  // ✅ Show error toast if pending request fetch fails
+  useEffect(() => {
+    if (pendingError) {
+      setToast({
+        type: "error",
+        title: "Failed to Load Close Requests",
+        message:
+          pendingError.message ||
+          "An error occurred while loading close requests.",
+      });
+    }
+  }, [pendingError]);
 
   const handleReassign = async (userId, newStoreId) => {
     const admin = JSON.parse(sessionStorage.getItem("user"));
@@ -142,19 +174,62 @@ function ManageStores() {
     const { storeId, isOpen } = confirmToggle;
     setConfirmToggle(null);
 
-    // ✅ Get admin_id from sessionStorage
     const user = JSON.parse(sessionStorage.getItem("user"));
     const admin_id = user?.id;
+    const admin_name = user?.name;
+    const store = stores.find((s) => s.store_id === storeId);
 
-    if (!admin_id) {
+    if (!admin_id || !admin_name || !store) {
       setToast({
         type: "error",
-        title: "Missing Admin ID",
-        message: "Admin not logged in or session expired.",
+        title: "Missing Data",
+        message: "Unable to process request due to missing information.",
       });
       return;
     }
 
+    // If ADMIN tries to close someone else's store, send a request instead
+    if (isAdmin && isOpen) {
+      console.log(
+        "📨 Admin attempted to close a store — sending request instead."
+      );
+
+      try {
+        const response = await fetch(
+          "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/request_store_close.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              store_id: storeId,
+              store_name: store.store_name,
+              admin_id,
+              admin_name,
+            }),
+          }
+        );
+        const result = await response.json();
+        if (result.success) {
+          setToast({
+            type: "info",
+            title: "Request Sent",
+            message: `Your request to close ${store.store_name} has been submitted.`,
+          });
+          retryPending();
+        } else {
+          throw new Error(result.error || "Request failed");
+        }
+      } catch (err) {
+        setToast({
+          type: "error",
+          title: "Request Failed",
+          message: err.message,
+        });
+      }
+      return;
+    }
+
+    // Otherwise, proceed with direct toggle (for managers or self-admins)
     try {
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/update_store_status.php",
@@ -169,8 +244,6 @@ function ManageStores() {
         }
       );
       const result = await response.json();
-
-      console.log("📥 Toggle Store Response:", result);
 
       if (result.success) {
         setToast({
@@ -256,6 +329,52 @@ function ManageStores() {
       });
     }
   };
+  const approveCloseRequest = async (request_id, store_id) => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const admin_id = user?.id;
+    const admin_name = user?.name;
+
+    if (!admin_id || !admin_name) {
+      setToast({
+        type: "error",
+        title: "Missing Admin Info",
+        message: "Unable to approve without valid admin session.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/approve_store_close.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_id, store_id, admin_id, admin_name }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setToast({
+          type: "success",
+          title: "Store Closed",
+          message: "Store successfully closed and request marked approved.",
+        });
+        setConfirmCloseRequest(null); // <-- ADD THIS LINE to CLOSE the modal
+        retry(); // Refresh stores
+        retryPending(); // Refresh requests
+      } else {
+        throw new Error(result.error || "Approval failed.");
+      }
+    } catch (err) {
+      setToast({
+        type: "error",
+        title: "Approval Failed",
+        message: err.message,
+      });
+    }
+  };
 
   return (
     <>
@@ -264,20 +383,106 @@ function ManageStores() {
           className="main-page-content"
           style={{ flexGrow: 1, padding: "30px" }}
         >
+          {confirmCloseRequest && (
+            <TwoChoicesModal
+              title="Confirm Store Closure"
+              text={`Are you sure you want to close ${confirmCloseRequest.store_name}?`}
+              confirmLabel="Yes, Close It"
+              cancelLabel="Cancel"
+              onConfirm={() =>
+                approveCloseRequest(
+                  confirmCloseRequest.request_id,
+                  confirmCloseRequest.store_id
+                )
+              }
+              onCancel={() => setConfirmCloseRequest(null)}
+            />
+          )}
+
           <h1>Store Options</h1>
           <p>
             This section allows for managing store availability and operating
             hours.
           </p>
-          <ul>
-            <li>ADD PERMISION FOR MANAGERS AND ADMINS.</li>
-            <li>
-              CHANGE THE CLOSE AND OPEN TOGGLE SO IF AN ADMIN TOGGLES A STORE
-              CLOSED IT HAS TO VERIFY WITH THE MANAGER THAT THEY WANT TO CLOSE
-              IT.
-            </li>
-            <li>ADD A NEW STORE BUTTON?</li>
-          </ul>
+          {isManager && (
+            <>
+              {pendingLoading ? (
+                <p>Loading close requests...</p>
+              ) : pendingError ? (
+                <RetryFallback onRetry={retryPending} />
+              ) : pendingRequests?.requests?.length > 0 ? (
+                <Paper
+                  elevation={3}
+                  sx={{
+                    padding: 2,
+                    backgroundColor: "#ffe0e0",
+                    border: "1px solid var(--danger)",
+                    marginBottom: 3,
+                  }}
+                >
+                  <Typography variant="h6" color="error" sx={{ mb: 1 }}>
+                    ⚠️ Pending Store Close Requests
+                  </Typography>
+                  <Stack spacing={2}>
+                    {pendingRequests.requests.map((request) => (
+                      <Paper
+                        key={request.id}
+                        sx={{
+                          padding: 2,
+                          backgroundColor: "#fff0f0",
+                          border: "1px solid var(--danger)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="body1">
+                          {request.requested_by_name} requested to close{" "}
+                          <strong>{request.store_name}</strong> at{" "}
+                          {new Date(request.request_time).toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </Typography>
+
+                        <Chip
+                          label="Close Store"
+                          icon={
+                            <PowerSettingsNewIcon
+                              sx={{ color: "#fff !important" }}
+                            />
+                          }
+                          onClick={() =>
+                            setConfirmCloseRequest({
+                              request_id: request.id,
+                              store_id: request.store_id,
+                              store_name: request.store_name,
+                            })
+                          }
+                          sx={{
+                            backgroundColor: "#c62828",
+                            color: "#fff",
+                            fontWeight: "bold",
+                            fontSize: "0.85rem",
+                            padding: "8px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            "& .MuiChip-icon": { color: "#fff" },
+                            "&:hover": {
+                              backgroundColor: "#b71c1c",
+                            },
+                          }}
+                        />
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Paper>
+              ) : null}
+            </>
+          )}
 
           {isLoading ? (
             <p>Loading store data...</p>
@@ -336,29 +541,27 @@ function ManageStores() {
                           </Typography>
 
                           {/* Edit Icon for Time */}
-                          <Tooltip title="Edit Store Hours">
-                            {isManager ||
-                            (isAdmin && userStoreId === store.store_id) ? (
-                              <Tooltip title="Edit Store Hours">
-                                <IconButton
-                                  size="small"
-                                  onClick={() =>
-                                    handleEditHours(
-                                      store.store_id,
-                                      store.open_time,
-                                      store.close_time
-                                    )
-                                  }
-                                  sx={{
-                                    color: "var(--primary)",
-                                    alignSelf: "flex-start",
-                                  }}
-                                >
-                                  <EditIcon />
-                                </IconButton>
-                              </Tooltip>
-                            ) : null}
-                          </Tooltip>
+                          {isManager ||
+                          (isAdmin && userStoreId === store.store_id) ? (
+                            <Tooltip title="Edit Store Hours">
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditHours(
+                                    store.store_id,
+                                    store.open_time,
+                                    store.close_time
+                                  )
+                                }
+                                sx={{
+                                  color: "var(--primary)",
+                                  alignSelf: "flex-start",
+                                }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : null}
 
                           {/* Divider between time and store status */}
                           <Divider

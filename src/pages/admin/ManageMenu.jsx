@@ -3,6 +3,7 @@ import useFetchWithRetry from "../../utils/useFetchWithRetry";
 import RetryFallback from "../../components/RetryFallback";
 import Toast from "../../components/Toast";
 import TwoChoicesModal from "../../components/TwoChoices";
+import MenuItemsTab from "../../components/MenuItemsTab"; 
 import {
   Box,
   Select,
@@ -26,16 +27,15 @@ function ManageMenu() {
   const userRole = user?.role || "unknown"; // admin, manager, customer
   const userStoreId = user?.store_id || null;
   const selectedStoreIdFromSession = sessionStorage.getItem("selectedStoreId");
-  const [storeId, setStoreId] = useState(selectedStoreIdFromSession || userStoreId || "");
-  
+  const [storeId, setStoreId] = useState(
+    selectedStoreIdFromSession || userStoreId || ""
+  );
 
   const [activeTab, setActiveTab] = useState(0);
   const [toast, setToast] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const isSmallScreen = useMediaQuery("(max-width:520px)");
-  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(true);
-  const [toggleTarget, setToggleTarget] = useState(null);
 
   const {
     data: stores,
@@ -44,19 +44,6 @@ function ManageMenu() {
     isLoading: storesLoading,
   } = useFetchWithRetry(
     `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php`
-  );
-
-  const {
-    data: drinks,
-    error,
-    retry,
-    isLoading,
-  } = useFetchWithRetry(
-    stores && (storeId || stores[0]?.id)
-      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/read_drinks.php?store_id=${
-          storeId || stores[0]?.id
-        }`
-      : null
   );
 
   const handleOpenMenu = (event) => {
@@ -80,19 +67,13 @@ function ManageMenu() {
     window.location.reload();
   };
 
-  const selectedStore = stores && stores.length > 0
-  ? stores.find((store) => store.id.toString() === storeId.toString())
-  : null;
+  const selectedStore =
+    stores && stores.length > 0
+      ? stores.find((store) => store.id.toString() === storeId.toString())
+      : null;
 
   // If admin has no assigned store, block page
   const isBlockedAdmin = userRole === "admin" && !userStoreId;
-
-  const filteredDrinks = Array.isArray(drinks)
-    ? drinks.filter((drink) => {
-        const combined = Object.values(drink).join(" ").toLowerCase();
-        return combined.includes(search.toLowerCase());
-      })
-    : [];
 
   const handleToggleClick = async (drink) => {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -217,6 +198,36 @@ function ManageMenu() {
             Manage your store's drink menu, customizations, and seasonal
             templates here.
           </Typography>
+          <ul>
+            <li>
+              <strong>Menu Items tab</strong>
+              <ul>
+                <li>View all drinks</li>
+                <li>Search drinks</li>
+                <li>Toggle drink availability</li>
+                <li>Create new drink</li>
+                <li>Edit existing drink</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Featured tab</strong>
+              <ul>
+                <li>Toggle drinks between featured and normal</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Customisations tab</strong>
+              <ul>
+                <li>Manage available add-ons like syrups, milks, toppings</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Templates tab</strong>
+              <ul>
+                <li>Switch between saved menu templates</li>
+              </ul>
+            </li>
+          </ul>
 
           {toast && (
             <div
@@ -370,8 +381,9 @@ function ManageMenu() {
                   }}
                 >
                   <MenuItem value={0}>Menu Items</MenuItem>
-                  <MenuItem value={1}>Customizations</MenuItem>
-                  <MenuItem value={2}>Templates</MenuItem>
+                  <MenuItem value={1}>Featured</MenuItem> {/* 🆕 ADD THIS */}
+                  <MenuItem value={2}>Customizations</MenuItem>
+                  <MenuItem value={3}>Templates</MenuItem>
                 </Select>
               ) : (
                 <Tabs
@@ -405,6 +417,7 @@ function ManageMenu() {
                   }}
                 >
                   <Tab label="Menu Items" />
+                  <Tab label="Featured" /> {/* 🆕 ADD THIS */}
                   <Tab label="Customizations" />
                   <Tab label="Templates" />
                 </Tabs>
@@ -412,149 +425,7 @@ function ManageMenu() {
 
               {/* Content */}
               {activeTab === 0 && (
-                <>
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        justifyContent: "space-between",
-                        alignItems: { xs: "stretch", sm: "center" },
-                        marginBottom: 2,
-                        gap: { xs: 2, sm: 0 },
-                      }}
-                    >
-                      <TextField
-                        size="small"
-                        placeholder="Search drinks..."
-                        variant="outlined"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        sx={{
-                          width: "100%",
-                          maxWidth: 300,
-                          input: {
-                            color: "var(--text)",
-                            backgroundColor: "var(--card)",
-                            borderRadius: "4px",
-                          },
-                          "& .MuiOutlinedInput-root": {
-                            "& fieldset": {
-                              borderColor: "var(--component-border)",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "var(--primary)",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "var(--primary)",
-                            },
-                          },
-                        }}
-                      />
-
-                      <Box sx={{ flexShrink: 0 }}>
-                        <button
-                          className="btn btn--primary"
-                          onClick={() =>
-                            setToast({
-                              type: "info",
-                              title: "Feature Coming Soon",
-                              message:
-                                "Adding new drinks will be available shortly!",
-                            })
-                          }
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            backgroundColor: "var(--primary)",
-                            color: "white",
-                            padding: "10px 18px",
-                            fontSize: "1rem",
-                            borderRadius: "8px",
-                            border: "none",
-                            cursor: "pointer",
-                            fontWeight: 600,
-                            gap: "8px",
-                            transition: "all 0.2s ease-in-out",
-                          }}
-                        >
-                          <Add />
-                          Add Drink
-                        </button>
-                      </Box>
-                    </Box>
-
-                    <Box sx={{ width: "100%", backgroundColor: "var(--card)" }}>
-                      <DataGrid
-                        autoHeight
-                        rows={filteredDrinks}
-                        columns={[
-                          { field: "id", headerName: "ID", flex: 0.4 },
-                          { field: "name", headerName: "Name", flex: 1 },
-                          {
-                            field: "toggle",
-                            headerName: "Toggle",
-                            flex: 0.8,
-                            sortable: false,
-                            renderCell: (params) => (
-                              <button
-                                onClick={() => setToggleTarget(params.row)}
-                                style={{
-                                  backgroundColor:
-                                    params.row.is_out_of_stock === 1
-                                      ? "#E53935"
-                                      : "#43A047",
-                                  color: "white",
-                                  padding: "6px 12px",
-                                  border: "none",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontWeight: 600,
-                                  transition: "all 0.2s",
-                                }}
-                              >
-                                {params.row.is_out_of_stock === 1
-                                  ? "Turn ON"
-                                  : "Turn OFF"}
-                              </button>
-                            ),
-                          },
-                          {
-                            field: "description",
-                            headerName: "Description",
-                            flex: 2,
-                          },
-                          { field: "price", headerName: "Price", flex: 0.6 },
-                          {
-                            field: "category",
-                            headerName: "Category",
-                            flex: 1,
-                          },
-                          { field: "tags", headerName: "Tags", flex: 1.2 },
-                        ]}
-                        disableRowSelectionOnClick
-                        hideFooterPagination
-                        localeText={{
-                          noRowsLabel: "No drinks match this search",
-                        }}
-                        sx={{
-                          color: "var(--text) !important",
-                          borderColor: "var(--component-border)",
-                          backgroundColor: "var(--card)",
-                          "& .MuiDataGrid-columnHeaders": {
-                            backgroundColor: "var(--accent)",
-                            color: "var(--text)",
-                            fontWeight: "bold",
-                            borderBottom: "1px solid var(--component-border)",
-                          },
-                          "& .MuiDataGrid-row": {
-                            borderBottom: "1px solid var(--component-border)",
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Collapse>
-                </>
+                <MenuItemsTab storeId={storeId} setToast={setToast} />
               )}
 
               {activeTab === 1 && (
@@ -576,17 +447,13 @@ function ManageMenu() {
                   </p>
                 </>
               )}
+              {activeTab === 3 && (
+                <>
+                  <h2>Manage Seasonal Templates</h2>
+                  <p>Switch between different saved menu templates.</p>
+                </>
+              )}
             </>
-          )}
-          {toggleTarget && (
-            <TwoChoicesModal
-              title="Confirm Drink Toggle"
-              text={`Are you sure you want to close orders for ${toggleTarget.name}?`}
-              confirmLabel="Yes, Close Orders"
-              cancelLabel="No, Go Back"
-              onConfirm={() => handleRealToggle(toggleTarget)}
-              onCancel={() => setToggleTarget(null)}
-            />
           )}
         </>
       )}

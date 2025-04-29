@@ -188,7 +188,6 @@ function Store() {
             right: isDesktop ? undefined : "1rem", // Add 1rem margin on mobile
             marginLeft: isDesktop ? 0 : "1rem", // 1rem margin for left on mobile
             marginRight: isDesktop ? 0 : "1rem", // 1rem margin for right on mobile
-            display: "flex", // Keep the flex to ensure both elements are inline
             justifyContent: "space-between", // Space out the search bar and button properly
           }}
         >

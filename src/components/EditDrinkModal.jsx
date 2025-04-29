@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, Box, Typography } from "@mui/material";
+import { Dialog, DialogContent, DialogActions, Button, Box, Typography } from "@mui/material";
 import FillerHero from "../assets/FILLER_HERO_IMG.jpg";
 
 function EditDrinkModal({ drink, onCancel, onSave }) {
@@ -34,18 +34,7 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
   if (!drink) return null;
 
   return (
-    <Dialog
-      open
-      onClose={onCancel}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: { md: 3 },
-          overflow: "hidden"
-        },
-      }}
-    >
+    <Dialog open onClose={onCancel} maxWidth="md" fullWidth>
       <Box display="flex" flexDirection={{ xs: "column", md: "row" }}>
         {/* Image Section */}
         <Box
@@ -55,6 +44,8 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
             backgroundSize: "cover",
             backgroundPosition: "center",
             height: { xs: 200, md: "auto" },
+            borderTopLeftRadius: 1,
+            borderBottomLeftRadius: { md: 1 },
           }}
         />
 
@@ -68,7 +59,7 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
                 type="text"
                 value={formData.name}
                 onChange={handleChange("name")}
-                className="profile__input"
+                style={inputStyle}
               />
             </div>
 
@@ -78,8 +69,7 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
                 rows="3"
                 value={formData.description}
                 onChange={handleChange("description")}
-                className="profile__input"
-                style={{ resize: "none" }}
+                style={{ ...inputStyle, resize: "none" }}
               />
             </div>
 
@@ -90,7 +80,7 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
                   type="number"
                   value={formData.price}
                   onChange={handleChange("price")}
-                  className="profile__input"
+                  style={inputStyle}
                 />
               </div>
 
@@ -99,7 +89,7 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
                 <select
                   value={formData.category}
                   onChange={handleChange("category")}
-                  className="profile__input"
+                  style={selectStyle}
                 >
                   <option value="">Select Category</option>
                   <option value="hot">Hot</option>
@@ -115,24 +105,50 @@ function EditDrinkModal({ drink, onCancel, onSave }) {
                 type="text"
                 value={formData.tags}
                 onChange={handleChange("tags")}
-                className="profile__input"
+                style={inputStyle}
               />
             </div>
           </Box>
 
-          <div className="profile__logout-actions" style={{ marginTop: "24px" }}>
+          <DialogActions sx={{ mt: 3, justifyContent: "space-between" }}>
+
             <button className="btn btn--primary" onClick={handleSave}>
               Save Changes
             </button>
             <button className="btn btn--outline" onClick={onCancel}>
               Cancel
             </button>
-          </div>
+          </DialogActions>
         </Box>
       </Box>
     </Dialog>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.75rem 1rem",
+  fontSize: "1rem",
+  borderRadius: "6px",
+  border: "2px solid #FD6100",
+  outline: "none",
+  backgroundColor: "#fefaf7",
+  color: "#333",
+  fontFamily: "inherit",
+  boxSizing: "border-box",
+  transition: "border 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  appearance: "none",
+  backgroundImage:
+    'url("data:image/svg+xml;utf8,<svg fill="%23FD6100" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>")',
+  backgroundRepeat: "no-repeat",
+  backgroundPositionX: "calc(100% - 1rem)",
+  backgroundPositionY: "center",
+  backgroundSize: "1rem",
+};
 
 const labelStyle = {
   fontWeight: "bold",
