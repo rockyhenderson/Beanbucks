@@ -20,10 +20,10 @@ function OrderCategory() {
   const [activeCategories, setActiveCategories] = useState([]);
   const scrollRefs = useRef({});
   const navigate = useNavigate();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const selectedStoreId = sessionStorage.getItem("selectedStoreId");
 
-  // Redirect if no store is selected
   useEffect(() => {
     if (!selectedStoreId) {
       navigate("/order", { replace: true });
@@ -44,22 +44,19 @@ function OrderCategory() {
   const filteredDrinks =
     drinks?.filter((drink) => drink.category === type) || [];
 
-  // Extract all tags
   const allTags = Array.from(
     new Set(filteredDrinks.map((drink) => drink.tags || "Other"))
   );
 
-  // Set default checked tags ONCE
   useEffect(() => {
     if (allTags.length && activeCategories.length === 0) {
       setActiveCategories(allTags);
     }
   }, [allTags]);
+
   const [priceFilter, setPriceFilter] = useState({ min: "", max: "" });
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Group drinks by tag and filter out unchecked ones
-  // Group drinks by tag, applying category + price filters
   const groupedDrinks = filteredDrinks
     .filter((drink) => {
       const tag = drink.tags || "Other";
@@ -81,7 +78,6 @@ function OrderCategory() {
       return acc;
     }, {});
 
-  // Scroll dragging behavior for drink carousels
   useEffect(() => {
     Object.values(scrollRefs.current).forEach((ref) => {
       if (!ref) return;
@@ -132,26 +128,50 @@ function OrderCategory() {
         <h1>{label}</h1>
       </div>
 
-      <div className="order-content">
+      {/* Mobile toggle button */}
+      <button className="sidebar-toggle" onClick={() => setIsMobileSidebarOpen(true)}>
+        Filters
+      </button>
+
+      {/* Mobile drawer sidebar */}
+      <div className={`mobile-sidebar ${isMobileSidebarOpen ? "open" : ""}`}>
+        <button className="close-sidebar" onClick={() => setIsMobileSidebarOpen(false)}>
+          ✕
+        </button>
         <FilterSidebar
           drinks={filteredDrinks}
           onFilterChange={(filters) => {
             setActiveCategories(filters.categories);
             setPriceFilter({ min: filters.priceMin, max: filters.priceMax });
-            setSearchTerm(filters.search); // 👈 add this
+            setSearchTerm(filters.search);
           }}
         />
+      </div>
 
-<div className="drink-grid flat-grid">
-  {Object.values(groupedDrinks).flat().map((drink) => (
-    <DrinkCard
-      key={drink.id}
-      drink={drink}
-      onClick={() => setSelectedDrink(drink)}
-    />
-  ))}
-</div>
+      <div className="order-content">
+        {/* Desktop sidebar */}
+        <div className="filter-sidebar-wrapper">
+          <FilterSidebar
+            drinks={filteredDrinks}
+            onFilterChange={(filters) => {
+              setActiveCategories(filters.categories);
+              setPriceFilter({ min: filters.priceMin, max: filters.priceMax });
+              setSearchTerm(filters.search);
+            }}
+          />
+        </div>
 
+        <div className="drink-groups">
+          <div className="drink-grid flat-grid">
+            {Object.values(groupedDrinks).flat().map((drink) => (
+              <DrinkCard
+                key={drink.id}
+                drink={drink}
+                onClick={() => setSelectedDrink(drink)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <DrinkModal

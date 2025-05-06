@@ -325,8 +325,10 @@ function Store() {
               message: `You selected ${selectedStore.store_name}!`,
             });
             setSelectedStore(null);
-            setJustSelectedStore(store);
+            setJustSelectedStore(selectedStore); // Fix: use selectedStore not store
+        
           }}
+          
           confirmLabel="Select This Store"
         >
           <p>

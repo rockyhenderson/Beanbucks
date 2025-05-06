@@ -28,7 +28,7 @@ function AdminNavbar() {
     { text: "BaristaPortal ❌", path: "/admin/baristaPortal" },
     { text: "Store Options ✅", path: "/admin/managestores" },
     { text: "Stock ❌", path: "/admin/adminstock" },
-    { text: "Logs 🔵", path: "/admin/adminlogs" },
+    { text: "Logs ✅", path: "/admin/adminlogs" },
     { text: "Back to main site ✅", path: "/" },
   ];
 

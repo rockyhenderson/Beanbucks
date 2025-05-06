@@ -1,3 +1,7 @@
+*{
+  box-sizing: border-box;
+
+}
 body {
   overflow-x: hidden;
 
@@ -10,19 +14,19 @@ body {
   }
   
   .order-category-page {
-    padding: 1rem 0;
-    padding-top:0;
+    width: 100%;
+    max-width: 1300px;
     margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* aligns header + content to left */
+    padding: 1rem;
+    overflow-x: hidden;
   }
   
+  
   .order-content {
+    width:100%;
     display: flex;
     align-items: flex-start;
     gap: 2rem;
-    margin-left:2rem;
     flex-wrap: nowrap; /* 👈 prevents sidebar wrapping under */
   }
   
@@ -38,9 +42,10 @@ body {
   
   .drink-groups {
     flex: 1;
-    min-width: 0; /* ✅ Prevents child overflow */
-    overflow-x: hidden; /* Just in case */
+    width: 100%;
+    min-width: 0;
   }
+  
   
 
   
@@ -66,41 +71,6 @@ body {
   }
   
   
-  .drink-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 1rem;
-    padding: 0 1rem 1rem;
-  
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    cursor: grab;
-  
-    width: 100%;           /* <- key fix */
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  
-  
-  
-  
-  
-  
-  .drink-grid.dragging {
-    cursor: grabbing;
-    user-select: none;
-  }
-  
-  .drink-grid > * {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    width: 320px;
-    max-width: 320px; /* ✅ Keeps it from stretching */
-  }
   
   .rewards {
     padding: 1rem;
@@ -128,12 +98,15 @@ body {
     font-size: 0.95rem;
   }
   .flat-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1.5rem;
-    justify-content: flex-start;
+    width: 100%;
     padding: 1rem 0;
   }
+  
+  
+  
   
   .flat-grid > * {
     flex: 1 1 250px; /* grow/shrink, min width */
@@ -260,3 +233,85 @@ body {
     height:auto;
     margin-left:2rem;
   }
+/* Mobile Sidebar Toggle */
+.sidebar-toggle {
+  display: none;
+  margin: 1rem 2rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  background-color: var(--primary);
+  color: var(--button-text);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+/* Sidebar Drawer */
+.mobile-sidebar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .filter-sidebar-wrapper {
+    display: none;
+  }
+
+  .mobile-sidebar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: -130%;
+    width: 80%;
+    max-width: 320px;
+    min-width: 320px;
+    height: 100vh;
+    background-color: var(--card);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+    z-index: 3000;
+    padding: 2rem 1.5rem;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .mobile-sidebar.open {
+    left: 0;
+  }
+
+  .close-sidebar {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .order-content {
+    flex-direction: column;
+    gap: 1rem;
+    margin-left: 0;
+  }
+}
+@media (max-width: 500px) {
+  .flat-grid > * {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 768px) {
+  .filter-sidebar {
+    box-shadow: none !important;
+  }
+}
+@media (max-width: 320px) {
+  .mobile-sidebar {
+    padding: 1rem;
+  }
+}
