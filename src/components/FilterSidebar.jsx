@@ -26,7 +26,6 @@ function FilterSidebar({ drinks = [], flavours = [], onFilterChange, onClose }) 
   const minPrice = Math.floor(Math.min(...drinks.map(d => parseFloat(d.price) || 0)));
   const maxPrice = Math.ceil(Math.max(...drinks.map(d => parseFloat(d.price) || 0)));
   useEffect(() => {
-    console.log("📦 Active filters:", selectedCategories);
     onFilterChange({
       search,
       categories: selectedCategories,

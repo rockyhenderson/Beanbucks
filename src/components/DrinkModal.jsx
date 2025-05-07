@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "../DrinkModal.css";
 import fillerImage from "../assets/no_image_found.png";
@@ -17,18 +17,25 @@ import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
 import Toast from "../components/Toast";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import TwoChoicesModal from "../components/TwoChoices";
+
+
 
 
 
 const storeId = sessionStorage.getItem("selectedStoreId");
 
-const DrinkModal = ({ drink, onClose }) => {
-  const [showOptions, setShowOptions] = useState(false);
+const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCount }) => {
 
+  const [showOptions, setShowOptions] = useState(false);
+  const [allergenWarning, setAllergenWarning] = useState(null);
+  const [showAllergenModal, setShowAllergenModal] = useState(false);
+  const [matchedAllergenNames, setMatchedAllergenNames] = useState([]);
   const [shots, setShots] = useState(1);
   const [selectedSize, setSelectedSize] = useState("Medium");
   const [selectedMilk, setSelectedMilk] = useState("Whole");
   const [selectedBean, setSelectedBean] = useState("Normal");
+
   const [syrupCounts, setSyrupCounts] = useState({
     Vanilla: 0,
     Caramel: 0,
@@ -46,6 +53,47 @@ const DrinkModal = ({ drink, onClose }) => {
       ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_store_customizations.php?store_id=${storeId}`
       : null
   );
+  const allergenMap = {
+    1: "Milk",
+    2: "Eggs",
+    3: "Peanuts",
+    4: "Soy",
+    5: "Gluten",
+    6: "Sesame",
+    7: "Coconut",
+    8: "Oats",
+    9: "Chocolate",
+    10: "Corn",
+    11: "Cinnamon",
+    12: "Caffeine",
+  };
+
+  const allergenNameToId = Object.entries(allergenMap).reduce((acc, [id, name]) => {
+    acc[name] = id;
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    if (!drink?.allergen) return;
+
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const userAllergens = (user?.allergens || []).map((val) => {
+      const entry = typeof val === "string" ? val : String(val);
+      return allergenNameToId[entry] || entry;
+    });
+
+    const drinkAllergens = drink.allergen.split(",").map((id) => id.trim());
+
+    const matched = drinkAllergens.filter((id) => userAllergens.includes(id));
+    if (matched.length > 0) {
+      const matchedNames = matched.map((id) => allergenMap[id]).filter(Boolean);
+      setMatchedAllergenNames(matchedNames);
+      setShowAllergenModal(true);
+    }
+  }, [drink]);
+
+
+
   const isOptionEnabled = (type, name) => {
     if (!availableCustomizations) return false;
     return availableCustomizations.some(
@@ -85,6 +133,47 @@ const DrinkModal = ({ drink, onClose }) => {
       }));
     }
   };
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: crypto.randomUUID(),
+      drinkId: drink.id,
+      name: drink.name,
+      description: drink.description,
+      size: selectedSize,
+      milk: selectedMilk,
+      beans: selectedBean,
+      shots,
+      syrups: syrupCounts,
+      toppings: selectedToppings,
+      price: drink.price || null,
+      timeAdded: Date.now(),
+    };
+
+    // Get the current cart from localStorage
+    const storedCart = localStorage.getItem("beanbucks_cart");
+    const cart = storedCart ? JSON.parse(storedCart) : [];
+
+    // Add the new item to the cart
+    cart.push(cartItem);
+
+    // Save the updated cart back to localStorage
+    localStorage.setItem("beanbucks_cart", JSON.stringify(cart));
+
+    // Log the cart item details to the console
+    console.log("Cart item added:", cartItem);
+
+    // Update the cart count using the passed prop function
+    setCartItemCount(getCartItemCount());
+
+    // Optional: Debugging logs
+    console.log("Item added to cart. Current cart count:", getCartItemCount());
+
+    // Close the modal
+    onClose();
+  };
+
+
+
 
   useEffect(() => {
     if (drink) document.body.style.overflow = "hidden";
@@ -96,7 +185,24 @@ const DrinkModal = ({ drink, onClose }) => {
   if (!drink) return null;
 
   return (
-    <div className="drink-modal-overlay" onClick={onClose}>
+    <div className="drink-modal-overlay" onClick={showAllergenModal ? undefined : onClose}>
+      {showAllergenModal && (
+        <TwoChoicesModal
+          title="Allergen Warning"
+          text={`This drink contains: ${matchedAllergenNames.join(", ")}. Are you sure you want to continue?`}
+          confirmLabel="Yes, continue"
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            setShowAllergenModal(false); // ✅ keep DrinkModal open
+          }}
+          onCancel={() => {
+            setShowAllergenModal(false);
+            onClose(); // ❌ user chooses to back out completely
+          }}
+        />
+      )}
+
+
       <div
         className="drink-modal-content"
         onClick={(e) => e.stopPropagation()}
@@ -122,219 +228,238 @@ const DrinkModal = ({ drink, onClose }) => {
             <div className="drink-info-container">
               <h2 className="drink-title">{drink.name}</h2>
               <div className="tag-container" style={{ marginBottom: "1rem" }}>
-                <span className="tag">Customizable</span>
-                <span className="tag">Caffeinated</span>
+                {drink.editable === 1 && <span className="tag">Customizable</span>}
+
+                {(() => {
+                  if (drink.allergen) {
+                    const ids = drink.allergen.split(",").map((id) => id.trim());
+                    const names = ids.map((id) => allergenMap[id]).filter(Boolean);
+                    console.log("Parsed allergen IDs:", ids);
+                    console.log("Mapped allergen names:", names);
+                    return names.map((name, index) => (
+                      <span className="tag" key={index}>{name}</span>
+                    ));
+                  }
+                  return null;
+                })()}
               </div>
+
+
               {drink.description && (
                 <p className="drink-description">{drink.description}</p>
               )}
 
             </div>
-
-            {customizationsError ? (
-              <RetryFallback
-                onRetry={retryCustomizations}
-                isLoading={isLoadingCustomizations}
-                message="Failed to load customization options. Please try again!"
-              />
-            ) : (
+            {drink.editable === 1 && (
               <>
-                <div className="edit-options-wrapper">
-                  <button
-                    className="edit-options-toggle"
-                    onClick={() => setShowOptions((prev) => !prev)}
-                  >
-                    <span>Edit Drink Options</span>
-                    <span
-                      className="toggle-arrow"
-                      style={{
-                        display: "inline-flex",
-                        transition: "transform 0.3s ease",
-                        transform: showOptions ? "rotate(180deg)" : "rotate(0deg)",
-                      }}
-                    >
-                      <ExpandMoreIcon fontSize="medium" />
-                    </span>
-                  </button>
-                </div>
-                {showOptions && (
-                  <div
-                    className="drink-options"
-                    style={{
-                      maxHeight: showOptions ? "1000px" : "0",
-                      transition: "max-height 0.4s ease",
-                    }}
-                  >
-                    {/* MAIN OPTIONS */}
-                    <div className="main-options">
-                      {/* Size */}
-                      <div className="option-group">
-                        <h3>Size</h3>
-                        <div className="size-options">
-                          {[
-                            { label: "Small", size: "1.5rem" },
-                            { label: "Medium", size: "2.2rem" },
-                            { label: "Large", size: "3rem" },
-                          ].map(({ label, size }) => {
-                            const disabled = !isOptionEnabled("size", label);
-                            return (
-                              <button
-                                key={label}
-                                className={`size-btn ${selectedSize === label ? "selected" : ""
-                                  } ${disabled ? "disabled" : ""}`}
-                                onClick={() => {
-                                  if (!disabled) setSelectedSize(label);
-                                }}
-                              >
-                                {disabled ? (
-                                  <DoNotDisturbIcon style={{ fontSize: size }} />
-                                ) : (
-                                  <CoffeeIcon style={{ fontSize: size }} />
-                                )}
-                                <span>{label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Milk */}
-                      <div className="option-group">
-                        <h3>Milk</h3>
-                        <div className="milk-options">
-                          {[
-                            { label: "Whole", Icon: AgricultureIcon },
-                            { label: "Oat", Icon: SpaIcon },
-                            { label: "Soy", Icon: SpaIcon },
-                            { label: "Almond", Icon: EmojiNatureIcon },
-                          ].map(({ label, Icon }) => {
-                            const disabled = !isOptionEnabled("milk", label);
-                            return (
-                              <button
-                                key={label}
-                                className={`milk-btn ${selectedMilk === label ? "selected" : ""
-                                  } ${disabled ? "disabled" : ""}`}
-                                onClick={() => {
-                                  if (!disabled) setSelectedMilk(label);
-                                }}
-                              >
-                                {disabled ? (
-                                  <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
-                                ) : (
-                                  <Icon style={{ fontSize: "2rem" }} />
-                                )}
-                                <span>{label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Beans */}
-                      <div className="option-group">
-                        <h3>Beans</h3>
-                        <div className="bean-options">
-                          {[
-                            { label: "Normal", Icon: CoffeeIcon },
-                            { label: "Decaf", Icon: LocalCafeIcon },
-                          ].map(({ label, Icon }) => {
-                            const disabled = !isOptionEnabled("beans", label);
-                            return (
-                              <button
-                                key={label}
-                                className={`bean-btn ${selectedBean === label ? "selected" : ""
-                                  } ${disabled ? "disabled" : ""}`}
-                                onClick={() => {
-                                  if (!disabled) setSelectedBean(label);
-                                }}
-                              >
-                                {disabled ? (
-                                  <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
-                                ) : (
-                                  <Icon style={{ fontSize: "2rem" }} />
-                                )}
-                                <span>{label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                {customizationsError ? (
+                  <RetryFallback
+                    onRetry={retryCustomizations}
+                    isLoading={isLoadingCustomizations}
+                    message="Failed to load customization options. Please try again!"
+                  />
+                ) : (
+                  <>
+                    {/* Size */}
+                    <div className="option-group" style={{ paddingLeft: "1.5rem" }}>
+                      <h3>Size</h3>
+                      <div className="size-options">
+                        {[
+                          { label: "Small", size: "1.5rem" },
+                          { label: "Medium", size: "2.2rem" },
+                          { label: "Large", size: "3rem" },
+                        ].map(({ label, size }) => {
+                          const disabled = !isOptionEnabled("size", label);
+                          return (
+                            <button
+                              key={label}
+                              className={`size-btn ${selectedSize === label ? "selected" : ""
+                                } ${disabled ? "disabled" : ""}`}
+                              onClick={() => {
+                                if (!disabled) setSelectedSize(label);
+                              }}
+                            >
+                              {disabled ? (
+                                <DoNotDisturbIcon style={{ fontSize: size }} />
+                              ) : (
+                                <CoffeeIcon style={{ fontSize: size }} />
+                              )}
+                              <span>{label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
+                    <div className="edit-options-wrapper">
+                      <button
+                        className="edit-options-toggle"
+                        onClick={() => setShowOptions((prev) => !prev)}
+                      >
+                        <span>Edit Drink Options</span>
+                        <span
+                          className="toggle-arrow"
+                          style={{
+                            display: "inline-flex",
+                            transition: "transform 0.3s ease",
+                            transform: showOptions ? "rotate(180deg)" : "rotate(0deg)",
+                          }}
+                        >
+                          <ExpandMoreIcon fontSize="medium" />
+                        </span>
+                      </button>
+                    </div>
+                    {showOptions && (
+                      <div
+                        className="drink-options"
+                        style={{
+                          maxHeight: showOptions ? "1000px" : "0",
+                          transition: "max-height 0.4s ease",
+                        }}
+                      >
+                        {/* MAIN OPTIONS */}
+                        <div className="main-options">
 
-                    {/* ADVANCED OPTIONS */}
-                    <div className="advanced-options">
-                      {/* Shot Amount */}
-                      <div className="option-group">
-                        <h3>Shot Amount</h3>
-                        <div className="stepper">
-                          <button onClick={() => setShots(Math.max(1, shots - 1))}>-</button>
-                          <span>{shots}</span>
-                          <button onClick={() => setShots(Math.min(8, shots + 1))}>+</button>
-                        </div>
-                      </div>
-
-                      {/* Syrup */}
-                      {availableCustomizations?.some((c) => c.type === "syrup") && (
-                        <div className="option-group">
-                          <h3>Syrup</h3>
-                          <div className="syrup-stepper-list">
-                            {Object.keys(syrupCounts).map(
-                              (syrup) =>
-                                isOptionEnabled("syrup", syrup) && (
-                                  <div key={syrup} className="syrup-stepper-item">
-                                    <span>{syrup}</span>
-                                    <div className="stepper">
-                                      <button onClick={() => decreaseSyrup(syrup)}>-</button>
-                                      <span>{syrupCounts[syrup]}</span>
-                                      <button onClick={() => increaseSyrup(syrup)}>+</button>
-                                    </div>
-                                  </div>
-                                )
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Toppings */}
-                      {availableCustomizations?.some((c) => c.type === "topping") && (
-                        <div className="option-group">
-                          <h3>Toppings</h3>
-                          <div className="topping-boxes">
-                            {[
-                              { label: "Whipped Cream", Icon: IcecreamIcon },
-                              { label: "Flakes", Icon: AcUnitIcon },
-                              { label: "Marshmallows", Icon: EmojiEmotionsIcon },
-                              { label: "Cinnamon", Icon: SpaIcon },
-                              { label: "Chocolate Chips", Icon: CookieIcon },
-                            ].map(({ label, Icon }) => {
-                              const disabled = !isOptionEnabled("topping", label);
-                              return (
-                                !disabled && (
+                          {/* Milk */}
+                          <div className="option-group">
+                            <h3>Milk</h3>
+                            <div className="milk-options">
+                              {[
+                                { label: "Whole", Icon: AgricultureIcon },
+                                { label: "Oat", Icon: SpaIcon },
+                                { label: "Soy", Icon: SpaIcon },
+                                { label: "Almond", Icon: EmojiNatureIcon },
+                              ].map(({ label, Icon }) => {
+                                const disabled = !isOptionEnabled("milk", label);
+                                return (
                                   <button
                                     key={label}
-                                    className={`topping-box ${selectedToppings.includes(label) ? "selected" : ""
-                                      }`}
-                                    onClick={() => handleToppingToggle(label)}
+                                    className={`milk-btn ${selectedMilk === label ? "selected" : ""
+                                      } ${disabled ? "disabled" : ""}`}
+                                    onClick={() => {
+                                      if (!disabled) setSelectedMilk(label);
+                                    }}
                                   >
-                                    <Icon className="topping-icon" />
+                                    {disabled ? (
+                                      <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
+                                    ) : (
+                                      <Icon style={{ fontSize: "2rem" }} />
+                                    )}
                                     <span>{label}</span>
                                   </button>
-                                )
-                              );
-                            })}
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Beans */}
+                          <div className="option-group">
+                            <h3>Beans</h3>
+                            <div className="bean-options">
+                              {[
+                                { label: "Normal", Icon: CoffeeIcon },
+                                { label: "Decaf", Icon: LocalCafeIcon },
+                              ].map(({ label, Icon }) => {
+                                const disabled = !isOptionEnabled("beans", label);
+                                return (
+                                  <button
+                                    key={label}
+                                    className={`bean-btn ${selectedBean === label ? "selected" : ""
+                                      } ${disabled ? "disabled" : ""}`}
+                                    onClick={() => {
+                                      if (!disabled) setSelectedBean(label);
+                                    }}
+                                  >
+                                    {disabled ? (
+                                      <DoNotDisturbIcon style={{ fontSize: "4rem" }} />
+                                    ) : (
+                                      <Icon style={{ fontSize: "2rem" }} />
+                                    )}
+                                    <span>{label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+
+                        {/* ADVANCED OPTIONS */}
+                        <div className="advanced-options">
+                          {/* Shot Amount */}
+                          <div className="option-group">
+                            <h3>Shot Amount</h3>
+                            <div className="stepper">
+                              <button onClick={() => setShots(Math.max(1, shots - 1))}>-</button>
+                              <span>{shots}</span>
+                              <button onClick={() => setShots(Math.min(8, shots + 1))}>+</button>
+                            </div>
+                          </div>
+
+                          {/* Syrup */}
+                          {availableCustomizations?.some((c) => c.type === "syrup") && (
+                            <div className="option-group">
+                              <h3>Syrup</h3>
+                              <div className="syrup-stepper-list">
+                                {Object.keys(syrupCounts).map(
+                                  (syrup) =>
+                                    isOptionEnabled("syrup", syrup) && (
+                                      <div key={syrup} className="syrup-stepper-item">
+                                        <span>{syrup}</span>
+                                        <div className="stepper">
+                                          <button onClick={() => decreaseSyrup(syrup)}>-</button>
+                                          <span>{syrupCounts[syrup]}</span>
+                                          <button onClick={() => increaseSyrup(syrup)}>+</button>
+                                        </div>
+                                      </div>
+                                    )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Toppings */}
+                          {availableCustomizations?.some((c) => c.type === "topping") && (
+                            <div className="option-group">
+                              <h3>Toppings</h3>
+                              <div className="topping-boxes">
+                                {[
+                                  { label: "Whipped Cream", Icon: IcecreamIcon },
+                                  { label: "Flakes", Icon: AcUnitIcon },
+                                  { label: "Marshmallows", Icon: EmojiEmotionsIcon },
+                                  { label: "Cinnamon", Icon: SpaIcon },
+                                  { label: "Chocolate Chips", Icon: CookieIcon },
+                                ].map(({ label, Icon }) => {
+                                  const disabled = !isOptionEnabled("topping", label);
+                                  return (
+                                    !disabled && (
+                                      <button
+                                        key={label}
+                                        className={`topping-box ${selectedToppings.includes(label) ? "selected" : ""
+                                          }`}
+                                        onClick={() => handleToppingToggle(label)}
+                                      >
+                                        <Icon className="topping-icon" />
+                                        <span>{label}</span>
+                                      </button>
+                                    )
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
           </div>
         </div>
 
-        <button className="add-to-cart-btn">Add to Cart</button>
+        <button className="add-to-cart-btn" onClick={handleAddToCart}>Add to Cart</button>
+
       </div>
+
     </div>
   );
 }

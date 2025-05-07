@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,23 +11,21 @@ import { useMediaQuery } from "@mui/material";
 // Components
 import Navbar from "./components/Navbar";
 import AdminNavbar from "./components/AdminNavbar";
-import DevToolsPanel from "./components/DevToolsPanel";
 import Footer from "./components/Footer";
-import Toast from "./components/Toast";
+import DevToolsPanel from "./components/DevToolsPanel";
 
-// Regular Pages
+// Pages
 import Home from "./pages/Home";
 import Order from "./pages/Order";
-import Rewards from "./pages/Rewards";
-import Store from "./pages/Store";
-import Profile from "./pages/Profile";
 import Cart from "./pages/Cart";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import OrderCategory from "./pages/OrderCategory";
-import ResetPassword from "./pages/ResetPassword"; // 
+import ResetPassword from "./pages/ResetPassword";
 import VerifyCode from "./pages/VerifyCode";
-import AdminStock from "./pages/admin/AdminStock"; 
+import Profile from "./pages/Profile";
+import Store from "./pages/Store";
+import Reward from "./pages/Rewards";
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -36,6 +35,7 @@ import ManageUsers from "./pages/admin/Manageusers";
 import BaristaPortal from "./pages/admin/BaristaPortal";
 import ManageStores from "./pages/admin/ManageStores";
 import AdminLogs from "./pages/admin/AdminLogs";
+import AdminStock from "./pages/admin/AdminStock";
 
 // Styles
 import "./global.css";
@@ -46,23 +46,43 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isDesktop = useMediaQuery("(min-width:900px)");
 
+  const getCartItemCount = () => {
+    const stored = localStorage.getItem("beanbucks_cart");
+    if (!stored) return 0;
+    const parsed = JSON.parse(stored);
+    const itemCount = parsed.reduce((sum, item) => sum + (item.qty || 1), 0);
+    return itemCount;
+  };
+
+
+  const [cartItemCount, setCartItemCount] = useState(getCartItemCount());
+
+  const updateCartItemCount = () => {
+    setCartItemCount(getCartItemCount());
+  };
+  console.log("❌setCartItemCount in AppContent:", setCartItemCount);
   return isAdminRoute && isDesktop ? (
     <div style={{ display: "flex" }}>
-      <AdminNavbar />
+      <AdminNavbar cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />
       <div style={{ flex: 1 }}>
         <Routes>
           {/* Regular Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/order" element={<Order />} />
-          <Route path="/rewards" element={<Rewards />} />
-          <Route path="/store" element={<Store />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/order/:type" element={<OrderCategory />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> 
-          <Route path="/verify-code" element={<VerifyCode />} /> 
+          <Route
+            path="/order/:type"
+            element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}
+          />          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-code" element={<VerifyCode />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/rewards" element={<Reward />} />
+
 
           {/* Admin Routes */}
           <Route path="/admin" element={<BeanAdmin />} />
@@ -80,20 +100,29 @@ function AppContent() {
     </div>
   ) : (
     <>
-      {isAdminRoute ? <AdminNavbar /> : <Navbar />}
+      {isAdminRoute ? (
+        <AdminNavbar />
+      ) : (
+        <Navbar cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />
+
+
+      )}
       <Routes>
-        {/* Regular Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/order/:type" element={<OrderCategory />} />
-        <Route path="/reset-password" element={<ResetPassword />} /> 
+        <Route path="/profile" element={<Profile />} />
+        <Route
+            path="/order/:type"
+            element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}
+          />    
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
+        <Route path="/store" element={<Store />} />
+        <Route path="/rewards" element={<Reward />} />
+
 
         {/* Admin Routes */}
         <Route path="/admin" element={<BeanAdmin />} />

@@ -6,6 +6,7 @@ import DrinkCard from "../components/DrinkCard";
 import "../Order_Style.css";
 import DrinkModal from "../components/DrinkModal";
 import FilterSidebar from "../components/FilterSidebar";
+import Toast from "../components/Toast"; // 🆕 import
 
 const categoryMap = {
   hot: "Hot Drinks",
@@ -13,7 +14,10 @@ const categoryMap = {
   food: "Food",
 };
 
-function OrderCategory() {
+function OrderCategory({ cartItemCount, setCartItemCount }) {
+  console.log("setCartItemCount in OrderCategory:", setCartItemCount); // Debugging log
+
+
   const { type } = useParams();
   const label = categoryMap[type];
   const [selectedDrink, setSelectedDrink] = useState(null);
@@ -21,6 +25,7 @@ function OrderCategory() {
   const scrollRefs = useRef({});
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [toast, setToast] = useState(null); // 🆕 toast state
 
   const selectedStoreId = sessionStorage.getItem("selectedStoreId");
 
@@ -121,19 +126,23 @@ function OrderCategory() {
   if (error)
     return <RetryFallback onRetry={retry} message="Failed to load drinks." />;
   if (isLoading || !drinks) return <p>Loading drinks...</p>;
-
+  const getCartItemCount = () => {
+    const stored = localStorage.getItem("beanbucks_cart");
+    if (!stored) return 0;
+    const parsed = JSON.parse(stored);
+    return parsed.reduce((sum, item) => sum + (item.qty || 1), 0);
+  };
+  
   return (
     <div className="order-category-page">
       <div className="order-category-header">
         <h1>{label}</h1>
       </div>
 
-      {/* Mobile toggle button */}
       <button className="sidebar-toggle" onClick={() => setIsMobileSidebarOpen(true)}>
         Filters
       </button>
 
-      {/* Mobile drawer sidebar */}
       <div className={`mobile-sidebar ${isMobileSidebarOpen ? "open" : ""}`}>
         <button className="close-sidebar" onClick={() => setIsMobileSidebarOpen(false)}>
           ✕
@@ -149,7 +158,6 @@ function OrderCategory() {
       </div>
 
       <div className="order-content">
-        {/* Desktop sidebar */}
         <div className="filter-sidebar-wrapper">
           <FilterSidebar
             drinks={filteredDrinks}
@@ -173,11 +181,36 @@ function OrderCategory() {
           </div>
         </div>
       </div>
+      <DrinkModal 
+  drink={selectedDrink} 
+  onClose={() => setSelectedDrink(null)} 
+  setToast={setToast} 
+  setCartItemCount={setCartItemCount} 
+  getCartItemCount={getCartItemCount} // Ensure this is passed as a prop
+/>
 
-      <DrinkModal
-        drink={selectedDrink}
-        onClose={() => setSelectedDrink(null)}
-      />
+
+
+      {/* 🆕 Toast rendered here */}
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            animation: "slideDown 0.3s ease-out",
+          }}
+        >
+          <Toast
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }

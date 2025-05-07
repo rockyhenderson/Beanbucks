@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -17,14 +17,18 @@ import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useLocation, Link } from "react-router-dom";
 import LoginIcon from "@mui/icons-material/Login";
+import DrinkModal from "./DrinkModal";
 
-function Navbar() {
+function Navbar({ cartItemCount, setCartItemCount }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const rawUser = sessionStorage.getItem("user");
   const user = rawUser ? JSON.parse(rawUser) : null;
   const isLoggedIn = !!user;
   const userRole = user?.role || null;
+
+
+
 
   // Hide Navbar on admin routes
   if (location.pathname.startsWith("/admin")) {
@@ -34,7 +38,7 @@ function Navbar() {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-  
+
   const navItems = [
     { text: "Home", path: "/" },
     { text: "Order", path: "/order" },
@@ -44,6 +48,9 @@ function Navbar() {
       ? [{ text: "BeanAdmin", path: "/admin" }]
       : []),
   ];
+  useEffect(() => {
+    console.log("Navbar mounted, cart item count:", cartItemCount); // Log cart count
+  }, [cartItemCount]);
   
 
   return (
@@ -100,17 +107,15 @@ function Navbar() {
                 Bean{"\n"}Bucks
               </Typography>
 
-              <Box sx={{ marginLeft: "auto", display: "flex" }}>
+              <Box sx={{ position: "relative" }}>
                 <IconButton
                   component={Link}
                   to="/cart"
                   sx={{
-                    color:
-                      location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
-                    backgroundColor:
-                      location.pathname === "/cart"
-                        ? "rgba(255,255,255,0.2)"
-                        : "transparent",
+                    color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
+                    backgroundColor: location.pathname === "/cart"
+                      ? "rgba(255,255,255,0.2)"
+                      : "transparent",
                     borderRadius: "50%",
                     transition: "all 0.2s ease-in-out",
                     "&:hover": {
@@ -120,30 +125,32 @@ function Navbar() {
                 >
                   <ShoppingCartOutlinedIcon fontSize="large" />
                 </IconButton>
-                <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                  <IconButton
-                    component={Link}
-                    to="/profile"
+
+                {cartItemCount > 0 && (
+                  <Box
                     sx={{
-                      color:
-                        location.pathname === "/profile"
-                          ? "#FFE7D2"
-                          : "#FFFFFF",
-                      backgroundColor:
-                        location.pathname === "/profile"
-                          ? "rgba(255,255,255,0.2)"
-                          : "transparent",
+                      position: "absolute",
+                      bottom: 2,
+                      right: 2,
+                      backgroundColor: "#fff",
+                      color: "var(--primary)",
                       borderRadius: "50%",
-                      transition: "all 0.2s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.1)",
-                      },
+                      minWidth: "24px",  // Increase the size
+                      height: "24px",    // Increase the size
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 0 4px rgba(0,0,0,0.2)",
                     }}
                   >
-                    <Person2OutlinedIcon fontSize="large" />
-                  </IconButton>
-                </Box>
+                    {cartItemCount}
+                  </Box>
+                )}
+
               </Box>
+
             </Box>
 
             {/* DESKTOP */}
@@ -198,25 +205,50 @@ function Navbar() {
             </Box>
 
             {/* Icons Right (Desktop) */}
+            {/* Icons Right (Desktop) */}
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <IconButton
-                component={Link}
-                to="/cart"
-                sx={{
-                  color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
-                  backgroundColor:
-                    location.pathname === "/cart"
-                      ? "rgba(255,255,255,0.2)"
-                      : "transparent",
-                  borderRadius: "50%",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                  },
-                }}
-              >
-                <ShoppingCartOutlinedIcon fontSize="large" />
-              </IconButton>
+              <Box sx={{ position: "relative" }}>
+                <IconButton
+                  component={Link}
+                  to="/cart"
+                  sx={{
+                    color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
+                    backgroundColor:
+                      location.pathname === "/cart" ? "rgba(255,255,255,0.2)" : "transparent",
+                    borderRadius: "50%",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    },
+                  }}
+                >
+                  <ShoppingCartOutlinedIcon fontSize="large" />
+                </IconButton>
+
+                {cartItemCount > 0 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          bottom: 2,
+                          right: 2,
+                          backgroundColor: "#fff",
+                          color: "var(--primary)",
+                          borderRadius: "50%",
+                          minWidth: "24px",  // Increase the size
+                          height: "24px",    // Increase the size
+                          fontSize: "1rem",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        {cartItemCount}
+                      </Box>
+                    )}
+              </Box>
+
               <IconButton
                 component={Link}
                 to={isLoggedIn ? "/profile" : "/login"}
@@ -243,6 +275,7 @@ function Navbar() {
                 )}
               </IconButton>
             </Box>
+
           </Toolbar>
         </Container>
       </AppBar>

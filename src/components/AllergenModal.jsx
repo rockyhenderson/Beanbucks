@@ -13,19 +13,22 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
-const allergensList = [
-  "Milk",
-  "Eggs",
-  "Peanuts",
-  "Soy",
-  "Wheat/Gluten",
-  "Sesame",
-  "Coconut",
-  "Oats",
-  "Chocolate",
-  "Corn",
-  "Cinnamon",
-];
+// Mapping of allergen names to their IDs
+const allergensMap = {
+  "Milk": 1,
+  "Eggs": 2,
+  "Peanuts": 3,
+  "Soy": 4,
+  "Wheat/Gluten": 5,
+  "Sesame": 6,
+  "Coconut": 7,
+  "Oats": 8,
+  "Chocolate": 9,
+  "Corn": 10,
+  "Cinnamon": 11,
+};
+
+const allergensList = Object.keys(allergensMap); // Extract allergen names as a list
 
 const AllergenModal = ({ open, onClose, onSave }) => {
   const [selectedAllergens, setSelectedAllergens] = useState([]);
@@ -39,12 +42,14 @@ const AllergenModal = ({ open, onClose, onSave }) => {
   }, [open]);
 
   const handleToggle = (allergen) => {
+    const allergenId = allergensMap[allergen]; // Get the allergen ID
     setSelectedAllergens((prevSelected) =>
-      prevSelected.includes(allergen)
-        ? prevSelected.filter((a) => a !== allergen)
-        : [...prevSelected, allergen]
+      prevSelected.includes(allergenId)
+        ? prevSelected.filter((id) => id !== allergenId)
+        : [...prevSelected, allergenId]
     );
   };
+
   const handleSave = () => {
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -55,14 +60,14 @@ const AllergenModal = ({ open, onClose, onSave }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: user.id,
-          allergens: selectedAllergens,
+          allergens: selectedAllergens, // Send allergen IDs
         }),
       }
     )
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          // ✅ update sessionStorage
+          // ✅ update sessionStorage with allergen IDs
           const updatedUser = { ...user, allergens: selectedAllergens };
           sessionStorage.setItem("user", JSON.stringify(updatedUser));
 
@@ -171,7 +176,7 @@ const AllergenModal = ({ open, onClose, onSave }) => {
           }}
         >
           {allergensList.map((allergen) => {
-            const isSelected = selectedAllergens.includes(allergen);
+            const isSelected = selectedAllergens.includes(allergensMap[allergen]);
             return (
               <Box
                 key={allergen}
