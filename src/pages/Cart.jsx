@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import TwoChoicesModal from "../components/TwoChoices";
 
+const MAX_QUANTITY = 10; // Define a max quantity limit
+
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -16,19 +18,38 @@ function Cart() {
     const updated = cartItems.map((item) => {
       if (item.id === id) {
         const newQty = (item.qty || 1) + delta;
-        return newQty < 1 ? null : { ...item, qty: newQty };
+  
+        // Ensure the quantity is at least 1 and no more than MAX_QUANTITY (10)
+        if (newQty < 1) {
+          return { ...item, qty: 1 }; // Prevent going below 1
+        } else if (newQty > MAX_QUANTITY) {
+          return { ...item, qty: MAX_QUANTITY }; // Limit to MAX_QUANTITY (10)
+        }
+  
+        return { ...item, qty: newQty };
       }
       return item;
-    }).filter(Boolean);
-
+    }).filter(Boolean); // Filter out null values from the array
+  
     setCartItems(updated);
     localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
   };
+  
+
+  useEffect(() => {
+    const stored = localStorage.getItem("beanbucks_cart");
+    if (stored) {
+      setCartItems(JSON.parse(stored));
+    }
+  }, []);
 
   const handleRemove = (id) => {
     const updated = cartItems.filter((item) => item.id !== id);
     setCartItems(updated);
     localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
+    
+    // Update the cart item count
+    setCartItemCount(); // Will trigger an update in AppContent
   };
 
   const handleClearCart = () => {
@@ -58,13 +79,32 @@ function Cart() {
     fontSize: "1.1rem",
     fontWeight: "bold",
     borderRadius: "6px",
-    cursor: "pointer"
+    cursor: "pointer",
   };
 
   return (
-<div className="main-page-content" style={{ padding: "1rem", paddingTop: "2rem", maxWidth: "600px", margin: "1rem auto 0", fontFamily: "monospace", background: "var(--card)", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-
-      <h1 style={{ textAlign: "center", borderBottom: "2px dashed var(--component-border)", paddingBottom: "1rem", }}>Cart</h1>
+    <div
+      className="main-page-content"
+      style={{
+        padding: "1rem",
+        paddingTop: "2rem",
+        maxWidth: "600px",
+        margin: "1rem auto 0",
+        fontFamily: "monospace",
+        background: "var(--card)",
+        borderRadius: "12px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h1
+        style={{
+          textAlign: "center",
+          borderBottom: "2px dashed var(--component-border)",
+          paddingBottom: "1rem",
+        }}
+      >
+        Cart
+      </h1>
 
       {cartItems.length === 0 ? (
         <p style={{ textAlign: "center" }}>No items in cart.</p>
@@ -79,10 +119,18 @@ function Cart() {
                   borderBottom: "1px dotted var(--component-border)",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.3rem"
+                  gap: "0.3rem",
                 }}
               >
-                <div style={{ fontSize: "1.1rem", fontWeight: "bold", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "bold",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <span>{item.name}</span>
                   <button
                     onClick={() => handleRemove(item.id)}
@@ -92,21 +140,37 @@ function Cart() {
                       color: "var(--danger)",
                       fontWeight: "bold",
                       fontSize: "1.4rem",
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                   >
                     ✕
                   </button>
                 </div>
-                <div>Size: {item.size} | Milk: {item.milk} | Beans: {item.beans}</div>
+                <div>
+                  Size: {item.size} | Milk: {item.milk} | Beans: {item.beans}
+                </div>
                 <div>Shots: {item.shots}</div>
-                {Object.entries(item.syrups || {}).some(([_, count]) => count > 0) && (
-                  <div>Syrups: {Object.entries(item.syrups).filter(([_, count]) => count > 0).map(([syrup, count]) => `${syrup}(${count})`).join(", ")}</div>
+                {Object.entries(item.syrups || {}).some(
+                  ([_, count]) => count > 0
+                ) && (
+                  <div>
+                    Syrups:{" "}
+                    {Object.entries(item.syrups)
+                      .filter(([_, count]) => count > 0)
+                      .map(([syrup, count]) => `${syrup}(${count})`)
+                      .join(", ")}
+                  </div>
                 )}
                 {item.toppings?.length > 0 && (
                   <div>Toppings: {item.toppings.join(", ")}</div>
                 )}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <button onClick={() => updateQuantity(item.id, -1)} style={qtyBtnStyle}>-</button>
                     <span>{item.qty || 1}</span>
@@ -118,14 +182,34 @@ function Cart() {
             ))}
           </div>
 
-          <div style={{ marginTop: "1.5rem", borderTop: "2px dashed var(--component-border)", paddingTop: "1rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: "bold" }}>
+          <div
+            style={{
+              marginTop: "1.5rem",
+              borderTop: "2px dashed var(--component-border)",
+              paddingTop: "1rem",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "1.2rem",
+                fontWeight: "bold",
+              }}
+            >
               <span>Total:</span>
               <span>£{total}</span>
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "2rem" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              marginTop: "2rem",
+            }}
+          >
             <button
               className="btn"
               style={{

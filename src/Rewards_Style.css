@@ -1,143 +1,184 @@
+/* Main rewards container */
 .rewards {
-    padding: 1rem;
-    max-width: 1300px;
-    margin: auto;
-  }
-  
-  .rewards__points-card {
-    background-color: var(--card);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .rewards__points-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary);
-    margin: 0.5rem 0;
-  }
-  
-  .rewards__points-subtext {
-    color: var(--body-text);
-    font-size: 0.95rem;
-  }
-  
-  .rewards__redeem-section {
-    margin-bottom: 2rem;
-  }
-  
-  .rewards__redeem-list {
-    display: flex;
+  padding: 1rem;
+  max-width: 1300px;
+  margin: auto;
+}
+
+/* Current Points Styling */
+.rewards__current-points {
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 3px solid; /* Rank-based border */
+}
+
+/* Points value (big number) */
+.rewards__points-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin: 0.5rem 0;
+}
+
+/* Subtext below points (instructional text) */
+.rewards__points-subtext {
+  color: var(--body-text);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* SPEND POINTS and Rank Progression */
+.rewards__spend-and-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* SPEND POINTS Section */
+.rewards__spend-points {
+  flex: 1;
+  background-color: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.rewards__spend-points h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Rank Progression Section */
+.rewards__rank-progress {
+  flex: 1;
+  background-color: red; /* Temporary red background */
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.rewards__rank-progress h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.rewards__progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #eee;
+  border-radius: 10px;
+  margin-top: 15px;
+  position: relative;
+}
+
+.rewards__progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%; /* Adjust this width for rank progression */
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 10px;
+}
+
+/* Lifetime Points Styling */
+.rewards__lifetime-points {
+  background-color: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Rank Info Modal */
+.rewards__rank-info-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  padding: 1rem;
+}
+
+/* Modal content */
+.rewards__modal-content {
+  background-color: var(--card);
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Close button (X) */
+.rewards__close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  color: var(--danger);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Modal title */
+.rewards__modal-content h3 {
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+}
+
+/* Modal content list */
+.rewards__modal-content ul {
+  text-align: left;
+  margin-top: 1rem;
+  color: var(--text);
+  list-style-type: none;
+  padding-left: 0;
+}
+
+/* Modal content list item */
+.rewards__modal-content li {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+/* Rank Colors */
+.rewards__rank-card.silver {
+  background-color: #C0C0C0;
+  border-color: #B0B0B0;
+}
+
+.rewards__rank-card.gold {
+  background-color: #FFD700;
+  border-color: #DAA520;
+}
+
+.rewards__rank-card.diamond {
+  background-color: #2C97BF;
+  border-color: #1F6C8C;
+}
+
+/* Mobile Layout */
+@media (max-width: 768px) {
+  .rewards__spend-and-progress {
     flex-direction: column;
-    gap: 0.75rem;
   }
   
-  .rewards__reward-card {
-    background-color: var(--card);
-    border-radius: 10px;
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .rewards__spend-points,
+  .rewards__rank-progress {
+    margin-bottom: 1rem;
   }
-  
-  .rewards__reward-info p {
-    color: var(--body-text);
-    font-size: 0.9rem;
-    margin: 0.25rem 0 0;
-  }
-  
-  .rewards__redeem-button {
-    background-color: #444;
-    color: #888;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    border: none;
-    cursor: not-allowed;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-  }
-  
-  .rewards__coming-soon ul {
-    padding-left: 1.5rem;
-  }
-  
-  .rewards__coming-soon li {
-    font-size: 0.95rem;
-    color: var(--list-text);
-  }
-  /* Blur effect when locked */
-.rewards--blurred {
-    filter: blur(6px);
-    pointer-events: none;
-    user-select: none;
-  }
-  
-  /* Lock overlay */
-  .rewards__lock-overlay {
-    position: fixed;
-    left: 0;
-    width: 100vw;
-    height: calc(100vh - 64px);
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 99;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    overflow: hidden;
-  }
-  
-  /* Login/register box */
-  .rewards__lock-box {
-    background: var(--card);
-    color: var(--text);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  .rewards__lock-box h2 {
-    color: var(--heading-color);
-    margin-bottom: 0.5rem;
-  }
-  
-  .rewards__lock-box p {
-    color: var(--body-text);
-    margin-bottom: 1.5rem;
-  }
-  
-  .rewards__lock-cta {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  /* Buttons */
-  .btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: 0.3s;
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  .btn--primary {
-    background-color: var(--primary);
-    color: var(--button-text);
-    border: none;
-  }
-  
-  .btn--outline {
-    background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
-  }
-  
+}

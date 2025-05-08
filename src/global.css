@@ -4,7 +4,10 @@
     --success: #28a745; 
     --danger: #dc3545;
     --info: #17a2b8; 
-    --warning: #ffcf40; 
+    --warning: #ffcf40;
+  --diamond-color: #2C97BF;  /* Diamond - A cool blueish shade */
+  --gold-color: #FFD700;     /* Gold - Classic gold color */
+  --silver-color: #C0C0C0;   /* Silver - Classic silver color */
   }
   
   html[data-theme="dark"] {

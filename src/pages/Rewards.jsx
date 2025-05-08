@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import useFetchWithRetry from "../utils/useFetchWithRetry"; // Custom Hook
+import RetryFallback from "../components/RetryFallback"; // Retry Fallback Component
 import "../Rewards_Style.css";
-import TwoChoicesModal from "../components/TwoChoices"; 
 import { useNavigate } from 'react-router-dom';
 
 function Rewards() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null); // Initialize as null
+    const [showRankInfo, setShowRankInfo] = useState(false); // State to control modal visibility
     const navigate = useNavigate();
 
+    // Check if the user is logged in and retrieve user ID from session storage
     useEffect(() => {
         const storedUser = sessionStorage.getItem("user");
         if (storedUser) {
@@ -14,6 +18,7 @@ function Rewards() {
                 const parsed = JSON.parse(storedUser);
                 if (parsed.role && parsed.role !== "none") {
                     setIsLoggedIn(true);
+                    setUserId(parsed.id); // Set the user ID dynamically
                 }
             } catch {
                 setIsLoggedIn(false);
@@ -22,14 +27,50 @@ function Rewards() {
             setIsLoggedIn(false);
         }
 
-        document.body.style.overflow = isLoggedIn ? 'auto' : 'hidden';
+        document.body.style.overflow = isLoggedIn ? "auto" : "hidden";
         return () => {
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = "auto";
         };
     }, [isLoggedIn]);
 
-    const handleLogin = () => navigate("/login");
-    const handleRegister = () => navigate("/register");
+    // Use the useFetchWithRetry hook to fetch loyalty points data
+    const { data, error, retry, isLoading } = useFetchWithRetry(
+        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`
+    );
+
+    // Debugging: Log the API response to the console
+    useEffect(() => {
+        if (data) {
+            console.log("API Response:", data); // Log the response to see the structure
+        }
+    }, [data]);
+
+    // Handle loading, error, and display data
+    if (error) return <RetryFallback onRetry={retry} />;
+    if (isLoading) return <p>Loading...</p>;
+    if (!data) return null;
+
+    // Membership Status (based on points)
+    const getMembershipLevel = (points) => {
+        if (points >= 1000) return "Diamond Membership";
+        if (points >= 500) return "Gold Membership";
+        if (points >= 300) return "Silver Membership";
+        return "Standard Membership";
+    };
+
+    // Set membership level based on lifetime points
+    const membershipLevel = getMembershipLevel(data.lifetime_points);
+
+    // Rank colors
+    const rankColors = {
+        "Standard Membership": "gray",
+        "Silver Membership": "silver",
+        "Gold Membership": "gold",
+        "Diamond Membership": "#2C97BF", // Custom color for Diamond
+    };
+
+    // Toggle rank information modal
+    const toggleRankInfo = () => setShowRankInfo(!showRankInfo);
 
     return (
         <>
@@ -38,51 +79,66 @@ function Rewards() {
                     title="Please log in to access rewards"
                     confirmLabel="Login"
                     cancelLabel="Register"
-                    onConfirm={handleLogin}
-                    onCancel={handleRegister}
+                    onConfirm={() => navigate("/login")}
+                    onCancel={() => navigate("/register")}
                 />
             )}
 
-            <div className={`rewards ${!isLoggedIn ? 'rewards--blurred' : ''}`}>
+            <div className={`rewards ${!isLoggedIn ? "rewards--blurred" : ""}`}>
                 <h1>Rewards</h1>
 
-                {/* Points Overview */}
-                <section className="rewards__points-card">
-                    <h2>Your Points</h2>
-                    <p className="rewards__points-value">Loading points...</p>
-                    <p className="rewards__points-subtext">Keep sipping to unlock free drinks!</p>
+                {/* Current Points - Main Focus */}
+                <section className="rewards__current-points" style={{ borderColor: rankColors[membershipLevel], backgroundColor: "var(--card)" }}>
+                    <h2>Your Current Points</h2>
+                    <p className="rewards__points-value">{data.loyalty_points} pts</p>
+                    <p className="rewards__points-subtext">
+                        These are your available points for redeeming rewards right now!
+                    </p>
                 </section>
 
-                {/* Redeemable Items */}
-                <section className="rewards__redeem-section">
-                    <h2>Redeem Your Points</h2>
-                    <div className="rewards__redeem-list">
-                        {[{ name: 'Free Small Coffee', cost: 250 }, { name: '50% Off Seasonal Drink', cost: 300 }, { name: 'Free Cookie', cost: 150 }].map((reward, index) => (
-                            <div className="rewards__reward-card" key={index}>
-                                <div className="rewards__reward-info">
-                                    <strong>{reward.name}</strong>
-                                    <p>{reward.cost} pts</p>
-                                </div>
-                                <button className="rewards__redeem-button" disabled>
-                                    Redeem
-                                </button>
-                            </div>
-                        ))}
+                {/* SPEND POINTS and Rank Progression Div */}
+                <section className="rewards__spend-and-progress">
+                    {/* SPEND POINTS Section */}
+                    <div className="rewards__spend-points">
+                        <h2>Your Lifetime Points</h2>
+                        <p className="rewards__points-value">{data.lifetime_points} pts</p>
+                        <p className="rewards__points-subtext">
+                            These are the total points you've earned over time.
+                        </p>
+                    </div>
+
+                    {/* Rank Progression Section */}
+                    <div className="rewards__rank-progress">
+                        <h2>Rank Progression</h2>
                     </div>
                 </section>
 
-                {/* Future Feature Teasers */}
-                <section className="rewards__coming-soon">
-                    <h2>Coming Soon</h2>
-                    <ul>
-                        <li>🎯 Personalized drink recommendations</li>
-                        <li>🎁 Exclusive offers based on your loyalty</li>
-                        <li>🔁 Quick reorder with points</li>
-                    </ul>
-                </section>
+
+                {/* Rank Info Modal */}
+                {showRankInfo && (
+                    <div className="rewards__rank-info-modal">
+                        <div className="rewards__modal-content">
+                            <button
+                                className="rewards__close-btn"
+                                onClick={toggleRankInfo}
+                            >
+                                ✕
+                            </button>
+                            <h3>Membership Ranks</h3>
+                            <ul>
+                                <li><strong>Standard Membership</strong>: Earn points for small rewards (e.g., Free Coffee) - <span style={{ color: "gray" }}>Gray</span></li>
+                                <li><strong>Silver Membership</strong>: Get bigger rewards like 50% off seasonal drinks - <span style={{ color: "silver" }}>Silver</span></li>
+                                <li><strong>Gold Membership</strong>: Unlock VIP rewards and discounts - <span style={{ color: "gold" }}>Gold</span></li>
+                                <li><strong>Diamond Membership</strong>: Enjoy exclusive benefits and VIP access - <span style={{ color: "#2C97BF" }}>Diamond</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
+
+
 }
 
 export default Rewards;

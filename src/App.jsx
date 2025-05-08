@@ -77,7 +77,7 @@ function AppContent() {
             element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}
           />          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart" element={<Cart cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-code" element={<VerifyCode />} />
           <Route path="/store" element={<Store />} />
@@ -110,7 +110,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<Cart cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
