@@ -4,6 +4,7 @@ import RetryFallback from "../../components/RetryFallback";
 import Toast from "../../components/Toast";
 import TwoChoicesModal from "../../components/TwoChoices";
 import MenuItemsTab from "../../components/MenuItemsTab"; 
+import TemplateTab from "../../components/TemplateTab";
 import {
   Box,
   Select,
@@ -449,8 +450,7 @@ function ManageMenu() {
               )}
               {activeTab === 3 && (
                 <>
-                  <h2>Manage Seasonal Templates</h2>
-                  <p>Switch between different saved menu templates.</p>
+                  <TemplateTab storeId={storeId} setToast={setToast} />
                 </>
               )}
             </>
