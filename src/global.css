@@ -161,3 +161,6 @@ html > body > .MuiDataGrid-columnHeaderTitle {
 .row-unverified {
   background-color: rgba(255, 234, 138, 0.4) !important; /* light yellow */
 }
+#selected-payment {
+  margin: 0 !important;
+}

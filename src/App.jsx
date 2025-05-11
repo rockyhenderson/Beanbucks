@@ -26,6 +26,9 @@ import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import Store from "./pages/Store";
 import Reward from "./pages/Rewards";
+import ConfirmOrder from "./pages/ConfirmOrder"; 
+import BaristaSecurePortal from "./pages/portal/BaristaSecurePortal";
+
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -82,6 +85,10 @@ function AppContent() {
           <Route path="/verify-code" element={<VerifyCode />} />
           <Route path="/store" element={<Store />} />
           <Route path="/rewards" element={<Reward />} />
+          <Route path="/confirm-order" element={<ConfirmOrder />} />
+          <Route path="/portal/barista" element={<BaristaSecurePortal />} />
+
+
 
 
           {/* Admin Routes */}
@@ -114,6 +121,10 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/confirm-order" element={<ConfirmOrder />} />
+        <Route path="/portal/barista" element={<BaristaSecurePortal />} />
+
+
         <Route
             path="/order/:type"
             element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}

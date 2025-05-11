@@ -1,55 +1,44 @@
 import React, { useEffect, useState } from "react";
 import TwoChoicesModal from "../components/TwoChoices";
+import { useNavigate } from "react-router-dom";
 
-const MAX_QUANTITY = 10; // Define a max quantity limit
+const MAX_QUANTITY = 10;
+
+const priceModifiers = {
+  size: { Small: 0, Medium: 0.5, Large: 1.0 },
+  milk: { Whole: 0, Oat: 0.4, Soy: 0.4, Almond: 0.4 },
+  beans: { Normal: 0, Decaf: 0.3 },
+  shot: 0.5,
+  syrup: 0.3,
+  topping: 0.4,
+};
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const stored = localStorage.getItem("beanbucks_cart");
-    if (stored) {
-      setCartItems(JSON.parse(stored));
-    }
+    if (stored) setCartItems(JSON.parse(stored));
   }, []);
 
   const updateQuantity = (id, delta) => {
     const updated = cartItems.map((item) => {
       if (item.id === id) {
         const newQty = (item.qty || 1) + delta;
-  
-        // Ensure the quantity is at least 1 and no more than MAX_QUANTITY (10)
-        if (newQty < 1) {
-          return { ...item, qty: 1 }; // Prevent going below 1
-        } else if (newQty > MAX_QUANTITY) {
-          return { ...item, qty: MAX_QUANTITY }; // Limit to MAX_QUANTITY (10)
-        }
-  
-        return { ...item, qty: newQty };
+        return { ...item, qty: Math.max(1, Math.min(MAX_QUANTITY, newQty)) };
       }
       return item;
-    }).filter(Boolean); // Filter out null values from the array
-  
+    });
     setCartItems(updated);
     localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
   };
-  
-
-  useEffect(() => {
-    const stored = localStorage.getItem("beanbucks_cart");
-    if (stored) {
-      setCartItems(JSON.parse(stored));
-    }
-  }, []);
 
   const handleRemove = (id) => {
     const updated = cartItems.filter((item) => item.id !== id);
     setCartItems(updated);
     localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
-    
-    // Update the cart item count
-    setCartItemCount(); // Will trigger an update in AppContent
   };
 
   const handleClearCart = () => {
@@ -60,11 +49,14 @@ function Cart() {
 
   const getItemTotal = (item) => {
     const base = parseFloat(item.price) || 2.5;
-    const shotCost = 0.5 * (item.shots - 1);
-    const syrupCount = Object.values(item.syrups || {}).reduce((sum, n) => sum + n, 0);
-    const syrupCost = 0.3 * syrupCount;
-    const toppingCost = 0.4 * (item.toppings?.length || 0);
-    const unitPrice = base + shotCost + syrupCost + toppingCost;
+    const size = priceModifiers.size[item.size] || 0;
+    const milk = priceModifiers.milk[item.milk] || 0;
+    const beans = priceModifiers.beans[item.beans] || 0;
+    const shots = Math.max(0, item.shots - 1) * priceModifiers.shot;
+    const syrups = Object.values(item.syrups || {}).reduce((sum, c) => sum + c, 0) * priceModifiers.syrup;
+    const toppings = (item.toppings?.length || 0) * priceModifiers.topping;
+
+    const unitPrice = base + size + milk + beans + shots + syrups + toppings;
     return (unitPrice * (item.qty || 1)).toFixed(2);
   };
 
@@ -111,115 +103,92 @@ function Cart() {
       ) : (
         <>
           <div className="receipt-items">
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  padding: "0.75rem 0",
-                  borderBottom: "1px dotted var(--component-border)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.3rem",
-                }}
-              >
+            {cartItems.map((item) => {
+              const syrupCount = Object.values(item.syrups || {}).reduce((sum, n) => sum + n, 0);
+              return (
                 <div
+                  key={item.id}
                   style={{
-                    fontSize: "1.1rem",
-                    fontWeight: "bold",
+                    padding: "0.75rem 0",
+                    borderBottom: "1px dotted var(--component-border)",
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    flexDirection: "column",
+                    gap: "0.3rem",
                   }}
                 >
-                  <span>{item.name}</span>
-                  <button
-                    onClick={() => handleRemove(item.id)}
+                  <div
                     style={{
-                      border: "none",
-                      background: "none",
-                      color: "var(--danger)",
+                      fontSize: "1.1rem",
                       fontWeight: "bold",
-                      fontSize: "1.4rem",
-                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                     }}
                   >
-                    ✕
-                  </button>
-                </div>
-                <div>
-                  Size: {item.size} | Milk: {item.milk} | Beans: {item.beans}
-                </div>
-                <div>Shots: {item.shots}</div>
-                {Object.entries(item.syrups || {}).some(
-                  ([_, count]) => count > 0
-                ) && (
+                    <span>{item.name}</span>
+                    <button
+                      onClick={() => handleRemove(item.id)}
+                      style={{
+                        border: "none",
+                        background: "none",
+                        color: "var(--danger)",
+                        fontWeight: "bold",
+                        fontSize: "1.4rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
                   <div>
-                    Syrups:{" "}
-                    {Object.entries(item.syrups)
-                      .filter(([_, count]) => count > 0)
-                      .map(([syrup, count]) => `${syrup}(${count})`)
-                      .join(", ")}
+                    Size: {item.size}
+                    {priceModifiers.size[item.size] > 0 && ` (+£${priceModifiers.size[item.size].toFixed(2)})`}
+                    {" | "}Milk: {item.milk}
+                    {priceModifiers.milk[item.milk] > 0 && ` (+£${priceModifiers.milk[item.milk].toFixed(2)})`}
+                    {" | "}Beans: {item.beans}
+                    {priceModifiers.beans[item.beans] > 0 && ` (+£${priceModifiers.beans[item.beans].toFixed(2)})`}
                   </div>
-                )}
-                {item.toppings?.length > 0 && (
-                  <div>Toppings: {item.toppings.join(", ")}</div>
-                )}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <button onClick={() => updateQuantity(item.id, -1)} style={qtyBtnStyle}>-</button>
-                    <span>{item.qty || 1}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} style={qtyBtnStyle}>+</button>
+
+                  <div>
+                    Shots: {item.shots}
+                    {item.shots > 1 && ` (+£${((item.shots - 1) * priceModifiers.shot).toFixed(2)})`}
                   </div>
-                  <div style={{ fontWeight: "bold" }}>£{getItemTotal(item)}</div>
+
+                  {syrupCount > 0 && (
+                    <div>
+                      Syrups: {Object.entries(item.syrups).filter(([_, c]) => c > 0).map(([s, c]) => `${s}(${c})`).join(", ")} (+£{(syrupCount * priceModifiers.syrup).toFixed(2)})
+                    </div>
+                  )}
+
+                  {item.toppings?.length > 0 && (
+                    <div>
+                      Toppings: {item.toppings.join(", ")} (+£{(item.toppings.length * priceModifiers.topping).toFixed(2)})
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button onClick={() => updateQuantity(item.id, -1)} style={qtyBtnStyle}>−</button>
+                      <span>{item.qty || 1}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} style={qtyBtnStyle}>+</button>
+                    </div>
+                    <strong>£{getItemTotal(item)}</strong>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div
-            style={{
-              marginTop: "1.5rem",
-              borderTop: "2px dashed var(--component-border)",
-              paddingTop: "1rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-              }}
-            >
-              <span>Total:</span>
-              <span>£{total}</span>
-            </div>
+          <div style={{ marginTop: "1.5rem", borderTop: "2px dashed var(--component-border)", paddingTop: "1rem", display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "1.2rem" }}>
+            <span>Total:</span>
+            <span>£{total}</span>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              marginTop: "2rem",
-            }}
-          >
+          <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
             <button
               className="btn"
-              style={{
-                backgroundColor: "var(--danger)",
-                color: "white",
-                border: "none",
-                padding: "0.75rem 1.5rem",
-                borderRadius: "8px",
-                fontWeight: 600,
-              }}
+              style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "0.75rem 1.5rem", borderRadius: "8px", fontWeight: 600 }}
               onClick={() => setShowClearConfirm(true)}
             >
               Clear Cart
@@ -227,15 +196,8 @@ function Cart() {
 
             <button
               className="btn"
-              style={{
-                backgroundColor: "var(--primary)",
-                color: "var(--button-text)",
-                border: "none",
-                padding: "0.75rem 1.5rem",
-                borderRadius: "8px",
-                fontWeight: 600,
-              }}
-              onClick={() => alert("Checkout coming soon!")}
+              style={{ backgroundColor: "var(--primary)", color: "var(--button-text)", border: "none", padding: "0.75rem 1.5rem", borderRadius: "8px", fontWeight: 600 }}
+              onClick={() => navigate("/confirm-order")}
             >
               Proceed to Checkout
             </button>
