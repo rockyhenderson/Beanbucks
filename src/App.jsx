@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   BrowserRouter as Router,
@@ -26,9 +25,8 @@ import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import Store from "./pages/Store";
 import Reward from "./pages/Rewards";
-import ConfirmOrder from "./pages/ConfirmOrder"; 
+import ConfirmOrder from "./pages/ConfirmOrder";
 import BaristaSecurePortal from "./pages/portal/BaristaSecurePortal";
-
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -47,6 +45,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isPortalRoute = location.pathname.startsWith("/portal");
   const isDesktop = useMediaQuery("(min-width:900px)");
 
   const getCartItemCount = () => {
@@ -57,39 +56,54 @@ function AppContent() {
     return itemCount;
   };
 
-
   const [cartItemCount, setCartItemCount] = useState(getCartItemCount());
 
   const updateCartItemCount = () => {
     setCartItemCount(getCartItemCount());
   };
-  console.log("❌setCartItemCount in AppContent:", setCartItemCount);
+
+  const shouldShowUI = !isPortalRoute;
+
   return isAdminRoute && isDesktop ? (
     <div style={{ display: "flex" }}>
-      <AdminNavbar cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />
+      {shouldShowUI && (
+        <AdminNavbar
+          cartItemCount={cartItemCount}
+          setCartItemCount={setCartItemCount}
+        />
+      )}
       <div style={{ flex: 1 }}>
         <Routes>
           {/* Regular Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/order" element={<Order />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route
+            path="/cart"
+            element={
+              <Cart
+                cartItemCount={cartItemCount}
+                setCartItemCount={setCartItemCount}
+              />
+            }
+          />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/order/:type"
-            element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}
-          />          <Route path="/reset-password" element={<ResetPassword />} />
+            element={
+              <OrderCategory
+                cartItemCount={cartItemCount}
+                setCartItemCount={setCartItemCount}
+              />
+            }
+          />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/cart" element={<Cart cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />} />
-          <Route path="/register" element={<Register />} />
           <Route path="/verify-code" element={<VerifyCode />} />
           <Route path="/store" element={<Store />} />
           <Route path="/rewards" element={<Reward />} />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
           <Route path="/portal/barista" element={<BaristaSecurePortal />} />
-
-
-
 
           {/* Admin Routes */}
           <Route path="/admin" element={<BeanAdmin />} />
@@ -101,39 +115,52 @@ function AppContent() {
           <Route path="/admin/adminstock" element={<AdminStock />} />
           <Route path="/quarry" element={<Quarry />} />
         </Routes>
-        <Footer />
-        <DevToolsPanel />
+        {shouldShowUI && <Footer />}
+        {shouldShowUI && <DevToolsPanel />}
       </div>
     </div>
   ) : (
     <>
-      {isAdminRoute ? (
-        <AdminNavbar />
-      ) : (
-        <Navbar cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />
-
-
-      )}
+      {shouldShowUI &&
+        (isAdminRoute ? (
+          <AdminNavbar />
+        ) : (
+          <Navbar
+            cartItemCount={cartItemCount}
+            setCartItemCount={setCartItemCount}
+          />
+        ))}
       <Routes>
+        {/* Regular Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/cart" element={<Cart cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />} />
+        <Route
+          path="/cart"
+          element={
+            <Cart
+              cartItemCount={cartItemCount}
+              setCartItemCount={setCartItemCount}
+            />
+          }
+        />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/portal/barista" element={<BaristaSecurePortal />} />
-
-
         <Route
-            path="/order/:type"
-            element={<OrderCategory cartItemCount={cartItemCount} setCartItemCount={setCartItemCount} />}
-          />    
+          path="/order/:type"
+          element={
+            <OrderCategory
+              cartItemCount={cartItemCount}
+              setCartItemCount={setCartItemCount}
+            />
+          }
+        />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/store" element={<Store />} />
         <Route path="/rewards" element={<Reward />} />
-
 
         {/* Admin Routes */}
         <Route path="/admin" element={<BeanAdmin />} />
@@ -145,8 +172,8 @@ function AppContent() {
         <Route path="/admin/adminstock" element={<AdminStock />} />
         <Route path="/quarry" element={<Quarry />} />
       </Routes>
-      <Footer />
-      <DevToolsPanel />
+      {shouldShowUI && <Footer />}
+      {shouldShowUI && <DevToolsPanel />}
     </>
   );
 }

@@ -41,7 +41,7 @@ function BaristaSecurePortal() {
         <Button
           variant="contained"
           size="large"
-          onClick={() => navigate("../portal/BaristaSecurePortal")}
+          onClick={() => navigate("../portal/barista")}
           sx={{ backgroundColor: "var(--primary)", color: "var(--button-text)", fontWeight: 600 }}
         >
           Enter Secure Portal 

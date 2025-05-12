@@ -66,45 +66,68 @@ function ConfirmOrder() {
         return sum + unitPrice * (item.qty || 1);
     }, 0).toFixed(2);
 
-    const handleConfirm = async () => {
-        setConfirming(true);
+const handleConfirm = async () => {
+    setConfirming(true);
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    // Add delay for UI feedback
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const payload = {
-            user_id: userId,
-            store_id: parseInt(selectedStore),
-            pickup_time: new Date().toISOString().slice(0, 19).replace("T", " "), // you can also format this based on your timeSlot logic
-            total_price: parseFloat(total),
-            reward_used: selectedReward || null,
-            cart: cartItems
-        };
+    // Get current time
+    const now = new Date();
 
-        try {
-            const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/CORE_ORDER_DRINK.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
+    // Add 1 hour to the current time to counter the timezone issue
+    now.setHours(now.getHours() + 1); // Add 1 hour
 
-            const result = await response.json();
+    // Determine the number of minutes to add based on the selected time slot
+    let minutesToAdd = 5;  // Default to "ASAP"
+    if (timeSlot === "10min") minutesToAdd = 10;
+    else if (timeSlot === "20min") minutesToAdd = 20;
+    else if (timeSlot === "30min") minutesToAdd = 30;
 
-            if (result.success) {
-                localStorage.removeItem("beanbucks_cart");
-                showToast("success", "Order Placed", "Your order has been successfully placed!");
-                setTimeout(() => navigate("/order-success"), 1500);
-            } else {
-                throw new Error(result.error || "Order failed.");
-            }
+    // Adjust the current time for the selected pickup slot
+    now.setMinutes(now.getMinutes() + minutesToAdd);
 
-        } catch (error) {
-            console.error(error);
-            showToast("error", "Order Failed", error.message);
-            setConfirming(false);
-        }
+    // Format the adjusted pickup time in 'YYYY-MM-DD HH:mm:ss' format
+    const formattedPickupTime = now.toISOString().slice(0, 19).replace("T", " ");
+
+    // Prepare payload with the correct pickup time
+    const payload = {
+        user_id: userId,
+        store_id: parseInt(selectedStore),
+        pickup_time: formattedPickupTime, // Corrected pickup time
+        total_price: parseFloat(total),
+        reward_used: selectedReward || null,
+        cart: cartItems
     };
+
+    try {
+        const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/CORE_ORDER_DRINK.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            localStorage.removeItem("beanbucks_cart");
+            showToast("success", "Order Placed", "Your order has been successfully placed!");
+            setTimeout(() => navigate("/order-success"), 1500);
+        } else {
+            throw new Error(result.error || "Order failed.");
+        }
+
+    } catch (error) {
+        console.error(error);
+        showToast("error", "Order Failed", error.message);
+        setConfirming(false);
+    }
+};
+
+
+
 
 
     const getExpectedPickupTime = () => {
