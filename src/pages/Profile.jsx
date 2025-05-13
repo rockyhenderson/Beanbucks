@@ -15,6 +15,9 @@ import InfoDisplayModal from "../components/InfoDisplayModal";
 import PreferredStoreCard from "../components/PreferredStoreCard";
 import AllergenModal from "../components/AllergenModal";
 
+
+
+
 function Profile() {
   const navigate = useNavigate();
   const [theme, setTheme] = useState("light");

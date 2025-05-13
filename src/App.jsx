@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
 } from "react-router-dom";
-import { useMediaQuery } from "@mui/material";
+import { useMediaQuery, Box } from "@mui/material";
 
 // Components
 import Navbar from "./components/Navbar";
 import AdminNavbar from "./components/AdminNavbar";
 import Footer from "./components/Footer";
 import DevToolsPanel from "./components/DevToolsPanel";
+import ActiveOrderWidget from "./components/ActiveOrderWidget";
+import Toast from "./components/Toast";
 
 // Pages
 import Home from "./pages/Home";
@@ -27,6 +29,7 @@ import Store from "./pages/Store";
 import Reward from "./pages/Rewards";
 import ConfirmOrder from "./pages/ConfirmOrder";
 import BaristaSecurePortal from "./pages/portal/BaristaSecurePortal";
+import ConfirmSuccess from "./pages/ConfirmSuccess";
 
 // Admin Pages
 import BeanAdmin from "./pages/admin/BeanAdmin";
@@ -43,6 +46,7 @@ import "./global.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 function AppContent() {
+  const [globalToast, setGlobalToast] = useState(null);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isPortalRoute = location.pathname.startsWith("/portal");
@@ -61,6 +65,16 @@ function AppContent() {
   const updateCartItemCount = () => {
     setCartItemCount(getCartItemCount());
   };
+  useEffect(() => {
+    window.showGlobalToast = ({ type, title, message }) => {
+      setGlobalToast({ type, title, message });
+
+      // Auto-hide after 4 seconds
+      setTimeout(() => {
+        setGlobalToast(null);
+      }, 4000);
+    };
+  }, []);
 
   const shouldShowUI = !isPortalRoute;
 
@@ -72,6 +86,7 @@ function AppContent() {
           setCartItemCount={setCartItemCount}
         />
       )}
+
       <div style={{ flex: 1 }}>
         <Routes>
           {/* Regular Routes */}
@@ -104,6 +119,7 @@ function AppContent() {
           <Route path="/rewards" element={<Reward />} />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
           <Route path="/portal/barista" element={<BaristaSecurePortal />} />
+          <Route path="/order-success" element={<ConfirmSuccess />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<BeanAdmin />} />
@@ -117,6 +133,9 @@ function AppContent() {
         </Routes>
         {shouldShowUI && <Footer />}
         {shouldShowUI && <DevToolsPanel />}
+        {!isAdminRoute &&
+          !isPortalRoute &&
+          sessionStorage.getItem("activeOrder") && <ActiveOrderWidget />}
       </div>
     </div>
   ) : (
@@ -157,6 +176,7 @@ function AppContent() {
             />
           }
         />
+        <Route path="/order-success" element={<ConfirmSuccess />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/store" element={<Store />} />
@@ -174,6 +194,27 @@ function AppContent() {
       </Routes>
       {shouldShowUI && <Footer />}
       {shouldShowUI && <DevToolsPanel />}
+      {!isAdminRoute &&
+        !isPortalRoute &&
+        sessionStorage.getItem("activeOrder") && <ActiveOrderWidget />}
+      {globalToast && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: "1.25rem",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+          }}
+        >
+          <Toast
+            type={globalToast.type}
+            title={globalToast.title}
+            message={globalToast.message}
+            onClose={() => setGlobalToast(null)}
+          />
+        </Box>
+      )}
     </>
   );
 }

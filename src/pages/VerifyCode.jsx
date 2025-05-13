@@ -134,10 +134,8 @@ function VerifyCode() {
 
       const data = await response.json();
       if (data.success) {
-        sessionStorage.removeItem("reset_email");
-        sessionStorage.removeItem("reset_email_timestamp");
         const token = data.token;
-        navigate(`/reset-password?token=${token}`);
+        navigate(`/reset-password?token=${token}&type=register`);
       } else {
         setToast({
           type: "error",

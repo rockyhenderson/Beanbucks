@@ -21,9 +21,9 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
-      const response = await fetch(
+      const loginRes = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
         {
           method: "POST",
@@ -33,57 +33,45 @@ function Login() {
           body: JSON.stringify({ email, password }),
         }
       );
-
-      const data = await response.json();
-
-      if (data.success) {
-        const user = data.user;
-
+  
+      const loginData = await loginRes.json();
+  
+      if (loginData.success) {
+        const user = loginData.user;
+  
         const roleMap = {
           1: "customer",
           2: "admin",
           3: "manager",
         };
-
+  
         const sessionUser = {
           id: user.id,
           name: user.first_name,
           role: roleMap[user.role] || "unknown",
           email: user.email,
-          ...(user.store_id !== undefined && { store_id: user.store_id }), // ✅ Only add if it exists
-          allergens: user.allergens || [], // ✅ Save allergens too, empty array if none
+          ...(user.store_id !== undefined && { store_id: user.store_id }),
+          allergens: user.allergens || [],
         };
-        
-        
-        
+  
         sessionStorage.setItem("user", JSON.stringify(sessionUser));
-        
-
-        // Clear reset_email and reset_email_time from sessionStorage
         sessionStorage.removeItem("reset_email");
         sessionStorage.removeItem("reset_email_time");
-
+  
         setToast({
           type: "success",
-          title: "Login Successful!",
-          message: `Welcome back, ${sessionUser.name} 👋`,
+          title: "Welcome!",
+          message: `Welcome to BeanBucks, ${user.first_name} 🎉`,
         });
-
+  
         setTimeout(() => {
           navigate("/");
         }, 1000);
       } else {
-        const isPasswordError = data.error?.toLowerCase().includes("password");
-        const isEmailError = data.error?.toLowerCase().includes("email");
-
         setToast({
           type: "error",
-          title: isPasswordError
-            ? "Wrong Password"
-            : isEmailError
-            ? "Wrong Email"
-            : "Login Failed",
-          message: data.error || "Something went wrong during login.",
+          title: "Login Failed",
+          message: loginData.error || "Could not log in.",
         });
       }
     } catch (err) {
@@ -91,12 +79,14 @@ function Login() {
       setToast({
         type: "error",
         title: "Server Error",
-        message: "Unable to connect. Please try again later.",
+        message: "Could not connect to server. Try again later.",
       });
     } finally {
       setLoading(false);
     }
   };
+  
+  
 
   return (
     <Box

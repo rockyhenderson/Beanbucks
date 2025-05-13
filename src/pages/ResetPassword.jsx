@@ -6,8 +6,9 @@ import Toast from "../components/Toast";
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const token = searchParams.get("token");
+  const isRegisterFlow = searchParams.get("type") === "register";  
+  const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,8 +17,14 @@ function ResetPassword() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    setStatus({ type: "warning", message: "Please be cautious. This will overwrite your current password." });
-  }, []);
+    setStatus({
+      type: "warning",
+      message: isRegisterFlow
+        ? "This is your first time setting a password. Make sure it's secure."
+        : "Please be cautious. This will overwrite your current password.",
+    });
+  }, [isRegisterFlow]);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +54,59 @@ function ResetPassword() {
       if (result.success) {
         setStatus({ type: "success", message: "Password reset successful!" });
         setSuccess(true);
-      } else {
+      
+        if (isRegisterFlow) {
+          const email = sessionStorage.getItem("reset_email");
+          if (!email) {
+            setStatus({ type: "error", message: "Missing email for auto-login." });
+            return;
+          }
+      
+          // Attempt login
+          const loginRes = await fetch(
+            "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password: newPassword }),
+            }
+          );
+          const loginData = await loginRes.json();
+      
+          if (loginData.success) {
+            const user = loginData.user;
+      
+            const roleMap = {
+              1: "customer",
+              2: "admin",
+              3: "manager",
+            };
+      
+            const sessionUser = {
+              id: user.id,
+              name: user.first_name,
+              role: roleMap[user.role] || "unknown",
+              email: user.email,
+              ...(user.store_id !== undefined && { store_id: user.store_id }),
+              allergens: user.allergens || [],
+            };
+      
+            sessionStorage.setItem("user", JSON.stringify(sessionUser));
+            sessionStorage.removeItem("reset_email");
+            sessionStorage.removeItem("reset_email_time");
+      
+            setTimeout(() => {
+              navigate("/");
+            }, 1000);
+          } else {
+            setStatus({
+              type: "error",
+              message: "Password set but login failed. Try logging in manually.",
+            });
+          }
+        }
+      }
+       else {
         setStatus({ type: "error", message: result.error || "Something went wrong." });
       }
     } catch (err) {
@@ -87,18 +146,23 @@ function ResetPassword() {
       )}
 
       <Container maxWidth="xs">
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            fontFamily: "'Quicksand', sans-serif",
-            color: "var(--heading-color)",
-            textAlign: "center",
-            marginBottom: "2rem",
-          }}
-        >
-          {success ? "Password Reset" : "Reset Your Password"}
-        </Typography>
+      <Typography
+  variant="h4"
+  sx={{
+    fontWeight: 700,
+    fontFamily: "'Quicksand', sans-serif",
+    color: "var(--heading-color)",
+    textAlign: "center",
+    marginBottom: "2rem",
+  }}
+>
+  {success
+    ? "Password Set"
+    : isRegisterFlow
+    ? "Create Your Password"
+    : "Reset Your Password"}
+</Typography>
+
 
         {!success ? (
           <Box

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Box, Button, Chip } from "@mui/material";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import useFetchWithRetry from "../../utils/useFetchWithRetry";
 import RetryFallback from "../../components/RetryFallback";
 import { useEffect } from "react";
 import TwoChoicesModal from "../../components/TwoChoices";
 import Toast from "../../components/Toast";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Collapse, Typography, IconButton } from '@mui/material';
-
-
-
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Collapse, Typography, IconButton, Tooltip } from "@mui/material";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import BaristaSettingsModal from "../../components/BaristaSettingsModal";
 
 function BaristaSecurePortal() {
   const [orders, setOrders] = useState([]);
@@ -24,9 +24,21 @@ function BaristaSecurePortal() {
   const [showIngredients, setShowIngredients] = useState(false); // local toggle state
   const [expandedDrinks, setExpandedDrinks] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [toastType, setToastType] = useState("error"); // 'error' | 'success'
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(
+    localStorage.getItem("soundEnabled") !== "false" // default to true
+  );
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+  const orderPing = new Audio("/sounds/IncomingOrder.mp3");
+  const orderDoneSound = new Audio("/sounds/OrderDone.mp3");
 
+  orderPing.volume = 1;
+  orderDoneSound.volume = 1;
   const [selectedStore, setSelectedStore] = useState(() => {
-    const user = sessionStorage.getItem('user'); // Get the 'user' string from sessionStorage
+    const user = sessionStorage.getItem("user"); // Get the 'user' string from sessionStorage
     if (user) {
       try {
         const parsedUser = JSON.parse(user); // Parse the string into an object
@@ -51,11 +63,13 @@ function BaristaSecurePortal() {
   const storeId = selectedStore.storeId;
   const fetchLowStockData = async (storeId) => {
     try {
-      const response = await fetch(`http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/lowest_stock.php?store_id=${storeId}`);
+      const response = await fetch(
+        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/lowest_stock.php?store_id=${storeId}`
+      );
 
       // Check if the response is ok (status 200)
       if (!response.ok) {
-        throw new Error('Failed to fetch low stock data');
+        throw new Error("Failed to fetch low stock data");
       }
 
       // Parse JSON response
@@ -63,21 +77,61 @@ function BaristaSecurePortal() {
 
       // Check if the response contains data
       if (data.success) {
-        console.log('Low stock data:', data.data);
-        setLowStock(data.data);  // Update the lowStock state with the fetched data
+        console.log("Low stock data:", data.data);
+        setLowStock(data.data); // Update the lowStock state with the fetched data
       } else {
-        console.error('Error:', data.message); // Log the error message if there's no data
+        console.error("Error:", data.message); // Log the error message if there's no data
       }
     } catch (error) {
-      console.error('Error fetching low stock data:', error);
+      console.error("Error fetching low stock data:", error);
     }
   };
 
-
-
   const { data, error, retry, isLoading } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/request_drinks.php?store_id=${sessionStorage.getItem('selectedStoreId')}`
+    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/request_drinks.php?store_id=${sessionStorage.getItem(
+      "selectedStoreId"
+    )}`
   );
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    setTheme(storedTheme);
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem("soundEnabled", next.toString());
+  };
+  const handleToggleTheme = () => {
+    const html = document.documentElement;
+    const current = html.getAttribute("data-theme") || "light";
+    const next = current === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    setTheme(next);
+  };
+  useEffect(() => {
+    const storedSound = localStorage.getItem("soundEnabled");
+    if (storedSound !== null) setSoundEnabled(storedSound === "true");
+  }, []);
+  useEffect(() => {
+    if (data && data.success && Array.isArray(data.data)) {
+      // 🔔 Detect new orders
+      if (data.data.length > orders.length) {
+        orderPing
+          .play()
+          .catch((err) =>
+            console.warn("🔇 Couldn't play new order sound:", err)
+          );
+      }
+
+      setOrders(data.data); // Update order state
+      setShowErrorToast(false);
+    }
+  }, [data, error]);
+
   useEffect(() => {
     // Fetch store names from the backend
     const fetchStoreNames = async () => {
@@ -123,9 +177,7 @@ function BaristaSecurePortal() {
     };
 
     fetchStoreNames();
-  }, [storeId]);  // Re-run when storeId changes
-
-
+  }, [storeId]); // Re-run when storeId changes
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -135,7 +187,6 @@ function BaristaSecurePortal() {
 
     return () => clearInterval(interval);
   }, [retry]);
-
 
   function extractCustomisationList(obj) {
     if (!obj || typeof obj !== "object") return [];
@@ -168,7 +219,6 @@ function BaristaSecurePortal() {
       setShowErrorToast(false);
     }
 
-
     if (error) {
       console.warn("❌ Error fetching orders");
       setShowErrorToast(true);
@@ -178,7 +228,6 @@ function BaristaSecurePortal() {
     }
   }, [data, error]);
 
-
   // Handle and show toast on any error (including network loss)
   useEffect(() => {
     if (error) {
@@ -186,8 +235,6 @@ function BaristaSecurePortal() {
       setShowErrorToast(true);
     }
   }, [error]);
-
-
 
   const markAsCompleted = (orderId) => {
     setOrders((prev) => prev.filter((order) => order.order_id !== orderId));
@@ -205,8 +252,8 @@ function BaristaSecurePortal() {
           drink_id: drink.drink_id,
           qty: drink.quantity,
           customizations: drink.customizations,
-          base_ingredients: drink.base_ingredients
-        }))
+          base_ingredients: drink.base_ingredients,
+        })),
       };
 
       // console.log("🔍 Sending order payload:", payload);
@@ -224,14 +271,18 @@ function BaristaSecurePortal() {
 
       const result = await res.json();
       if (result.success) {
-        // console.log("✅ Order completed:", result.message);
+        orderDoneSound
+          .play()
+          .catch((err) => console.warn("🔇 Couldn't play done sound:", err));
         markAsCompleted(order.order_id);
       } else {
         console.warn("❌ Error completing order:", result.message);
       }
     } catch (err) {
       console.error("❌ Network error while completing order:", err);
-      setErrorMessage("Order could not be completed. Please try again or check your connection.");
+      setErrorMessage(
+        "Order could not be completed. Please try again or check your connection."
+      );
       setShowErrorToast(true);
     }
   };
@@ -278,8 +329,8 @@ function BaristaSecurePortal() {
     let bgColor = isLate
       ? "var(--danger)"
       : diffMin <= 2
-        ? "var(--warning)"
-        : "var(--success)";
+      ? "var(--warning)"
+      : "var(--success)";
 
     return { label, bgColor };
   };
@@ -297,9 +348,6 @@ function BaristaSecurePortal() {
     }
   }, [data, error]);
 
-
-
-
   useEffect(() => {
     if (storeId) {
       fetchLowStockData(storeId); // Correct function call
@@ -308,11 +356,9 @@ function BaristaSecurePortal() {
     }
   }, [storeId]); // Run the effect whenever storeId changes
 
-
-
   const handleStoreChange = (event) => {
     const newStoreId = Number(event.target.value); // Convert to number
-    sessionStorage.setItem('selectedStoreId', newStoreId); // Update sessionStorage
+    sessionStorage.setItem("selectedStoreId", newStoreId); // Update sessionStorage
     setSelectedStore({ ...selectedStore, storeId: newStoreId }); // Update state
     retry(); // Refetch orders for the new store
   };
@@ -330,7 +376,9 @@ function BaristaSecurePortal() {
       }
 
       // Find the selected store by its ID
-      const selectedStore = storeNames.find((store) => Number(store.id) === Number(currentStoreId));
+      const selectedStore = storeNames.find(
+        (store) => Number(store.id) === Number(currentStoreId)
+      );
 
       if (selectedStore) {
         setStoreName(selectedStore.name); // Update the store name
@@ -341,7 +389,59 @@ function BaristaSecurePortal() {
       }
     }
   }, [storeId, storeNames, role]); // Trigger whenever storeId, storeNames, or role changes
+  const handleDelayOrder = async (order) => {
+    try {
+      const payload = {
+        order_id: order.order_id ?? order.id,
+        store_id: Number(storeId),
+      };
 
+      const response = await fetch(
+        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/delay_order.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setToastType("success");
+        setErrorMessage("Order delayed by 5 minutes!");
+        setShowErrorToast(true);
+
+        setOrders((prevOrders) =>
+          prevOrders.map((o) =>
+            o.order_id === order.order_id
+              ? {
+                  ...o,
+                  delay_count: (o.delay_count || 0) + 1,
+                  pickup_time: new Date(
+                    new Date(o.pickup_time.replace(" ", "T")).getTime() +
+                      5 * 60000
+                  )
+                    .toLocaleString("sv-SE", { hour12: false }) // "YYYY-MM-DD HH:mm:ss"
+                    .replace("T", " "),
+                }
+              : o
+          )
+        );
+      } else {
+        setToastType("error");
+        setErrorMessage(result.message || "⚠️ Failed to delay order.");
+        setShowErrorToast(true);
+      }
+    } catch (error) {
+      console.error("❌ Network error during delay:", error);
+      setToastType("error");
+      setErrorMessage("❌ Network error. Could not delay order.");
+      setShowErrorToast(true);
+    }
+  };
 
   return (
     <Box
@@ -359,7 +459,6 @@ function BaristaSecurePortal() {
         margin: "0 auto",
       }}
     >
-
       {isManager && (
         <FormControl variant="outlined" sx={{ minWidth: 120 }}>
           <InputLabel id="store-select-label">Select Store</InputLabel>
@@ -376,7 +475,6 @@ function BaristaSecurePortal() {
             ))}
           </Select>
         </FormControl>
-
       )}
 
       {showErrorToast && (
@@ -390,12 +488,11 @@ function BaristaSecurePortal() {
           }}
         >
           <Toast
-            type="error"
-            title="Error"
-            message={errorMessage || "Refresh the page. If that doesn't work, contact IT ASAP."}
+            type={toastType} // dynamic based on toastType
+            title={toastType === "success" ? "Success" : "Error"}
+            message={errorMessage}
             onClose={() => setShowErrorToast(false)}
           />
-
         </Box>
       )}
       {error && (
@@ -439,12 +536,13 @@ function BaristaSecurePortal() {
           },
         }}
       >
-
         <div>
           <h1 style={{ margin: 0 }}>Barista Portal</h1>
           {role === "admin" ? (
             // Render this if the user is an admin
-            <h2 style={{ margin: 0 }}>{storeName.replace(/^BeanBucks\s*-\s*/, "")}</h2>
+            <h2 style={{ margin: 0 }}>
+              {storeName.replace(/^BeanBucks\s*-\s*/, "")}
+            </h2>
           ) : (
             // Render this if the user is not an admin
             <h2
@@ -488,8 +586,6 @@ function BaristaSecurePortal() {
           )}
         </div>
 
-
-
         <Button
           variant="outlined"
           onClick={() => navigate(-1)}
@@ -500,7 +596,7 @@ function BaristaSecurePortal() {
             textTransform: "none",
             padding: "0.5rem 1.2rem",
             borderRadius: "8px",
-            '&:hover': {
+            "&:hover": {
               backgroundColor: "rgba(238, 92, 1, 0.1)",
               borderColor: "var(--primary)",
             },
@@ -510,47 +606,72 @@ function BaristaSecurePortal() {
         </Button>
       </Box>
 
-
-      {/* Connection Status */}
+      {/* Status + Settings Row */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "1.5rem",
+          justifyContent: "space-between",
+          gap: "1rem",
+          marginBottom: "0.8rem",
           paddingLeft: {
-            xs: "2rem", // On mobile, add 2rem padding-left
-            sm: "0", // For larger screens, no padding-left
+            xs: "2rem",
+            sm: "0",
           },
           paddingRight: {
-            xs: "2rem", // On mobile, add 2rem padding-right
-            sm: "0", // For larger screens, no padding-right
+            xs: "2rem",
+            sm: "0",
           },
         }}
       >
-
-
-        <div
-          style={{
-            width: "12px",
-            height: "12px",
-            borderRadius: "50%",
-            backgroundColor: error ? "var(--danger)" : "var(--success)",
-          }}
-        />
-
-        <span
-          style={{
-            color: error ? "var(--danger)" : "var(--body-text)",
-            fontWeight: error ? 700 : 500,
-            textTransform: error ? "uppercase" : "none",
-            fontSize: "1rem",
+        {/* Connection Status */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-          {error ? "Disconnected from server" : "Connected to order system"}
-        </span>
-      </Box>
+          <div
+            style={{
+              width: "12px",
+              height: "12px",
+              borderRadius: "50%",
+              backgroundColor: error ? "var(--danger)" : "var(--success)",
+            }}
+          />
+          <span
+            style={{
+              color: error ? "var(--danger)" : "var(--body-text)",
+              fontWeight: error ? 700 : 500,
+              textTransform: error ? "uppercase" : "none",
+              fontSize: "1.4rem",
+            }}
+          >
+            {error ? "Disconnected from server" : "Connected to order system"}
+          </span>
+        </Box>
 
+        {/* Settings Button */}
+        <Button
+          variant="outlined"
+          onClick={() => setSettingsOpen(true)}
+          sx={{
+            fontWeight: 600,
+            borderColor: "var(--primary)",
+            color: "var(--primary)",
+            textTransform: "none",
+            padding: "0.5rem 1.2rem",
+            borderRadius: "8px",
+            "&:hover": {
+              backgroundColor: "rgba(238, 92, 1, 0.1)",
+              borderColor: "var(--primary)",
+            },
+          }}
+        >
+          ⚙️ Settings
+        </Button>
+      </Box>
 
       {/* Orders */}
       <Box
@@ -571,12 +692,7 @@ function BaristaSecurePortal() {
           },
         }}
       >
-
-
-
-        <h2>
-          Incoming Orders ({orders.length})
-        </h2>
+        <h2>Incoming Orders ({orders.length})</h2>
 
         {!data && error ? (
           <RetryFallback onRetry={retry} isLoading={isLoading} />
@@ -586,12 +702,11 @@ function BaristaSecurePortal() {
           orders.map((order) => {
             const { label, bgColor } = getPickupStatus(order.pickup_time);
 
-
             return (
               <Box
-                key={order.id}
+                key={order.order_id} // ✅ FIXED
                 sx={{
-                  backgroundColor: "#fff",
+                  backgroundColor: "--(var(--card))",
                   borderRadius: "10px",
                   padding: "1.5rem",
                   marginBottom: "1.5rem",
@@ -604,27 +719,58 @@ function BaristaSecurePortal() {
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    flexWrap: "wrap",
                     alignItems: "center",
-                    marginBottom: "1rem",
-                    gap: "0.75rem",
+                    flexWrap: "wrap",
+
                   }}
                 >
-                  <h3 style={{ margin: 0, fontWeight: "bold" }}>
-                    Order for {order.customer}
-                  </h3>
-
-                  <Chip
-                    label={label}
-                    sx={{
-                      backgroundColor: bgColor,
-                      color: "#FFFFFF",
+                  {/* Left side: Order for X */}
+                  <h2
+                    style={{
+                      margin: 0,
                       fontWeight: 600,
-                      fontSize: "0.95rem",
-                      padding: "0 12px",
-                      fontWeight: 450,
                     }}
-                  />
+                  >
+                    Order for {order.customer_name || `User #${order.user_id}`}
+                  </h2>
+
+                  {/* Right side: Chip and delay */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                    }}
+                  >
+                    <Chip
+                      label={label}
+                      sx={{
+                        backgroundColor: bgColor,
+                        color: "#FFFFFF",
+                        fontWeight: 600,
+                        fontSize: "0.95rem",
+                        padding: "0 12px",
+                      }}
+                    />
+                    {order.delay_count > 0 && (
+                      <div
+                        style={{
+                          backgroundColor: "#fff3cd",
+                          color: "#8a6d3b",
+                          fontWeight: 600,
+                          fontSize: "0.85rem",
+                          padding: "4px 10px",
+                          borderRadius: "8px",
+                          marginTop: "0.4rem",
+                          display: "inline-block",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        Delayed by {order.delay_count * 5} minute
+                        {order.delay_count > 1 ? "s" : ""}
+                      </div>
+                    )}
+                  </div>
                 </Box>
 
                 {/* Drinks Row */}
@@ -638,30 +784,38 @@ function BaristaSecurePortal() {
                   }}
                 >
                   {order.drinks.map((drink, idx) => {
-                    const key = `${order.id}-${idx}`;
+                    console.log(
+                      "ORDER DEBUG",
+                      order.order_id,
+                      order.delay_count
+                    );
+
+                    const key = `${order.order_id}-${idx}`;
                     const isExpanded = expandedDrinks[key] || false;
 
                     return (
-                      <Box key={`${order.id}-${drink.drink_entry_id || idx}`}
-
+                      <Box
+                        key={`${order.order_id}-${drink.drink_entry_id || idx}`}
                         sx={{
-                          minWidth: "260px",
-                          flex: "1 1 0",
+                          flex: "1 1 100%",
                           position: "relative",
-                          paddingRight: "1rem",
-                          marginRight: "1rem",
+                          paddingRight: { xs: "0", sm: "1rem" },
+                          marginRight: { xs: "0", sm: "1rem" },
                           borderBottom: "1px solid #ddd",
-                          borderRight: "1px solid #ddd",
+                          borderRight: { xs: "none", sm: "1px solid #ddd" },
+                          overflowX: "auto",
+                          paddingBottom: "1rem",
                         }}
                       >
                         <h4 style={{ marginBottom: "0.5rem" }}>{drink.name}</h4>
 
                         <ul style={{ margin: 0, paddingLeft: "1.2rem" }}>
-                          {extractCustomisationList(drink.customizations).map((c, i) => (
-                            <li key={i}>{c}</li>
-                          ))}
+                          {extractCustomisationList(drink.customizations).map(
+                            (c, i) => (
+                              <li key={i}>{c}</li>
+                            )
+                          )}
                         </ul>
-
 
                         <Box
                           sx={{
@@ -687,11 +841,15 @@ function BaristaSecurePortal() {
                               userSelect: "none",
                             }}
                           >
-                            {isExpanded ? "Hide Ingredients" : "View Ingredients"}
+                            {isExpanded
+                              ? "Hide Ingredients"
+                              : "View Ingredients"}
                           </Typography>
                           <ExpandMoreIcon
                             sx={{
-                              transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                              transform: isExpanded
+                                ? "rotate(180deg)"
+                                : "rotate(0deg)",
                               transition: "transform 0.2s ease-in-out",
                             }}
                           />
@@ -713,7 +871,8 @@ function BaristaSecurePortal() {
                               >
                                 <Typography>{ing.name}</Typography>
                                 <Typography sx={{ fontWeight: 600 }}>
-                                  {ing.quantity}{ing.unit}
+                                  {ing.quantity}
+                                  {ing.unit}
                                 </Typography>
                               </Box>
                             ))}
@@ -722,43 +881,64 @@ function BaristaSecurePortal() {
                       </Box>
                     );
                   })}
-
-
                 </Box>
 
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => {
-                    completeOrder(order);
-                  }}
-
-                  className="btn"
+                <Box
                   sx={{
-                    backgroundColor: "var(--success)",
-                    color: "var(--button-text)",
-                    fontWeight: 600,
-                    fontSize: "1.3rem", // Increased font size for bigger text
-                    padding: "1rem 2.5rem", // Increased padding for bigger button
-                    borderRadius: "12px", // Slightly more rounded corners
-                    textTransform: "none",
-                    "&:hover": {
-                      backgroundColor: "#218838",
-                    },
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "1rem",
+                    marginTop: "1rem",
                   }}
                 >
-                  Done
-                </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => completeOrder(order)}
+                    className="btn"
+                    sx={{
+                      backgroundColor: "var(--success)",
+                      color: "var(--button-text)",
+                      fontWeight: 600,
+                      fontSize: "1.3rem",
+                      padding: "1rem 2.5rem",
+                      borderRadius: "12px",
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: "#218838",
+                      },
+                    }}
+                  >
+                    Done
+                  </Button>
 
-
-
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => handleDelayOrder(order)}
+                    sx={{
+                      color: "var(--danger)",
+                      borderColor: "var(--danger)",
+                      fontWeight: 600,
+                      fontSize: "1.3rem",
+                      padding: "1rem 2.5rem",
+                      borderRadius: "12px",
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: "#8B0000",
+                        borderColor: "var(--danger)",
+                      },
+                    }}
+                  >
+                    Delay +5m
+                  </Button>
+                </Box>
               </Box>
             );
           })
-
         )}
-
-
       </Box>
 
       {/* Stock Alerts */}
@@ -770,9 +950,14 @@ function BaristaSecurePortal() {
           padding: "1rem",
           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)", // Added shadow for depth
           marginTop: "1rem",
+          "& p": {
+            color: "#000",
+          },
         }}
       >
-        <h3 style={{ color: "#856404", marginBottom: "0.75rem", fontWeight: 600 }}>
+        <h3
+          style={{ color: "#856404", marginBottom: "0.75rem", fontWeight: 600 }}
+        >
           ⚠️ Stock Alerts
         </h3>
         {isLoading ? (
@@ -796,7 +981,10 @@ function BaristaSecurePortal() {
                 <strong>{item.name}</strong>
               </p>
               <p style={{ marginBottom: 0 }}>
-                {item.stock_quantity} {item.unit} remaining
+                <b>
+                  {item.stock_quantity} {item.unit}
+                </b>{" "}
+                remaining
               </p>
             </Box>
           ))
@@ -806,12 +994,14 @@ function BaristaSecurePortal() {
           </p>
         )}
       </Box>
-
-
-
-
-
-
+      <BaristaSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+      />
     </Box>
   );
 }

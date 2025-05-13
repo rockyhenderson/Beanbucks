@@ -99,6 +99,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
+  max-width: 850px !important;
 }
 
 /* Right side text area */
@@ -561,6 +562,7 @@ h3{
 .modal-left {
   flex: 1;
   min-width: 50%;
+
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
@@ -594,7 +596,7 @@ h3{
 
 .modal-right {
   flex: 1;
-  min-width: 50%;
+  max-width: 850px !important;
   padding: 2rem;
   overflow-y: auto;
   display: flex;

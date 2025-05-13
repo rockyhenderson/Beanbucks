@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  LinearProgress,
-} from "@mui/material";
+import { Box, Typography, IconButton, LinearProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 const TOAST_STYLES = {
@@ -22,7 +17,8 @@ const TOAST_STYLES = {
     textColor: "#750800",
     progressColor: "#E51A3C",
     emoji: "❌",
-    message: "This server couldn't find what went wrong so this is a generic error message.",
+    message:
+      "This server couldn't find what went wrong so this is a generic error message.",
   },
   warning: {
     background: "#FFF5CC",
@@ -43,7 +39,6 @@ const TOAST_STYLES = {
 };
 
 function Toast({ type = "error", title = "Header", message, onClose }) {
-
   const styles = TOAST_STYLES[type] || TOAST_STYLES.error;
   const [progress, setProgress] = useState(100);
 
@@ -57,7 +52,7 @@ function Toast({ type = "error", title = "Header", message, onClose }) {
       setProgress((prev) => {
         if (prev <= 0) {
           clearInterval(timer);
-          if (onClose) onClose();
+          if (onClose) setTimeout(onClose, 0); // ✅ Defer until after render
           return 0;
         }
         return prev - step;
@@ -71,7 +66,11 @@ function Toast({ type = "error", title = "Header", message, onClose }) {
     <Box
       sx={{
         backgroundColor: styles.background,
-        color: styles.textColor,
+        color: "#000",
+        "& h1, & h2, & h3, & h4, & h5, & h6, & p, & span, & strong, & li": {
+          color: "#000",
+        },
+
         borderLeft: `5px solid ${styles.borderColor}`,
         padding: "16px",
         borderRadius: "6px",
@@ -82,21 +81,32 @@ function Toast({ type = "error", title = "Header", message, onClose }) {
       }}
     >
       {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography
           variant="h6"
-          sx={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center" }}
+          sx={{
+            fontSize: "20px",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+          }}
         >
           <span style={{ marginRight: "8px" }}>{styles.emoji}</span> {title}
         </Typography>
-        <IconButton onClick={onClose} size="small" sx={{ color: styles.textColor }}>
+        <IconButton onClick={onClose} size="small" sx={{ color: "#000" }}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
 
       {/* Body */}
       <Typography variant="body2" sx={{ fontSize: "16px", mt: 1 }}>
-      {message || styles.message}
+        {message || styles.message}
       </Typography>
 
       {/* Countdown Progress */}
