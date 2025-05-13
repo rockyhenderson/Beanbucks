@@ -2,76 +2,89 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Slide } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-
 function ActiveOrderWidget() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [animate, setAnimate] = useState(true);
+  const [hasAlerted, setHasAlerted] = useState(false);
   const navigate = useNavigate();
-  const readySound = new Audio("/sounds/OrderReady.mp3");
-  readySound.volume = 1;
-  
-  // Load order info from session
+
   useEffect(() => {
     const stored = sessionStorage.getItem("activeOrder");
     if (stored) setActiveOrder(JSON.parse(stored));
   }, []);
 
-  // One-time pulse animation on mount
   useEffect(() => {
     const timer = setTimeout(() => setAnimate(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-// Countdown timer + ready alert
-useEffect(() => {
+  // ⏱ Poll every 10s to keep widget synced
+
+  useEffect(() => {
     if (!activeOrder) return;
   
-    let interval;
-    let hasAlerted = false;
-  
-    interval = setInterval(() => {
-      const now = new Date();
-      const pickup = new Date(activeOrder.pickupTime.replace(" ", "T"));
-      const diffMs = pickup - now;
-  
-      if (diffMs <= 0 && !hasAlerted) {
-        setTimeLeft("Ready for pickup!");
-  
-        // 🔔 Play ready sound
-        const sound = new Audio("/sounds/OrderReady.mp3");
-        sound.volume = 1;
-        sound.play().catch((err) =>
-          console.warn("🔇 Could not play ready sound:", err)
+    const poll = async () => {
+      try {
+        const response = await fetch(
+          `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/poll_pickup_time.php?order_id=${activeOrder.orderId}`
         );
+        const result = await response.json();
   
-        // ✅ Show toast
-        if (window?.showGlobalToast) {
-          window.showGlobalToast({
-            type: "success",
-            title: "Ready for Pickup",
-            message: `Your order at ${activeOrder.storeName.replace(
-              /^BeanBucks\s*-\s*/,
-              ""
-            )} is now ready!`,
-          });
+        if (
+          result?.success === false &&
+          result?.error === "No orders found" &&
+          !hasAlerted
+        ) {
+          setTimeLeft("Ready for pickup!");
+          setHasAlerted(true);
+          sessionStorage.removeItem("activeOrder");
+  
+          // 🔔 Sound
+          const sound = new Audio("/sounds/OrderReady.mp3");
+          sound.volume = 1;
+          sound.play().catch((err) =>
+            console.warn("🔇 Could not play sound:", err)
+          );
+  
+          // ✅ Toast
+          if (window?.showGlobalToast) {
+            window.showGlobalToast({
+              type: "success",
+              title: "Order Ready",
+              message: "Your BeanBucks order is ready for pickup!",
+            });
+          }
+        } else if (result?.pickup_time) {
+          const now = new Date();
+          const pickup = new Date(result.pickup_time.replace(" ", "T"));
+          const diffMs = pickup - now;
+  
+          if (diffMs < 0) {
+            const lateBy = Math.abs(Math.floor(diffMs / 60000));
+            setTimeLeft(`Late by ${lateBy} min${lateBy === 1 ? "" : "s"}`);
+          } else {
+            const mins = Math.floor(diffMs / 60000);
+            const secs = Math.floor((diffMs % 60000) / 1000);
+            setTimeLeft(`${mins}m ${secs < 10 ? "0" : ""}${secs}s`);
+          }
+        } else {
+          setTimeLeft("Unavailable");
         }
-  
-        hasAlerted = true;
-        clearInterval(interval); // 🛑 Stop further updates
-      } else if (diffMs > 0) {
-        const mins = Math.floor(diffMs / 60000);
-        const secs = Math.floor((diffMs % 60000) / 1000);
-        setTimeLeft(`${mins}m ${secs < 10 ? "0" : ""}${secs}s`);
+      } catch (err) {
+        console.error("Error polling pickup time:", err);
       }
-    }, 1000);
+    };
   
+    // Initial poll and every 10s
+    poll();
+    const interval = setInterval(poll, 10000);
     return () => clearInterval(interval);
-  }, [activeOrder]);
+  }, [activeOrder, hasAlerted]);
   
-  
-  
+
+
 
   const handleViewOrder = () => {
     navigate("/order-success", {
@@ -89,7 +102,7 @@ useEffect(() => {
       sx={{
         position: "fixed",
         bottom: "4rem",
-        right: "1.5rem",
+        left: "1.5rem",
         zIndex: 9999,
       }}
     >
@@ -116,7 +129,11 @@ useEffect(() => {
             <b>Time left:</b>{" "}
             <span
               style={{
-                color: timeLeft === "Ready for pickup!" ? "#2e7d32" : "#388e3c",
+                color: timeLeft.includes("Late")
+                  ? "var(--danger)"
+                  : timeLeft === "Ready for pickup!"
+                  ? "#2e7d32"
+                  : "#388e3c",
                 fontWeight: 600,
               }}
             >

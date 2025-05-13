@@ -259,30 +259,35 @@ function Cart() {
 
             <button
               className="btn"
+              disabled={!!sessionStorage.getItem("activeOrder")}
               style={{
-                backgroundColor: "var(--primary)",
+                backgroundColor: sessionStorage.getItem("activeOrder")
+                  ? "#ccc"
+                  : "var(--primary)",
                 color: "var(--button-text)",
                 border: "none",
                 padding: "0.75rem 1.5rem",
                 borderRadius: "8px",
                 fontWeight: 600,
+                cursor: sessionStorage.getItem("activeOrder")
+                  ? "not-allowed"
+                  : "pointer",
+                opacity: sessionStorage.getItem("activeOrder") ? 0.6 : 1,
               }}
               onClick={() => {
                 const activeOrder = sessionStorage.getItem("activeOrder");
                 if (activeOrder) {
-                  // 🔔 Block navigation and show info toast
                   if (window?.showGlobalToast) {
                     window.showGlobalToast({
                       type: "info",
                       title: "Active Order",
                       message:
-                        "You already have an order in progress. Please wait until it is completed before placing a new one.",
+                        "You already have an order in progress. Please wait until it’s completed before placing another.",
                     });
                   }
                   return;
                 }
 
-                // ✅ Proceed if no active order
                 navigate("/confirm-order");
               }}
             >
