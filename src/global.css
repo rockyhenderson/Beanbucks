@@ -164,3 +164,6 @@ html > body > .MuiDataGrid-columnHeaderTitle {
 #selected-payment {
   margin: 0 !important;
 }
+#no-margin {
+  margin-top: 0 !important;
+}

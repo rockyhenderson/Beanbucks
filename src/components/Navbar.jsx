@@ -51,7 +51,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
   useEffect(() => {
     console.log("Navbar mounted, cart item count:", cartItemCount); // Log cart count
   }, [cartItemCount]);
-  
+
 
   return (
     <>
@@ -107,15 +107,20 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                 Bean{"\n"}Bucks
               </Typography>
 
-              <Box sx={{ position: "relative" }}>
+              <Box
+                component={Link}
+                to="/cart"
+                sx={{
+                  position: "relative",
+                  display: "inline-block",
+                  textDecoration: "none", // Removes blue link style
+                }}
+              >
                 <IconButton
-                  component={Link}
-                  to="/cart"
                   sx={{
                     color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
-                    backgroundColor: location.pathname === "/cart"
-                      ? "rgba(255,255,255,0.2)"
-                      : "transparent",
+                    backgroundColor:
+                      location.pathname === "/cart" ? "rgba(255,255,255,0.2)" : "transparent",
                     borderRadius: "50%",
                     transition: "all 0.2s ease-in-out",
                     "&:hover": {
@@ -135,8 +140,8 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                       backgroundColor: "#fff",
                       color: "var(--primary)",
                       borderRadius: "50%",
-                      minWidth: "24px",  // Increase the size
-                      height: "24px",    // Increase the size
+                      minWidth: "24px",
+                      height: "24px",
                       fontSize: "1rem",
                       fontWeight: "bold",
                       display: "flex",
@@ -148,8 +153,8 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                     {cartItemCount}
                   </Box>
                 )}
-
               </Box>
+
 
             </Box>
 
@@ -207,10 +212,16 @@ function Navbar({ cartItemCount, setCartItemCount }) {
             {/* Icons Right (Desktop) */}
             {/* Icons Right (Desktop) */}
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <Box sx={{ position: "relative" }}>
+              <Box
+                component={Link}
+                to="/cart"
+                sx={{
+                  position: "relative",
+                  display: "inline-block",
+                  textDecoration: "none", // Removes blue link style
+                }}
+              >
                 <IconButton
-                  component={Link}
-                  to="/cart"
                   sx={{
                     color: location.pathname === "/cart" ? "#FFE7D2" : "#FFFFFF",
                     backgroundColor:
@@ -226,28 +237,29 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                 </IconButton>
 
                 {cartItemCount > 0 && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          bottom: 2,
-                          right: 2,
-                          backgroundColor: "#fff",
-                          color: "var(--primary)",
-                          borderRadius: "50%",
-                          minWidth: "24px",  // Increase the size
-                          height: "24px",    // Increase the size
-                          fontSize: "1rem",
-                          fontWeight: "bold",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: "0 0 4px rgba(0,0,0,0.2)",
-                        }}
-                      >
-                        {cartItemCount}
-                      </Box>
-                    )}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 2,
+                      right: 2,
+                      backgroundColor: "#fff",
+                      color: "var(--primary)",
+                      borderRadius: "50%",
+                      minWidth: "24px",
+                      height: "24px",
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    {cartItemCount}
+                  </Box>
+                )}
               </Box>
+
 
               <IconButton
                 component={Link}

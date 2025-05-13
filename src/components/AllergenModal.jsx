@@ -15,20 +15,20 @@ import CloseIcon from "@mui/icons-material/Close";
 
 // Mapping of allergen names to their IDs
 const allergensMap = {
-  "Milk": 1,
-  "Eggs": 2,
-  "Peanuts": 3,
-  "Soy": 4,
+  Milk: 1,
+  Eggs: 2,
+  Peanuts: 3,
+  Soy: 4,
   "Wheat/Gluten": 5,
-  "Sesame": 6,
-  "Coconut": 7,
-  "Oats": 8,
-  "Chocolate": 9,
-  "Corn": 10,
-  "Cinnamon": 11,
+  Sesame: 6,
+  Coconut: 7,
+  Oats: 8,
+  Chocolate: 9,
+  Corn: 10,
+  Cinnamon: 11,
 };
 
-const allergensList = Object.keys(allergensMap); // Extract allergen names as a list
+const allergensList = Object.keys(allergensMap);
 
 const AllergenModal = ({ open, onClose, onSave }) => {
   const [selectedAllergens, setSelectedAllergens] = useState([]);
@@ -42,17 +42,16 @@ const AllergenModal = ({ open, onClose, onSave }) => {
   }, [open]);
 
   const handleToggle = (allergen) => {
-    const allergenId = allergensMap[allergen]; // Get the allergen ID
-    setSelectedAllergens((prevSelected) =>
-      prevSelected.includes(allergenId)
-        ? prevSelected.filter((id) => id !== allergenId)
-        : [...prevSelected, allergenId]
+    const allergenId = allergensMap[allergen];
+    setSelectedAllergens((prev) =>
+      prev.includes(allergenId)
+        ? prev.filter((id) => id !== allergenId)
+        : [...prev, allergenId]
     );
   };
 
   const handleSave = () => {
     const user = JSON.parse(sessionStorage.getItem("user"));
-
     fetch(
       "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_allergens.php",
       {
@@ -60,18 +59,15 @@ const AllergenModal = ({ open, onClose, onSave }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: user.id,
-          allergens: selectedAllergens, // Send allergen IDs
+          allergens: selectedAllergens,
         }),
       }
     )
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          // ✅ update sessionStorage with allergen IDs
           const updatedUser = { ...user, allergens: selectedAllergens };
           sessionStorage.setItem("user", JSON.stringify(updatedUser));
-
-          // ✅ tell parent
           onSave(selectedAllergens);
         } else {
           alert("Failed to update allergens.");
@@ -104,151 +100,120 @@ const AllergenModal = ({ open, onClose, onSave }) => {
           color: "var(--text)",
           borderRadius: isMobile ? 0 : 4,
           p: isMobile ? 2 : 4,
-          width: isMobile ? "100vw" : "60%",
+          width: isMobile ? "100vw" : "600px",
           height: isMobile ? "100vh" : "auto",
-          margin: isMobile ? 0 : "auto",
-          mt: isMobile ? 0 : 10, // ✅ adds margin-top ONLY on desktop
-          overflowY: isMobile ? "scroll" : "auto",
+          m: isMobile ? 0 : "auto",
+          mt: isMobile ? 0 : 10,
+          overflowY: "auto",
+          position: "relative",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          position: "relative",
-          outline: "none",
+          gap: 3,
         }}
       >
-        {/* Top-right Close (X) Button */}
         <IconButton
           onClick={handleTryClose}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            color: "var(--text)",
-          }}
+          sx={{ position: "absolute", top: 8, right: 8, color: "var(--text)" }}
         >
           <CloseIcon />
         </IconButton>
 
-        {/* Header */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            mb: 3,
+            justifyContent: "center", // ✅ centers the whole group
             gap: 1,
+            textAlign: "center",
           }}
         >
-          <Typography variant="h2" component="h2" fontSize="2rem">
-            Allergens
-          </Typography>
+          <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>Allergens</h2>
           <Tooltip title="Select all allergens that apply, then save." arrow>
-            <IconButton
-              sx={{
-                color: "var(--primary)",
-              }}
-            >
-              <InfoOutlinedIcon />
-            </IconButton>
+            <InfoOutlinedIcon sx={{ color: "var(--primary)", cursor: "pointer" }} />
           </Tooltip>
         </Box>
 
-        {/* RED WARNING */}
-        <Typography
+
+        {/* <Typography
           sx={{
             color: "red",
             fontWeight: "bold",
-            fontSize: "1.2rem",
             textAlign: "center",
-            mb: 2,
+            fontSize: "1rem",
           }}
         >
           REMEMBER TO MAKE AN API PULL TO UPDATE THIS
-        </Typography>
+        </Typography> */}
 
-        {/* Toggles */}
         <Box
           sx={{
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
             gap: 2,
-            width: "100%",
           }}
         >
           {allergensList.map((allergen) => {
             const isSelected = selectedAllergens.includes(allergensMap[allergen]);
+
             return (
               <Box
                 key={allergen}
+                onClick={() => handleToggle(allergen)}
                 sx={{
                   backgroundColor: "var(--card)",
                   border: "2px solid var(--component-border)",
                   borderRadius: "16px",
-                  padding: "12px 16px",
-                  minWidth: "150px",
+                  padding: "12px",
+                  minWidth: "140px",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 2,
+                  textAlign: "center",
+                  gap: 1,
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                  "&:hover": {
+                    backgroundColor: "var(--hover-bg, #eee)",
+                  },
                 }}
               >
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    color: "var(--text)",
-                  }}
-                >
-                  {allergen}
-                </Typography>
-
+                <Typography fontWeight={600}>{allergen}</Typography>
                 <Button
-                  onClick={() => handleToggle(allergen)}
                   variant="contained"
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    backgroundColor: isSelected
-                      ? "var(--success)"
-                      : "var(--danger)",
+                    pointerEvents: "none", // ← let clicks pass to parent Box
+                    backgroundColor: isSelected ? "var(--success)" : "var(--danger)",
                     color: "var(--button-text)",
                     borderRadius: "30px",
-                    px: 2,
                     textTransform: "none",
                     fontWeight: "bold",
-                    "&:hover": {
-                      backgroundColor: isSelected
-                        ? "var(--success)"
-                        : "var(--danger)",
-                      opacity: 0.9,
-                    },
+                    px: 2,
                   }}
-                  className="btn"
                 >
                   {isSelected ? (
                     <>
-                      <CheckCircleIcon sx={{ mr: 1 }} />
-                      ON
+                      <CheckCircleIcon sx={{ mr: 1 }} /> ON
                     </>
                   ) : (
                     <>
-                      <CancelIcon sx={{ mr: 1 }} />
-                      OFF
+                      <CancelIcon sx={{ mr: 1 }} /> OFF
                     </>
                   )}
                 </Button>
               </Box>
             );
           })}
+
         </Box>
 
-        {/* Footer Buttons (Save left, Cancel right) */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
             gap: 2,
-            mt: 4,
-            mb: isMobile ? 4 : 0,
+            mt: "auto",
+            mb: isMobile ? 2 : 0,
           }}
         >
           <button className="btn btn--primary" onClick={handleSave}>

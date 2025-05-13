@@ -6,6 +6,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import FastfoodIcon from "@mui/icons-material/Fastfood";
+import Box from "@mui/material/Box";
+
+
+
 
 const ORDERS_PER_PAGE = 5;
 
@@ -18,6 +24,38 @@ const OrderHistoryModal = ({ userId, onClose }) => {
   const [expandedOrder, setExpandedOrder] = useState(null);
 
   const listRef = useRef(null);
+  function getValueFromCustomization(customs, key) {
+    const match = customs?.find((c) => c.startsWith(`${key}:`));
+    return match ? match.split(":")[1].trim() : "";
+  }
+
+  function parseSyrups(customs) {
+    const syrupMap = {
+      Vanilla: 0,
+      Caramel: 0,
+      Hazelnut: 0,
+      Mocha: 0,
+      "Pumpkin Spice": 0,
+    };
+
+    customs?.forEach((line) => {
+      if (line.startsWith("Syrup:")) {
+        const parts = line.replace("Syrup: ", "").split(" x");
+        if (parts.length === 2 && syrupMap.hasOwnProperty(parts[0])) {
+          syrupMap[parts[0]] = parseInt(parts[1]) || 0;
+        }
+      }
+    });
+
+    return syrupMap;
+  }
+
+  function parseToppings(customs) {
+    return customs
+      ?.filter((line) => line.startsWith("Topping:"))
+      .map((line) => line.replace("Topping: ", "")) || [];
+  }
+
 
   useEffect(() => {
     fetch(
@@ -101,7 +139,7 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                   <div
                     key={order.order_id}
                     style={{
-                      background: "#fffaf5",
+                      background: "var(--card)",
                       padding: "1rem 1.5rem",
                       borderRadius: "0.75rem",
                       border: "1px solid var(--component-border)",
@@ -122,10 +160,72 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                       }
                     >
                       <div>
-                        <h3 style={{ marginBottom: "0.4rem" }}>Order #{order.order_id}</h3>
-                        <p style={{ margin: 0 }}><strong>Placed:</strong> {order.order_time}</p>
-                        <p style={{ margin: 0 }}><strong>Total:</strong> £{order.total_price}</p>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: { xs: 0, sm: "1rem" },
+                          }}
+                        >
+                          <Box sx={{ minWidth: { xs: "0", sm: "240px" } }}>
+                            <h3
+                              id="no-margin"
+                              style={{ fontSize: "1.2rem", textAlign: "left", margin: 0 }}
+                            >
+                              Order #{order.order_id} ({order.items.length}{" "}
+                              {order.items.length === 1 ? "item" : "items"})
+                            </h3>
+                          </Box>
+
+                          <button
+                            className="btn btn--outline"
+                            onClick={(e) => {
+                              e.stopPropagation(); // prevent accordion toggle
+
+                              // Transform items to cart format
+                              const cartItems = order.items.map((item) => ({
+                                id: crypto.randomUUID(),
+                                drinkId: item.drink_id || 0, // fallback if drink_id missing
+                                name: item.drink_name,
+                                size: item.size,
+                                milk: getValueFromCustomization(item.customizations, "Milk"),
+                                beans: getValueFromCustomization(item.customizations, "Beans"),
+                                shots: parseInt(getValueFromCustomization(item.customizations, "Shots")) || 0,
+                                syrups: parseSyrups(item.customizations),
+                                toppings: parseToppings(item.customizations),
+                                price: item.price,
+                                description: "", // optional if available
+                                timeAdded: Date.now(),
+                              }));
+
+                              // Wipe and store to localStorage
+                              localStorage.removeItem("beanbucks_cart");
+                              localStorage.setItem("beanbucks_cart", JSON.stringify(cartItems));
+
+                              // Redirect to cart
+                              window.location.href = "/cart";
+                            }}
+                          >
+                            Reorder
+                          </button>
+
+                        </Box>
+
+                        <p
+                          style={{
+                            margin: 0,
+                            color: "var(--body-text)",
+                            lineHeight: "1.4",
+                            textAlign: "left",
+                            marginTop: "0.5rem", // A little spacing from the header group
+                          }}
+                        >
+                          <strong style={{ color: "var(--heading-color)" }}>Placed:</strong>{" "}
+                          {order.order_time}
+                        </p>
                       </div>
+
                       {isExpanded ? (
                         <ExpandLessIcon style={{ color: "var(--text)" }} />
                       ) : (
@@ -141,7 +241,8 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                         transition: "max-height 0.4s ease-in-out",
                       }}
                     >
-                      <Divider style={{ margin: "1rem 0" }} />
+                      <Divider style={{ margin: "1rem 0",borderColor:"var(--component-border)" }} />
+
                       {order.items.map((item, i) => {
                         const filteredCustoms = item.customizations?.filter((line) => {
                           const trimmed = line.trim();
@@ -153,31 +254,57 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                         }) || [];
 
                         return (
-                          <div
-                            key={i}
-                            style={{
-                              marginBottom: i < order.items.length - 1 ? "1.5rem" : "0",
-                            }}
-                          >
-                            <p style={{ fontWeight: 600 }}>
-                              {item.drink_name} — {item.size} — £{item.price}
-                            </p>
-                            {filteredCustoms.length > 0 ? (
-                              <div
+                          <div key={i} style={{ marginBottom: "1.5rem" }}>
+                            {/* Icon + Title in SAME row */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              {item.size ? (
+                                <LocalCafeIcon style={{ color: "var(--primary)" }} />
+                              ) : (
+                                <FastfoodIcon style={{ color: "var(--primary)" }} />
+                              )}
+                              <p
                                 style={{
-                                  display: "flex",
-                                  flexWrap: "wrap",
-                                  gap: "0.5rem",
-                                  marginLeft: "0.5rem",
-                                  marginTop: "0.25rem",
+                                  fontWeight: 600,
+                                  margin: 0,
+                                  textAlign: "left",
                                 }}
                               >
-                                {filteredCustoms.map((c, j) => (
+                                {item.drink_name} — £{item.price}
+                              </p>
+                            </div>
+
+                            {/* Pills (size + customizations) BELOW the title row */}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.5rem",
+                                marginTop: "0.5rem",
+                              }}
+                            >
+                              {item.size && (
+                                <span
+                                  style={{
+                                    backgroundColor: "var(--accent)",
+                                    color: "#000",
+                                    padding: "0.35rem 0.75rem",
+                                    borderRadius: "999px",
+                                    fontSize: "0.85rem",
+                                    fontWeight: 500,
+                                    lineHeight: 1.4,
+                                  }}
+                                >
+                                  {item.size}
+                                </span>
+                              )}
+
+                              {filteredCustoms.length > 0 ? (
+                                filteredCustoms.map((c, j) => (
                                   <span
                                     key={j}
                                     style={{
-                                      backgroundColor: "#5A4A42",
-                                      color: "#fff",
+                                      backgroundColor: "var(--accent)",
+                                      color: "#000",
                                       padding: "0.35rem 0.75rem",
                                       borderRadius: "999px",
                                       fontSize: "0.85rem",
@@ -187,25 +314,35 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                                   >
                                     {c}
                                   </span>
-                                ))}
-                              </div>
-                            ) : (
-                              <p
-                                style={{
-                                  fontSize: "0.9rem",
-                                  color: "var(--body-text)",
-                                  marginLeft: "1rem",
-                                }}
-                              >
-                                No customizations
-                              </p>
-                            )}
+                                ))
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "0.9rem",
+                                    color: "var(--body-text)",
+                                    marginTop: "0.25rem",
+                                  }}
+                                >
+                                  No customizations
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Divider between drinks */}
                             {i < order.items.length - 1 && (
-                              <Divider style={{ margin: "1rem 0" }} />
+                              <Divider style={{ margin: "1rem 0", borderColor: "var(--component-border)" }} />
                             )}
                           </div>
                         );
                       })}
+
+                      {/* ✅ Total at bottom — ONCE */}
+                      <Divider style={{ margin: "1.5rem 0 1rem", borderColor: "var(--component-border)" }} />
+                      <p style={{ fontWeight: 600, color: "var(--text)", fontSize: "1.1rem" }}>
+                        <strong>Total:</strong> £{order.total_price}
+                      </p>
+
+
                     </div>
                   </div>
                 );

@@ -13,7 +13,7 @@ const priceModifiers = {
   topping: 0.4,
 };
 
-function Cart() {
+function Cart({ cartItemCount, setCartItemCount }) {
   const [cartItems, setCartItems] = useState([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const navigate = useNavigate();
@@ -31,21 +31,21 @@ function Cart() {
       }
       return item;
     });
-    setCartItems(updated);
-    localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
+    syncCart(updated);
   };
+
 
   const handleRemove = (id) => {
     const updated = cartItems.filter((item) => item.id !== id);
-    setCartItems(updated);
-    localStorage.setItem("beanbucks_cart", JSON.stringify(updated));
+    syncCart(updated);
   };
 
+
   const handleClearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem("beanbucks_cart");
+    syncCart([]);
     setShowClearConfirm(false);
   };
+
 
   const getItemTotal = (item) => {
     const base = parseFloat(item.price) || 2.5;
@@ -76,6 +76,14 @@ function Cart() {
     fontWeight: "bold",
     borderRadius: "6px",
     cursor: "pointer",
+  };
+  const syncCart = (newCart) => {
+    setCartItems(newCart);
+    localStorage.setItem("beanbucks_cart", JSON.stringify(newCart));
+    if (setCartItemCount) {
+      const count = newCart.reduce((sum, item) => sum + (item.qty || 1), 0);
+      setCartItemCount(count);
+    }
   };
 
   return (

@@ -142,6 +142,8 @@ function Store() {
                     className="btn btn--primary"
                     disabled={!isStoreCurrentlyOpen(store)}
                     onClick={() => {
+                      localStorage.removeItem("beanbucks_cart");
+
                       sessionStorage.setItem("selectedStoreId", store.id);
                       setToast({
                         type: "success",
@@ -252,8 +254,8 @@ function Store() {
                         transition: "0.2s",
                       }}
                       onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--background)")
+                      (e.currentTarget.style.backgroundColor =
+                        "var(--background)")
                       }
                       onMouseLeave={(e) =>
                         (e.currentTarget.style.backgroundColor = "transparent")
@@ -318,6 +320,7 @@ function Store() {
           title={selectedStore.store_name}
           onClose={() => setSelectedStore(null)}
           onConfirm={() => {
+            localStorage.removeItem("beanbucks_cart");
             sessionStorage.setItem("selectedStoreId", selectedStore.id);
             setToast({
               type: "success",
@@ -326,9 +329,9 @@ function Store() {
             });
             setSelectedStore(null);
             setJustSelectedStore(selectedStore); // Fix: use selectedStore not store
-        
+
           }}
-          
+
           confirmLabel="Select This Store"
         >
           <p>
