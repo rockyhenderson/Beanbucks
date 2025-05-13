@@ -53,14 +53,18 @@ function Cart() {
     const milk = priceModifiers.milk[item.milk] || 0;
     const beans = priceModifiers.beans[item.beans] || 0;
     const shots = Math.max(0, item.shots - 1) * priceModifiers.shot;
-    const syrups = Object.values(item.syrups || {}).reduce((sum, c) => sum + c, 0) * priceModifiers.syrup;
+    const syrups =
+      Object.values(item.syrups || {}).reduce((sum, c) => sum + c, 0) *
+      priceModifiers.syrup;
     const toppings = (item.toppings?.length || 0) * priceModifiers.topping;
 
     const unitPrice = base + size + milk + beans + shots + syrups + toppings;
     return (unitPrice * (item.qty || 1)).toFixed(2);
   };
 
-  const total = cartItems.reduce((sum, item) => sum + parseFloat(getItemTotal(item)), 0).toFixed(2);
+  const total = cartItems
+    .reduce((sum, item) => sum + parseFloat(getItemTotal(item)), 0)
+    .toFixed(2);
 
   const qtyBtnStyle = {
     width: "32px",
@@ -104,7 +108,10 @@ function Cart() {
         <>
           <div className="receipt-items">
             {cartItems.map((item) => {
-              const syrupCount = Object.values(item.syrups || {}).reduce((sum, n) => sum + n, 0);
+              const syrupCount = Object.values(item.syrups || {}).reduce(
+                (sum, n) => sum + n,
+                0
+              );
               return (
                 <div
                   key={item.id}
@@ -143,35 +150,67 @@ function Cart() {
 
                   <div>
                     Size: {item.size}
-                    {priceModifiers.size[item.size] > 0 && ` (+£${priceModifiers.size[item.size].toFixed(2)})`}
+                    {priceModifiers.size[item.size] > 0 &&
+                      ` (+£${priceModifiers.size[item.size].toFixed(2)})`}
                     {" | "}Milk: {item.milk}
-                    {priceModifiers.milk[item.milk] > 0 && ` (+£${priceModifiers.milk[item.milk].toFixed(2)})`}
+                    {priceModifiers.milk[item.milk] > 0 &&
+                      ` (+£${priceModifiers.milk[item.milk].toFixed(2)})`}
                     {" | "}Beans: {item.beans}
-                    {priceModifiers.beans[item.beans] > 0 && ` (+£${priceModifiers.beans[item.beans].toFixed(2)})`}
+                    {priceModifiers.beans[item.beans] > 0 &&
+                      ` (+£${priceModifiers.beans[item.beans].toFixed(2)})`}
                   </div>
 
                   <div>
                     Shots: {item.shots}
-                    {item.shots > 1 && ` (+£${((item.shots - 1) * priceModifiers.shot).toFixed(2)})`}
+                    {item.shots > 1 &&
+                      ` (+£${((item.shots - 1) * priceModifiers.shot).toFixed(
+                        2
+                      )})`}
                   </div>
 
                   {syrupCount > 0 && (
                     <div>
-                      Syrups: {Object.entries(item.syrups).filter(([_, c]) => c > 0).map(([s, c]) => `${s}(${c})`).join(", ")} (+£{(syrupCount * priceModifiers.syrup).toFixed(2)})
+                      Syrups:{" "}
+                      {Object.entries(item.syrups)
+                        .filter(([_, c]) => c > 0)
+                        .map(([s, c]) => `${s}(${c})`)
+                        .join(", ")}{" "}
+                      (+£{(syrupCount * priceModifiers.syrup).toFixed(2)})
                     </div>
                   )}
 
                   {item.toppings?.length > 0 && (
                     <div>
-                      Toppings: {item.toppings.join(", ")} (+£{(item.toppings.length * priceModifiers.topping).toFixed(2)})
+                      Toppings: {item.toppings.join(", ")} (+£
+                      {(item.toppings.length * priceModifiers.topping).toFixed(
+                        2
+                      )}
+                      )
                     </div>
                   )}
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginTop: "0.5rem",
+                    }}
+                  >
                     <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button onClick={() => updateQuantity(item.id, -1)} style={qtyBtnStyle}>−</button>
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        style={qtyBtnStyle}
+                      >
+                        −
+                      </button>
                       <span>{item.qty || 1}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)} style={qtyBtnStyle}>+</button>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        style={qtyBtnStyle}
+                      >
+                        +
+                      </button>
                     </div>
                     <strong>£{getItemTotal(item)}</strong>
                   </div>
@@ -180,15 +219,39 @@ function Cart() {
             })}
           </div>
 
-          <div style={{ marginTop: "1.5rem", borderTop: "2px dashed var(--component-border)", paddingTop: "1rem", display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "1.2rem" }}>
+          <div
+            style={{
+              marginTop: "1.5rem",
+              borderTop: "2px dashed var(--component-border)",
+              paddingTop: "1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+              fontSize: "1.2rem",
+            }}
+          >
             <span>Total:</span>
             <span>£{total}</span>
           </div>
 
-          <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div
+            style={{
+              marginTop: "2rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
             <button
               className="btn"
-              style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "0.75rem 1.5rem", borderRadius: "8px", fontWeight: 600 }}
+              style={{
+                backgroundColor: "var(--danger)",
+                color: "white",
+                border: "none",
+                padding: "0.75rem 1.5rem",
+                borderRadius: "8px",
+                fontWeight: 600,
+              }}
               onClick={() => setShowClearConfirm(true)}
             >
               Clear Cart
@@ -196,8 +259,32 @@ function Cart() {
 
             <button
               className="btn"
-              style={{ backgroundColor: "var(--primary)", color: "var(--button-text)", border: "none", padding: "0.75rem 1.5rem", borderRadius: "8px", fontWeight: 600 }}
-              onClick={() => navigate("/confirm-order")}
+              style={{
+                backgroundColor: "var(--primary)",
+                color: "var(--button-text)",
+                border: "none",
+                padding: "0.75rem 1.5rem",
+                borderRadius: "8px",
+                fontWeight: 600,
+              }}
+              onClick={() => {
+                const activeOrder = sessionStorage.getItem("activeOrder");
+                if (activeOrder) {
+                  // 🔔 Block navigation and show info toast
+                  if (window?.showGlobalToast) {
+                    window.showGlobalToast({
+                      type: "info",
+                      title: "Active Order",
+                      message:
+                        "You already have an order in progress. Please wait until it is completed before placing a new one.",
+                    });
+                  }
+                  return;
+                }
+
+                // ✅ Proceed if no active order
+                navigate("/confirm-order");
+              }}
             >
               Proceed to Checkout
             </button>
