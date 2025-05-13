@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -18,6 +18,12 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
+  useEffect(() => {
+    const user = sessionStorage.getItem("user");
+    if (user) {
+      navigate("/profile");
+    }
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

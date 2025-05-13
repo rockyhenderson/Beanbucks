@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import Toast from "../components/Toast";
@@ -12,6 +12,12 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const user = sessionStorage.getItem("user");
+    if (user) {
+      navigate("/profile");
+    }
+  }, []);
   const handleSubmit = async (e) => {
     sessionStorage.setItem("test_write", "hello");
 console.log("Wrote test_write:", sessionStorage.getItem("test_write"));
