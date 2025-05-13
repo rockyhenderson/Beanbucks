@@ -285,7 +285,7 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                               {item.size && (
                                 <span
                                   style={{
-                                    backgroundColor: "var(--accent)",
+                                    backgroundColor: "#FFE7D2",
                                     color: "#000",
                                     padding: "0.35rem 0.75rem",
                                     borderRadius: "999px",
@@ -303,7 +303,7 @@ const OrderHistoryModal = ({ userId, onClose }) => {
                                   <span
                                     key={j}
                                     style={{
-                                      backgroundColor: "var(--accent)",
+                                      backgroundColor: "#FFE7D2",
                                       color: "#000",
                                       padding: "0.35rem 0.75rem",
                                       borderRadius: "999px",
