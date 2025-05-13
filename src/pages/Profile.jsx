@@ -14,14 +14,13 @@ import TwoChoicesModal from "../components/TwoChoices";
 import InfoDisplayModal from "../components/InfoDisplayModal";
 import PreferredStoreCard from "../components/PreferredStoreCard";
 import AllergenModal from "../components/AllergenModal";
-
-
-
+import OrderHistoryModal from "../components/OrderHistoryModal";
 
 function Profile() {
   const navigate = useNavigate();
   const [theme, setTheme] = useState("light");
   const [showStoreModal, setShowStoreModal] = useState(false);
+  const [showOrderHistoryModal, setShowOrderHistoryModal] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -114,8 +113,17 @@ function Profile() {
               </a>
             </li>
             <li>
-              <a href="#">Order History ❌</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowOrderHistoryModal(true);
+                }}
+              >
+                Order History
+              </a>
             </li>
+
             <li>
               <a
                 href="#"
@@ -231,6 +239,12 @@ function Profile() {
             </li>
           </ul>
         </div>
+        {showOrderHistoryModal && (
+          <OrderHistoryModal
+            userId={JSON.parse(sessionStorage.getItem("user"))?.id}
+            onClose={() => setShowOrderHistoryModal(false)}
+          />
+        )}
 
         {/* Logout Modal */}
         {showModal && (

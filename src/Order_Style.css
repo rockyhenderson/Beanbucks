@@ -8,9 +8,10 @@ body {
 }
 
 .orders {
-    padding: 1rem;
-    max-width: 1300px;
+    padding-right:1rem;
+    max-width: 1000px;
     margin: auto;
+    padding-left: 1rem !important;
   }
   
   .order-category-page {

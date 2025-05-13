@@ -7,6 +7,8 @@ const BaristaSettingsModal = ({
   onToggleTheme,
   soundEnabled,
   onToggleSound,
+  focusMode,
+  onToggleFocus,
 }) => {
   if (!open) return null;
 
@@ -63,6 +65,42 @@ const BaristaSettingsModal = ({
             }}
           />
         </div>
+
+        {/* Toggle: Focus Mode */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "0.25rem",
+          }}
+        >
+          <span style={{ fontWeight: 500, color: "var(--text)" }}>
+            Focus Mode
+          </span>
+          <input
+            type="checkbox"
+            checked={focusMode}
+            onChange={onToggleFocus}
+            style={{
+              width: "40px",
+              height: "20px",
+              cursor: "pointer",
+              accentColor: "var(--primary)",
+            }}
+          />
+        </div>
+        <p
+          style={{
+            fontSize: "0.85rem",
+            fontStyle: "italic",
+            color: "var(--text)",
+            marginBottom: "1rem",
+            marginTop: 0,
+          }}
+        >
+          Press Ctrl+F to toggle quickly
+        </p>
 
         {/* Toggle: Notification Sounds */}
         <div

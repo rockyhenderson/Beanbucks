@@ -32,9 +32,9 @@ function Order() {
           onCancel={handleGoHome}
         />
       )}
-
       <div className={`orders ${!hasStore ? "rewards--blurred" : ""}`}>
-        <h1>Menu</h1>
+      <h1 style={{ marginLeft: "2rem" }}>Menu</h1>
+
         <CategoryCard />
       </div>
     </>

@@ -34,6 +34,11 @@ function BaristaSecurePortal() {
   });
   const orderPing = new Audio("/sounds/IncomingOrder.mp3");
   const orderDoneSound = new Audio("/sounds/OrderDone.mp3");
+  const [focusMode, setFocusMode] = useState(false);
+
+  const toggleFocusMode = () => {
+    setFocusMode((prev) => !prev);
+  };
 
   orderPing.volume = 1;
   orderDoneSound.volume = 1;
@@ -104,6 +109,18 @@ function BaristaSecurePortal() {
     setSoundEnabled(next);
     localStorage.setItem("soundEnabled", next.toString());
   };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.key === "f") {
+        e.preventDefault(); // Prevent browser search
+        toggleFocusMode();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleToggleTheme = () => {
     const html = document.documentElement;
     const current = html.getAttribute("data-theme") || "light";
@@ -448,7 +465,6 @@ function BaristaSecurePortal() {
       sx={{
         minHeight: "100vh",
         backgroundColor: {
-          xs: "transparent", // On mobile, the background is transparent
           sm: "var(--background)", // For larger screens, use the normal background
         },
         padding: {
@@ -513,166 +529,171 @@ function BaristaSecurePortal() {
           ⚠️ CONNECTION LOST — TRY REFRESHING OR CONTACT IT SUPPORT
         </Box>
       )}
+      {!focusMode && (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap", // allows stacking on smaller screens
+              gap: "1rem",
+              marginBottom: "1.5rem",
+              paddingLeft: {
+                xs: "2rem", // On mobile, add 2rem padding-left
+                sm: "0", // For larger screens, no padding-left
+              },
+              paddingRight: {
+                xs: "2rem", // On mobile, add 2rem padding-right
+                sm: "0", // For larger screens, no padding-right
+              },
+              paddingTop: {
+                xs: "2rem", // On mobile, add 2rem padding-top
+                sm: "0", // For larger screens, no padding-top
+              },
+            }}
+          >
+            <div>
+              <h1 style={{ margin: 0 }}>Barista Portal</h1>
+              {role === "admin" ? (
+                // Render this if the user is an admin
+                <h2 style={{ margin: 0 }}>
+                  {storeName.replace(/^BeanBucks\s*-\s*/, "")}
+                </h2>
+              ) : (
+                // Render this if the user is not an admin
+                <h2
+                  style={{
+                    margin: 0,
+                    display: "flex",
+                    flexDirection: "column", // Stack content vertically
+                    alignItems: "flex-start", // Align content to the left
+                    gap: "0.5rem",
+                  }}
+                >
+                  <FormControl variant="standard" sx={{ minWidth: "auto" }}>
+                    <Select
+                      value={storeId} // Use storeId here, not the entire selectedStore object
+                      onChange={handleStoreChange}
+                      disableUnderline
+                      sx={{
+                        fontSize: "inherit",
+                        fontWeight: "bold",
+                        color: "inherit",
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        "& .MuiSelect-icon": {
+                          marginLeft: "0.25rem", // Adjust spacing for the dropdown arrow
+                        },
+                      }}
+                    >
+                      {storeNames
+                        .filter(
+                          (store, index, self) =>
+                            self.findIndex((s) => s.name === store.name) ===
+                            index // Remove duplicates
+                        )
+                        .map((store) => (
+                          <MenuItem key={store.id} value={store.id}>
+                            {store.name.replace(/^BeanBucks\s*-\s*/, "")}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </h2>
+              )}
+            </div>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap", // allows stacking on smaller screens
-          gap: "1rem",
-          marginBottom: "1.5rem",
-          paddingLeft: {
-            xs: "2rem", // On mobile, add 2rem padding-left
-            sm: "0", // For larger screens, no padding-left
-          },
-          paddingRight: {
-            xs: "2rem", // On mobile, add 2rem padding-right
-            sm: "0", // For larger screens, no padding-right
-          },
-          paddingTop: {
-            xs: "2rem", // On mobile, add 2rem padding-top
-            sm: "0", // For larger screens, no padding-top
-          },
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0 }}>Barista Portal</h1>
-          {role === "admin" ? (
-            // Render this if the user is an admin
-            <h2 style={{ margin: 0 }}>
-              {storeName.replace(/^BeanBucks\s*-\s*/, "")}
-            </h2>
-          ) : (
-            // Render this if the user is not an admin
-            <h2
-              style={{
-                margin: 0,
+            <Button
+              variant="outlined"
+              onClick={() => navigate(-1)}
+              sx={{
+                fontWeight: 600,
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+                textTransform: "none",
+                padding: "0.5rem 1.2rem",
+                borderRadius: "8px",
+                "&:hover": {
+                  backgroundColor: "rgba(238, 92, 1, 0.1)",
+                  borderColor: "var(--primary)",
+                },
+              }}
+            >
+              ⬅ Back
+            </Button>
+          </Box>
+
+          {/* Status + Settings Row */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
+              marginBottom: "0.8rem",
+              paddingLeft: {
+                xs: "2rem",
+                sm: "0",
+              },
+              paddingRight: {
+                xs: "2rem",
+                sm: "0",
+              },
+            }}
+          >
+            {/* Connection Status */}
+            <Box
+              sx={{
                 display: "flex",
-                flexDirection: "column", // Stack content vertically
-                alignItems: "flex-start", // Align content to the left
+                alignItems: "center",
                 gap: "0.5rem",
               }}
             >
-              <FormControl variant="standard" sx={{ minWidth: "auto" }}>
-                <Select
-                  value={storeId} // Use storeId here, not the entire selectedStore object
-                  onChange={handleStoreChange}
-                  disableUnderline
-                  sx={{
-                    fontSize: "inherit",
-                    fontWeight: "bold",
-                    color: "inherit",
-                    paddingLeft: 0,
-                    paddingRight: 0,
-                    "& .MuiSelect-icon": {
-                      marginLeft: "0.25rem", // Adjust spacing for the dropdown arrow
-                    },
-                  }}
-                >
-                  {storeNames
-                    .filter(
-                      (store, index, self) =>
-                        self.findIndex((s) => s.name === store.name) === index // Remove duplicates
-                    )
-                    .map((store) => (
-                      <MenuItem key={store.id} value={store.id}>
-                        {store.name.replace(/^BeanBucks\s*-\s*/, "")}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </h2>
-          )}
-        </div>
+              <div
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "50%",
+                  backgroundColor: error ? "var(--danger)" : "var(--success)",
+                }}
+              />
+              <span
+                style={{
+                  color: error ? "var(--danger)" : "var(--body-text)",
+                  fontWeight: error ? 700 : 500,
+                  textTransform: error ? "uppercase" : "none",
+                  fontSize: "1.4rem",
+                }}
+              >
+                {error
+                  ? "Disconnected from server"
+                  : "Connected to order system"}
+              </span>
+            </Box>
 
-        <Button
-          variant="outlined"
-          onClick={() => navigate(-1)}
-          sx={{
-            fontWeight: 600,
-            borderColor: "var(--primary)",
-            color: "var(--primary)",
-            textTransform: "none",
-            padding: "0.5rem 1.2rem",
-            borderRadius: "8px",
-            "&:hover": {
-              backgroundColor: "rgba(238, 92, 1, 0.1)",
-              borderColor: "var(--primary)",
-            },
-          }}
-        >
-          ⬅ Back
-        </Button>
-      </Box>
-
-      {/* Status + Settings Row */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          marginBottom: "0.8rem",
-          paddingLeft: {
-            xs: "2rem",
-            sm: "0",
-          },
-          paddingRight: {
-            xs: "2rem",
-            sm: "0",
-          },
-        }}
-      >
-        {/* Connection Status */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
-        >
-          <div
-            style={{
-              width: "12px",
-              height: "12px",
-              borderRadius: "50%",
-              backgroundColor: error ? "var(--danger)" : "var(--success)",
-            }}
-          />
-          <span
-            style={{
-              color: error ? "var(--danger)" : "var(--body-text)",
-              fontWeight: error ? 700 : 500,
-              textTransform: error ? "uppercase" : "none",
-              fontSize: "1.4rem",
-            }}
-          >
-            {error ? "Disconnected from server" : "Connected to order system"}
-          </span>
-        </Box>
-
-        {/* Settings Button */}
-        <Button
-          variant="outlined"
-          onClick={() => setSettingsOpen(true)}
-          sx={{
-            fontWeight: 600,
-            borderColor: "var(--primary)",
-            color: "var(--primary)",
-            textTransform: "none",
-            padding: "0.5rem 1.2rem",
-            borderRadius: "8px",
-            "&:hover": {
-              backgroundColor: "rgba(238, 92, 1, 0.1)",
-              borderColor: "var(--primary)",
-            },
-          }}
-        >
-          ⚙️ Settings
-        </Button>
-      </Box>
-
+            {/* Settings Button */}
+            <Button
+              variant="outlined"
+              onClick={() => setSettingsOpen(true)}
+              sx={{
+                fontWeight: 600,
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+                textTransform: "none",
+                padding: "0.5rem 1.2rem",
+                borderRadius: "8px",
+                "&:hover": {
+                  backgroundColor: "rgba(238, 92, 1, 0.1)",
+                  borderColor: "var(--primary)",
+                },
+              }}
+            >
+              ⚙️ Settings
+            </Button>
+          </Box>
+        </>
+      )}
       {/* Orders */}
       <Box
         sx={{
@@ -692,7 +713,35 @@ function BaristaSecurePortal() {
           },
         }}
       >
-        <h2>Incoming Orders ({orders.length})</h2>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+            paddingTop: "1rem",
+          }}
+        >
+          <h2 style={{ margin: 0 }}>Incoming Orders ({orders.length})</h2>
+
+          {focusMode && (
+            <Button
+              variant="text"
+              onClick={() => setSettingsOpen(true)}
+              sx={{
+                fontWeight: 600,
+                color: "var(--primary)",
+                textTransform: "none",
+                fontSize: "1rem",
+                "&:hover": {
+                  backgroundColor: "rgba(238, 92, 1, 0.1)",
+                },
+              }}
+            >
+              ⚙️ 
+            </Button>
+          )}
+        </Box>
 
         {!data && error ? (
           <RetryFallback onRetry={retry} isLoading={isLoading} />
@@ -721,7 +770,6 @@ function BaristaSecurePortal() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     flexWrap: "wrap",
-
                   }}
                 >
                   {/* Left side: Order for X */}
@@ -1001,6 +1049,8 @@ function BaristaSecurePortal() {
         onToggleTheme={handleToggleTheme}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
+        focusMode={focusMode}
+        onToggleFocus={toggleFocusMode}
       />
     </Box>
   );
