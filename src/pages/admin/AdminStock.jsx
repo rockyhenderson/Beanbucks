@@ -42,6 +42,9 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Add, ExpandLess, ExpandMore } from "@mui/icons-material";
 import Toast from "../../components/Toast";
 import EditStockModal from "../../components/EditStockModal";
+import BulkUpdateView from "../../components/BulkUpdateView";
+import StockRules from "../../components/StockRules";
+
 
 
 const storeOptions = [
@@ -58,6 +61,8 @@ function AdminStock() {
   const [toast, setToast] = useState(null);
   const [storeId, setStoreId] = useState(sessionStoreId || userStoreId || "101");
   const [expiryFilter, setExpiryFilter] = useState("");
+  const [activeTab, setActiveTab] = useState("inventory");
+
   const [recentSave, setRecentSave] = useState(false);
 
   const {
@@ -128,8 +133,6 @@ function AdminStock() {
 
 
 
-  console.log("✅ stockData raw:", stockData);
-  console.log("✅ stockRows parsed:", stockRows);
   const now = new Date();
 
   const filteredData = stockRows.filter((item) => {
@@ -141,8 +144,13 @@ function AdminStock() {
         (item.expiry_date instanceof Date
           ? item.expiry_date < now
           : new Date(item.expiry_date) < now)
-        : true;
-
+        : filter === "oos"
+          ? item.is_out_of_stock === true || item.stock === 0
+          : filter === "belowThreshold"
+            ? item.stock < item.threshold
+            : filter === "expired"
+              ? item.expiry_date instanceof Date && item.expiry_date < now
+              : true; // Default: no filter
 
     const matchesUnit = unit ? item.unit === unit : true;
     const matchesExpiry =
@@ -154,7 +162,8 @@ function AdminStock() {
   });
 
 
-  console.log("✅ filteredData result:", filteredData);
+
+
 
   const outOfStock = stockRows.filter(
     (d) => d.stock === 0 || d.is_out_of_stock === true
@@ -296,7 +305,7 @@ function AdminStock() {
   useEffect(() => {
     if (!stockLoading && expiredCount > 0 && !recentSave) {
       setToast({
-        type: "error",
+        type: "warning",
         title: "Expired Stock",
         message: `You have ${expiredCount} ingredient${expiredCount > 1 ? "s" : ""} out of date.`,
       });
@@ -387,107 +396,206 @@ function AdminStock() {
           </Menu>
         )}
       </Box>
-      {expiredCount > 0 && (
+
+
+
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          mb: 3,
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          { label: "Inventory Overview", value: "inventory" },
+          { label: "Bulk Update", value: "bulk" },
+          { label: "Stock Rules", value: "rules" }, // New Tab
+        ].map((tab) => {
+          const isActive = activeTab === tab.value;
+
+          return (
+            <Button
+              key={tab.value}
+              onClick={() => setActiveTab(tab.value)}
+              disableRipple
+              sx={{
+                textTransform: "none",
+                borderRadius: "20px",
+                px: 3,
+                py: 1,
+                fontWeight: 500,
+                fontSize: "1rem",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: isActive ? "0 2px 8px rgba(0,0,0,0.1)" : "none",
+                backgroundColor: isActive ? "var(--primary)" : "var(--card)",
+                color: isActive ? "white" : "var(--text)",
+                border: `1.5px solid ${isActive ? "var(--primary)" : "var(--component-border)"}`,
+                "&:hover": {
+                  backgroundColor: isActive ? "var(--primary)" : "rgba(0,0,0,0.04)", // Keep primary color for active
+                  borderColor: isActive ? "var(--primary)" : "var(--primary)",
+                  color: isActive ? "white" : "var(--text)", // Ensure text color stays consistent
+                },
+                "&:focus": {
+                  outline: "none",
+                  boxShadow: isActive
+                    ? "0 0 0 3px rgba(238, 92, 1, 0.5)" // Slight orange glow for focus
+                    : "0 0 0 2px rgba(0, 123, 255, 0.15)",
+                  backgroundColor: isActive ? "var(--primary)" : "var(--card)", // Keep primary color for active
+                  color: isActive ? "white" : "var(--text)",
+                },
+                "&:active": {
+                  backgroundColor: "var(--primary-dark)", // Slightly darker shade for click
+                  color: "white", // Ensure text stays white
+                },
+              }}
+            >
+              {tab.label}
+            </Button>
+          );
+        })}
+      </Box>
+      {activeTab === "bulk" && (
+        
+        <BulkUpdateView
+          stockRows={stockRows}
+          onBulkSave={async (updates) => {
+            for (let item of updates) {
+              await handleSave(item); // reuse your existing update logic
+            }
+            retryStock(); // refresh data
+          }}
+          setToast={setToast}  // Pass setToast here
+        />
+
+      )}
+      {activeTab === "inventory" && (
+        <>
+          {expiredCount > 0 && (
         <div
           style={{
-            backgroundColor: "#f8d7da",
-            color: "#721c24",
-            border: "2px solid #f5c6cb",
+            backgroundColor: "#fff3cd",
+            color: "#856404",
+            border: "2px solid #ffeeba",
             borderRadius: "10px",
             padding: "1.5rem",
             marginBottom: "2rem",
             display: "flex",
             alignItems: "center",
             gap: "1.25rem",
+            flexDirection: "row", // Default row for larger screens
+            justifyContent: "space-between", // Keep the space between icon, text, and button
+            flexWrap: "wrap", // Allows content to stack on mobile
           }}
         >
-          <ReportProblemOutlined style={{ fontSize: "2.5rem", color: "#dc3545" }} />
+          <ReportProblemOutlined style={{ fontSize: "2.5rem", color: "#ffc107" }} />
           <div style={{ flex: 1 }}>
-            <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: "bold" }}>
-              {expiredCount} Ingredient{expiredCount > 1 ? "s" : ""} Expired!
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "1.35rem",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {expiredCount} Ingredient{expiredCount > 1 ? "s" : ""} Expired
             </h2>
             <p style={{ marginTop: "0.4rem", fontSize: "1rem", lineHeight: 1.4 }}>
-              Please mark them as <strong>out of stock</strong> immediately to prevent drink issues.
+              These ingredients are past their expiry. Please{" "}
+              <strong>mark them out of stock</strong> to avoid use in drinks.
             </p>
           </div>
-          <button
-            style={{
-              backgroundColor: "#dc3545",
-              color: "white",
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#ffc107",
+              color: "#212529",
               fontWeight: "bold",
               fontSize: "1rem",
               padding: "0.7rem 1.2rem",
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#fb8c00", // hover color
+              },
             }}
-            onClick={() => alert("MORE CODE HERE")}
+            onClick={() => {
+              const updates = {};
+              for (const item of lowStockItems) {
+                updates[item.ingredient_id] = 500; // Quick order all low stock items
+              }
+              setOrderQuantities((prev) => ({ ...prev, ...updates }));
+              setToast({
+                type: "info",
+                title: "Quick Order Added",
+                message: `${lowStockItems.length} low-stock ingredients set to 500.`,
+              });
+            }}
           >
             Resolve Now
-          </button>
-
+          </Button>
         </div>
       )}
+          {userRole === "manager" && (
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
+              {stores?.map((store) => (
+                <MenuItem key={store.id} onClick={() => handleSelectStore(store.id.toString())}>
+                  {store.store_name}
+                </MenuItem>
+              ))}
 
-
-
-      {userRole === "manager" && (
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
-          {stores?.map((store) => (
-            <MenuItem key={store.id} onClick={() => handleSelectStore(store.id.toString())}>
-              {store.store_name}
-            </MenuItem>
-          ))}
-
-        </Menu>
-      )}
-      {/* Summary Header Card */}
-      <Paper
-        sx={{
-          backgroundColor: "var(--card)",
-          color: "var(--body-text)",
-          border: "1px solid var(--component-border)",
-          borderRadius: 2,
-          padding: 3,
-          marginBottom: 4,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            mb: showSummaryStats ? 2 : 0,
-          }}
-        >
-          <h2 style={{ margin: 0, color: "var(--heading-color)" }}>Operational Stock Metrics</h2>
-          <Button
-            onClick={() => setShowSummaryStats((prev) => !prev)}
-            sx={{ color: "var(--primary)", minWidth: 0, padding: 1 }}
+            </Menu>
+          )}
+          {/* Summary Header Card */}
+          <Paper
+            sx={{
+              backgroundColor: "var(--card)",
+              color: "var(--body-text)",
+              border: "1px solid var(--component-border)",
+              borderRadius: 2,
+              padding: 3,
+              marginBottom: 4,
+            }}
           >
-            {showSummaryStats ? <ExpandLess /> : <ExpandMore />}
-          </Button>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: showSummaryStats ? 2 : 0,
+              }}
+            >
+              <h2 style={{ margin: 0, color: "var(--heading-color)" }}>Operational Stock Metrics</h2>
+              <Button
+                onClick={() => setShowSummaryStats((prev) => !prev)}
+                sx={{ color: "var(--primary)", minWidth: 0, padding: 1 }}
+              >
+                {showSummaryStats ? <ExpandLess /> : <ExpandMore />}
+              </Button>
 
-        </Box>
+            </Box>
 
 
 
 
-        <Collapse in={showSummaryStats}>
-          <Grid container spacing={2}>
-            {[
-              {
-                label: "Total Ingredients",
-                value: stockRows.length,
-                tip: `This represents the total number of unique ingredients currently tracked for this store.
+            <Collapse in={showSummaryStats}>
+              <Grid container spacing={2}>
+                {[
+                  {
+                    label: "Total Ingredients",
+                    value: stockRows.length,
+                    tip: `This represents the total number of unique ingredients currently tracked for this store.
 
 Includes all ingredients regardless of stock level, expiry status, or threshold.`,
-              },
-              {
-                label: "Out of Stock",
-                value: outOfStock,
-                percent: oosPercentage,
-                tip: `Ingredients that are completely out of stock (stock = 0) or are flagged as manually marked out of stock.
+                  },
+                  {
+                    label: "Out of Stock",
+                    value: outOfStock,
+                    percent: oosPercentage,
+                    tip: `Ingredients that are completely out of stock (stock = 0) or are flagged as manually marked out of stock.
 
 ${Math.round(oosPercentage)}% of tracked ingredients are currently out of stock.
 
@@ -497,40 +605,40 @@ Severity:
 - 🔴 Over 30% = Critical
 
 Used to determine store-wide stock risk level.`,
-              },
-              {
-                label: "Below Threshold",
-                value: belowThreshold,
-                percent: stockRows.length > 0 ? (belowThreshold / stockRows.length) * 100 : 0,
-                tip: `Ingredients where the current stock is below the configured minimum threshold.
+                  },
+                  {
+                    label: "Below Threshold",
+                    value: belowThreshold,
+                    percent: stockRows.length > 0 ? (belowThreshold / stockRows.length) * 100 : 0,
+                    tip: `Ingredients where the current stock is below the configured minimum threshold.
 
 This helps flag ingredients that are not yet out of stock, but are **running low**.
 
 % is based on total number of tracked ingredients.`,
-              },
-              {
-                label: "Lowest Stock Item",
-                value: lowestItem ? `${lowestItem.name} (${lowestItem.stock})` : "N/A",
-                fixedIcon: WaterDropOutlined,
-                tip: `This shows the ingredient with the **lowest available stock count** in the store.
+                  },
+                  {
+                    label: "Lowest Stock Item",
+                    value: lowestItem ? `${lowestItem.name} (${lowestItem.stock})` : "N/A",
+                    fixedIcon: WaterDropOutlined,
+                    tip: `This shows the ingredient with the **lowest available stock count** in the store.
 
 Useful for quickly identifying the most urgent refill candidate that is still in stock.`,
-              },
-              {
-                label: "Expiring Soon",
-                value: `${expiringSoon} ingredients`,
-                percent: stockRows.length > 0 ? (expiringSoon / stockRows.length) * 100 : 0,
-                tip: `Ingredients that will expire within the next 3 days (today + 3 days ahead).
+                  },
+                  {
+                    label: "Expiring Soon",
+                    value: `${expiringSoon} ingredients`,
+                    percent: stockRows.length > 0 ? (expiringSoon / stockRows.length) * 100 : 0,
+                    tip: `Ingredients that will expire within the next 3 days (today + 3 days ahead).
 
 Helps identify stock that may become unusable soon and should be prioritized or removed.
 
 % is based on the total number of ingredients with a valid expiry date.`,
-              },
-              {
-                label: "Stock Risk Level",
-                value: stockRiskSummary,
-                percent: outOfStock + belowThreshold > 0 ? 100 : 0,
-                tip: `An overall summary of the store's inventory health, combining both Out of Stock and Below Threshold items.
+                  },
+                  {
+                    label: "Stock Risk Level",
+                    value: stockRiskSummary,
+                    percent: outOfStock + belowThreshold > 0 ? 100 : 0,
+                    tip: `An overall summary of the store's inventory health, combining both Out of Stock and Below Threshold items.
 
 Examples:
 - "Low — 0 OOS, 0 low" = ✅ Fully stocked
@@ -538,100 +646,100 @@ Examples:
 - "High — 6 OOS, 9 low" = 🔥 Critical shortages
 
 This value directly affects the color and icon of this card.`,
-              },
-            ]
-              .map((stat, i) => {
-                const percent = stat.percent ?? 0;
-                const color = getColorFromPercent(percent);
-                const bg = getBackgroundFromColor(color);
+                  },
+                ]
+                  .map((stat, i) => {
+                    const percent = stat.percent ?? 0;
+                    const color = getColorFromPercent(percent);
+                    const bg = getBackgroundFromColor(color);
 
-                // Pick icon based on status or fallback
-                let IconComponent = stat.fixedIcon;
-                if (!IconComponent) {
-                  IconComponent =
-                    color === "#28a745"
-                      ? Inventory2Outlined // ✅ green = good
-                      : color === "#ffc107"
-                        ? ShieldOutlined // ⚠️ yellow = warning
-                        : ReportProblemOutlined; // 🔴 red = bad
-                }
+                    // Pick icon based on status or fallback
+                    let IconComponent = stat.fixedIcon;
+                    if (!IconComponent) {
+                      IconComponent =
+                        color === "#28a745"
+                          ? Inventory2Outlined // ✅ green = good
+                          : color === "#ffc107"
+                            ? ShieldOutlined // ⚠️ yellow = warning
+                            : ReportProblemOutlined; // 🔴 red = bad
+                    }
 
-                return (
-                  <Grid item xs={12} sm={6} md={4} key={i}>
-                    <Box
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        backgroundColor: bg,
-                        border: `1px solid ${color}`,
-                        height: "100%",
-                        boxShadow: "0 0 0 1px var(--component-border)",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          mb: 0.5,
-                        }}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <IconComponent sx={{ color, mr: 1 }} />
+                    return (
+                      <Grid item xs={12} sm={6} md={4} key={i}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            backgroundColor: bg,
+                            border: `1px solid ${color}`,
+                            height: "100%",
+                            boxShadow: "0 0 0 1px var(--component-border)",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              mb: 0.5,
+                            }}
+                          >
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <IconComponent sx={{ color, mr: 1 }} />
+                              <p
+                                style={{
+                                  fontStyle: "italic",
+                                  color: "var(--text)",
+                                  fontSize: "0.9rem",
+                                  margin: 0,
+                                }}
+                              >
+                                {stat.label}
+                              </p>
+                            </Box>
+                            <Tooltip
+                              title={
+                                <div style={{ fontSize: "0.9rem", lineHeight: 1.4, maxWidth: 220 }}>
+                                  {stat.tip}
+                                </div>
+                              }
+                              placement="top"
+                              arrow
+                              componentsProps={{
+                                tooltip: {
+                                  sx: {
+                                    bgcolor: "var(--card)",
+                                    color: "var(--text)",
+                                    border: "1px solid var(--component-border)",
+                                    boxShadow: 2,
+                                    px: 2,
+                                    py: 1,
+                                  },
+                                },
+                              }}
+                            >
+                              <IconButton size="small" sx={{ color: "var(--text)", p: 0 }}>
+                                <HelpOutline fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
                           <p
                             style={{
-                              fontStyle: "italic",
-                              color: "var(--text)",
-                              fontSize: "0.9rem",
+                              fontWeight: 600,
+                              color,
                               margin: 0,
                             }}
                           >
-                            {stat.label}
+                            {stat.value}
                           </p>
                         </Box>
-                        <Tooltip
-                          title={
-                            <div style={{ fontSize: "0.9rem", lineHeight: 1.4, maxWidth: 220 }}>
-                              {stat.tip}
-                            </div>
-                          }
-                          placement="top"
-                          arrow
-                          componentsProps={{
-                            tooltip: {
-                              sx: {
-                                bgcolor: "var(--card)",
-                                color: "var(--text)",
-                                border: "1px solid var(--component-border)",
-                                boxShadow: 2,
-                                px: 2,
-                                py: 1,
-                              },
-                            },
-                          }}
-                        >
-                          <IconButton size="small" sx={{ color: "var(--text)", p: 0 }}>
-                            <HelpOutline fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                      <p
-                        style={{
-                          fontWeight: 600,
-                          color,
-                          margin: 0,
-                        }}
-                      >
-                        {stat.value}
-                      </p>
-                    </Box>
-                  </Grid>
-                );
-              })}
+                      </Grid>
+                    );
+                  })}
 
 
-          </Grid>
-        </Collapse>
+              </Grid>
+            </Collapse>
 
 
 
@@ -639,310 +747,357 @@ This value directly affects the color and icon of this card.`,
 
 
 
-      </Paper>
+          </Paper>
 
 
 
-      <Box
-        sx={{
-          marginTop: 4,
-          padding: 2,
-          borderRadius: "12px",
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--component-border)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h2 style={{ marginBottom: "1rem" }}>Ingredient Inventory</h2>
-
-          <IconButton
-            onClick={() => setShowInventoryTable((prev) => !prev)}
-            sx={{ color: "var(--primary)" }}
-          >
-            {showInventoryTable ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
-
-
-        </Box>
-
-        <Collapse in={showInventoryTable} timeout="auto" unmountOnExit>
           <Box
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 2,
-              alignItems: "center",
-              marginBottom: 2,
+              marginTop: 4,
+              padding: 2,
+              borderRadius: "12px",
+              backgroundColor: "var(--card)",
+              border: "1px solid var(--component-border)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             }}
           >
-            {/* Search */}
-            <TextField
-              size="small"
-              placeholder="Search..."
-              variant="outlined"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <Box
               sx={{
-                width: "100%",
-                maxWidth: 240,
-                input: {
-                  color: "var(--text)",
-                  backgroundColor: "var(--card)",
-                  borderRadius: "4px",
-                },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "var(--primary)", // default border
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "var(--primary)", // on hover
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--primary)", // on focus
-                  },
-                },
-              }}
-            />
-
-            {/* Unit filter */}
-            <FormControl
-              size="small"
-              sx={{
-                minWidth: 150,
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "var(--primary)",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "var(--primary)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--primary)",
-                  },
-                },
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              <InputLabel id="unit-filter-label">Unit</InputLabel>
-              <Select
-                labelId="unit-filter-label"
-                value={unit}
-                label="Unit"
-                onChange={(e) => setUnit(e.target.value)}
+              <h2 style={{ marginBottom: "1rem" }}>Ingredient Inventory</h2>
+
+              <IconButton
+                onClick={() => setShowInventoryTable((prev) => !prev)}
+                sx={{ color: "var(--primary)" }}
               >
-                <MenuItem value="">All</MenuItem>
-                {uniqueUnits.map((u) => (
-                  <MenuItem key={u} value={u}>
-                    {u}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                {showInventoryTable ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
 
-            {/* Out of Stock filter */}
-            <FormControl
-              size="small"
-              sx={{
-                minWidth: 200,
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "var(--primary)" },
-                  "&:hover fieldset": { borderColor: "var(--primary)" },
-                  "&.Mui-focused fieldset": { borderColor: "var(--primary)" },
-                },
-              }}
-            >
-              <InputLabel id="stock-filter-label">Stock Filter</InputLabel>
-              <Select
-                labelId="stock-filter-label"
-                value={filter}
-                label="Stock Filter"
-                onChange={(e) => setFilter(e.target.value)}
+
+            </Box>
+
+            <Collapse in={showInventoryTable} timeout="auto" unmountOnExit>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  alignItems: "center",
+                  marginBottom: 2,
+                }}
               >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="urgent">🚨 Urgent Issues</MenuItem>
-              </Select>
-            </FormControl>
-
-
-
-
-          </Box>
-
-
-          <Box sx={{ width: "100%", backgroundColor: "var(--card)" }}>
-            {!stockLoading && (
-              filteredData.length === 0 ? (
-                <p style={{
-                  marginTop: "1rem",
-                  marginBottom: "1rem",
-                  fontStyle: "italic",
-                  color: "gray",
-                  textAlign: "center"
-                }}>
-                  No stock data available for this store.
-                </p>
-
-              ) : (
-                <DataGrid
-                  autoHeight
-                  rows={filteredData}
-                  getRowClassName={(params) => {
-                    const isExpired =
-                      params.row.expiry_date instanceof Date
-                        ? params.row.expiry_date < new Date()
-                        : new Date(params.row.expiry_date) < new Date();
-
-                    if (params.row.is_out_of_stock) return "row-oos";
-                    if (isExpired) return "row-expired";
-                    return "";
+                {/* Search */}
+                <TextField
+                  size="small"
+                  placeholder="Search..."
+                  variant="outlined"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  sx={{
+                    width: "100%",
+                    maxWidth: 240,
+                    input: {
+                      color: "var(--text)",
+                      backgroundColor: "var(--card)",
+                      borderRadius: "4px",
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "var(--primary)", // default border
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "var(--primary)", // on hover
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "var(--primary)", // on focus
+                      },
+                    },
                   }}
+                />
+
+                {/* Unit filter */}
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 150,
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "var(--primary)",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "var(--primary)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "var(--primary)",
+                      },
+                    },
+                  }}
+                >
+                  <InputLabel id="unit-filter-label">Unit</InputLabel>
+                  <Select
+                    labelId="unit-filter-label"
+                    value={unit}
+                    label="Unit"
+                    onChange={(e) => setUnit(e.target.value)}
+                  >
+                    <MenuItem value="">All</MenuItem>
+                    {uniqueUnits.map((u) => (
+                      <MenuItem key={u} value={u}>
+                        {u}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Out of Stock filter */}
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 200,
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "var(--primary)" },
+                      "&:hover fieldset": { borderColor: "var(--primary)" },
+                      "&.Mui-focused fieldset": { borderColor: "var(--primary)" },
+                    },
+                  }}
+                >
+                  <InputLabel id="stock-filter-label">Stock Filter</InputLabel>
+                  <Select
+                    labelId="stock-filter-label"
+                    value={filter}
+                    label="Stock Filter"
+                    onChange={(e) => setFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="urgent"> Urgent Issues</MenuItem>
+                    <MenuItem value="oos">Out of Stock</MenuItem>
+                    <MenuItem value="belowThreshold">Below Threshold</MenuItem>
+                    <MenuItem value="expired">Expired</MenuItem>
+                  </Select>
+                </FormControl>
 
 
-                  columns={[
-                    {
-                      field: "name",
-                      headerName: "Ingredient",
-                      flex: 1,
-                      renderCell: (params) => {
+
+
+
+              </Box>
+
+
+              <Box sx={{ width: "100%", backgroundColor: "var(--card)" }}>
+                {!stockLoading && (
+                  filteredData.length === 0 ? (
+                    <p style={{
+                      marginTop: "1rem",
+                      marginBottom: "1rem",
+                      fontStyle: "italic",
+                      color: "gray",
+                      textAlign: "center"
+                    }}>
+                      No stock data available for this store.
+                    </p>
+
+                  ) : (
+                    <DataGrid
+                      autoHeight
+                      rows={filteredData}
+                      getRowClassName={(params) => {
                         const isExpired =
                           params.row.expiry_date instanceof Date
                             ? params.row.expiry_date < new Date()
                             : new Date(params.row.expiry_date) < new Date();
 
-                        const iconStyle = {
-                          fontSize: "1.2rem",
-                          marginRight: "0.5rem",
-                        };
+                        const isBelowThreshold = params.row.stock < params.row.threshold;
 
-                        let icon = null;
+                        if (params.row.is_out_of_stock) return "row-oos"; // Out of Stock (Red)
+                        if (isExpired) return "row-expired"; // Expired (Yellow)
+                        if (isBelowThreshold) return "row-below-threshold"; // Below Threshold (Orange)
+                        return ""; // Default
+                      }}
 
-                        if (params.row.is_out_of_stock) {
-                          icon = <span style={{ ...iconStyle, color: "#dc3545" }}>❌</span>;
-                        } else if (isExpired) {
-                          icon = <span style={{ ...iconStyle, color: "#ffc107" }}>⚠️</span>;
+
+
+                      columns={[
+                        {
+                          field: "name",
+                          headerName: "Ingredient",
+                          flex: 1,
+                          renderCell: (params) => {
+                            const isExpired =
+                              params.row.expiry_date instanceof Date
+                                ? params.row.expiry_date < new Date()
+                                : new Date(params.row.expiry_date) < new Date();
+
+                            const isBelowThreshold = params.row.stock < params.row.threshold;
+
+                            const iconStyle = {
+                              fontSize: "1.2rem",
+                              marginRight: "0.5rem",
+                            };
+
+                            let icon = null;
+
+                            if (params.row.is_out_of_stock) {
+                              icon = <span style={{ ...iconStyle, color: "#dc3545" }}>❌</span>; // Red for out of stock
+                            } else if (isExpired) {
+                              icon = <span style={{ ...iconStyle, color: "#ffc107" }}>⚠️</span>; // Yellow for expired
+                            } else if (isBelowThreshold) {
+                              icon = <span style={{ ...iconStyle, color: "#fd7e14" }}>🟠</span>; // Orange for below threshold
+                            }
+
+                            return (
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {icon}
+                                {params.row.name}
+                              </div>
+                            );
+                          }
+
+                        },
+
+
+                        {
+                          field: "stock",
+                          headerName: "Stock",
+                          flex: 0.6,
+                          renderCell: (params) => (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                              {params.row.stock}
+
+                            </div>
+                          )
+                        },
+
+                        { field: "unit", headerName: "Unit", flex: 0.6 },
+                        {
+                          field: "expiry_date",
+                          headerName: "Expiry Date",
+                          flex: 1,
+                          renderCell: (params) => {
+                            const isExpired =
+                              params.row.expiry_date instanceof Date
+                                ? params.row.expiry_date < new Date()
+                                : new Date(params.row.expiry_date) < new Date();
+
+                            const isBelowThreshold = params.row.stock < params.row.threshold;
+
+                            const iconStyle = {
+                              fontSize: "1.2rem",
+                              marginRight: "0.5rem",
+                            };
+
+                            let icon = null;
+                            let backgroundColor = "transparent"; // Default background color
+
+
+
+                            // Format the expiry date as a readable string (e.g., "dd/MM/yyyy")
+                            const formattedDate = params.row.expiry_date
+                              ? new Date(params.row.expiry_date).toLocaleDateString()
+                              : "No expiry date";
+
+                            return (
+                              <div style={{ display: "flex", alignItems: "center", backgroundColor }}>
+                                {icon}
+                                {formattedDate} {/* Show the formatted expiry date */}
+                              </div>
+                            );
+                          },
                         }
 
-                        return (
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            {icon}
-                            {params.row.name}
-                          </div>
-                        );
-                      },
-                    },
+
+                        ,
 
 
-                    {
-                      field: "stock",
-                      headerName: "Stock",
-                      flex: 0.6,
-                      renderCell: (params) => (
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          {params.row.stock}
-
-                        </div>
-                      )
-                    },
-
-                    { field: "unit", headerName: "Unit", flex: 0.6 },
-                    {
-                      field: "expiry_date",
-                      headerName: "Expiry Date",
-                      flex: 1,
-                      renderCell: (params) => {
-                        const date = params.row?.expiry_date;
-                        if (!date) return "N/A";
-
-                        // Safely format whether it's a Date or a string
-                        const d = date instanceof Date ? date : new Date(date);
-                        return d.toLocaleDateString();
-                      }
-                    }
-
-                    ,
-
-
-                    { field: "threshold", headerName: "Minimum Threshold", flex: 0.6 },
-                    {
-                      field: "edit",
-                      headerName: "Edit",
-                      flex: 0.5,
-                      sortable: false,
-                      renderCell: (params) => (
-                        <Button
-                          onClick={() => handleEdit(params.row)}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            textTransform: "none",
-                            fontWeight: 500,
-                            fontSize: "0.85rem",
-                            paddingX: 2,
-                            paddingY: 0.5,
-                            borderRadius: "8px",
-                            color: "var(--primary)",
-                            borderColor: "var(--primary)",
-                            "&:hover": {
-                              backgroundColor: "rgba(0, 0, 0, 0.04)",
-                              borderColor: "var(--primary)",
-                            },
-                          }}
-                        >
-                          Edit
-                        </Button>
+                        { field: "threshold", headerName: "Minimum Threshold", flex: 0.6 },
+                        {
+                          field: "edit",
+                          headerName: "Edit",
+                          flex: 0.5,
+                          sortable: false,
+                          renderCell: (params) => (
+                            <Button
+                              onClick={() => handleEdit(params.row)}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                textTransform: "none",
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                paddingX: 2,
+                                paddingY: 0.5,
+                                borderRadius: "8px",
+                                color: "var(--primary)",
+                                borderColor: "var(--primary)",
+                                "&:hover": {
+                                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                  borderColor: "var(--primary)",
+                                },
+                              }}
+                            >
+                              Edit
+                            </Button>
 
 
-                      ),
-                    },
-                  ]}
-                  disableRowSelectionOnClick
-                  hideFooterPagination
-                  getRowId={(row) => row.id}
-                  localeText={{
-                    noRowsLabel: "No ingredients match your filters.",
-                  }}
-                  sx={{
-                    color: "var(--text) !important",
-                    borderColor: "var(--component-border)",
-                    backgroundColor: "var(--card)",
-                    '& .MuiDataGrid-columnHeaders': {
-                      backgroundColor: 'var(--accent)',
-                      color: 'var(--text)',
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid var(--component-border)',
-                    },
-                    '& .MuiDataGrid-row': {
-                      borderBottom: '1px solid var(--component-border)',
-                    },
-                    '& .row-oos': {
-                      backgroundColor: 'rgba(220, 53, 69, 0.1)', // light red
-                      '&:hover': {
-                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                      },
-                    },
-                    '& .row-expired': {
-                      backgroundColor: 'rgba(255, 193, 7, 0.15)', // light yellow
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 193, 7, 0.25)',
-                      },
-                    },
-                  }}
+                          ),
+                        },
+                      ]}
+                      disableRowSelectionOnClick
+                      hideFooterPagination
+                      getRowId={(row) => row.id}
+                      localeText={{
+                        noRowsLabel: "No ingredients match your filters.",
+                      }}
+                      sx={{
+                        color: "var(--text) !important",
+                        borderColor: "var(--component-border)",
+                        backgroundColor: "var(--card)",
+                        '& .MuiDataGrid-columnHeaders': {
+                          backgroundColor: 'var(--accent)',
+                          color: 'var(--text)',
+                          fontWeight: 'bold',
+                          borderBottom: '1px solid var(--component-border)',
+                        },
+                        '& .MuiDataGrid-row': {
+                          borderBottom: '1px solid var(--component-border)',
+                        },
+                        '& .row-oos': {
+                          backgroundColor: 'rgba(220, 53, 69, 0.1)', // light red
+                          '&:hover': {
+                            backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                          },
+                        },
+                        '& .row-expired': {
+                          backgroundColor: 'rgba(255, 193, 7, 0.15)', // light yellow
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 193, 7, 0.25)',
+                          },
+                        },
+
+                        '& .row-below-threshold': {
+                          backgroundColor: 'rgba(244, 133, 42, 0.2)', // slightly darker light orange
+                          '&:hover': {
+                            backgroundColor: 'rgba(253, 126, 20, 0.2)',
+                          },
+                        },
 
 
-                />
-              )
-            )}
+                      }}
+
+
+                    />
+                  )
+                )}
+              </Box>
+
+            </Collapse>
           </Box>
-
-        </Collapse>
-      </Box>
-
+        </>
+      )}
+      {activeTab === "rules" && <StockRules />}
       {toast && (
         <div
           style={{
@@ -958,10 +1113,11 @@ This value directly affects the color and icon of this card.`,
             type={toast.type}
             title={toast.title}
             message={toast.message}
-            onClose={() => setToast(null)}
+            onClose={() => setToast(null)} // Close the toast
           />
         </div>
       )}
+
 
       {selected && (
         <EditStockModal
