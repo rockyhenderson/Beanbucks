@@ -1,138 +1,87 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, Box, Typography } from "@mui/material";
-import FillerHero from "../assets/FILLER_HERO_IMG.jpg";
 
-function EditDrinkModal({ drink, onCancel, onSave }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    tags: "",
-  });
+const EditStoreHoursModal = ({
+  store_id,
+  open_time,
+  close_time,
+  open,
+  onCancel,
+  onSave,
+}) => {
+  const [openTime, setOpenTime] = useState(open_time || "");
+  const [closeTime, setCloseTime] = useState(close_time || "");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (drink) {
-      setFormData({
-        name: drink.name || "",
-        description: drink.description || "",
-        price: drink.price || "",
-        category: drink.category || "",
-        tags: drink.tags || "",
-      });
-    }
-  }, [drink]);
+    setOpenTime(open_time || "");
+    setCloseTime(close_time || "");
+    setError(""); // Clear errors when new times are passed in
+  }, [open_time, close_time]);
 
-  const handleChange = (field) => (e) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-  };
+  const isValidTime = (value) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 
   const handleSave = () => {
-    onSave(formData);
+    if (!openTime || !closeTime) {
+      setError("Both times are required.");
+      return;
+    }
+
+    if (!isValidTime(openTime) || !isValidTime(closeTime)) {
+      setError("Please enter valid times in HH:MM format.");
+      return;
+    }
+
+    setError("");
+    onSave(store_id, openTime, closeTime);
   };
 
-  if (!drink) return null;
+  if (!open) return null;
 
   return (
-    <Dialog
-      open
-      onClose={onCancel}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: { md: 3 },
-          overflow: "hidden"
-        },
-      }}
-    >
-      <Box display="flex" flexDirection={{ xs: "column", md: "row" }}>
-        {/* Image Section */}
-        <Box
-          sx={{
-            width: { xs: "100%", md: 300 },
-            backgroundImage: `url(${FillerHero})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            height: { xs: 200, md: "auto" },
-          }}
-        />
+    <div className="modal-overlay">
+      <div className="profile__logout-modal" style={{ maxWidth: "450px" }}>
+        <h2>Edit Store Hours</h2>
 
-        {/* Form Section */}
-        <Box flex={1} p={3}>
-          <Typography variant="h5" mb={3}>Edit Drink</Typography>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <div>
-              <label style={labelStyle}>Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={handleChange("name")}
-                className="profile__input"
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Description</label>
-              <textarea
-                rows="3"
-                value={formData.description}
-                onChange={handleChange("description")}
-                className="profile__input"
-                style={{ resize: "none" }}
-              />
-            </div>
-
-            <Box display="flex" gap={2} flexWrap="wrap">
-              <div style={{ flex: 1, minWidth: "120px" }}>
-                <label style={labelStyle}>Price</label>
-                <input
-                  type="number"
-                  value={formData.price}
-                  onChange={handleChange("price")}
-                  className="profile__input"
-                />
-              </div>
-
-              <div style={{ flex: 1, minWidth: "120px" }}>
-                <label style={labelStyle}>Category</label>
-                <select
-                  value={formData.category}
-                  onChange={handleChange("category")}
-                  className="profile__input"
-                >
-                  <option value="">Select Category</option>
-                  <option value="hot">Hot</option>
-                  <option value="cold">Cold</option>
-                  <option value="food">Food</option>
-                </select>
-              </div>
-            </Box>
-
-            <div>
-              <label style={labelStyle}>Tags</label>
-              <input
-                type="text"
-                value={formData.tags}
-                onChange={handleChange("tags")}
-                className="profile__input"
-              />
-            </div>
-          </Box>
-
-          <div className="profile__logout-actions" style={{ marginTop: "24px" }}>
-            <button className="btn btn--primary" onClick={handleSave}>
-              Save Changes
-            </button>
-            <button className="btn btn--outline" onClick={onCancel}>
-              Cancel
-            </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+          <div>
+            <label style={labelStyle}>Open Time</label>
+            <input
+              type="time"
+              value={openTime}
+              onChange={(e) => setOpenTime(e.target.value)}
+              className="profile__input"
+            />
           </div>
-        </Box>
-      </Box>
-    </Dialog>
+
+          <div>
+            <label style={labelStyle}>Close Time</label>
+            <input
+              type="time"
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+              className="profile__input"
+            />
+          </div>
+
+          {error && (
+            <p style={{ color: "var(--danger)", fontSize: "0.9rem", marginTop: "-0.5rem" }}>
+              ⚠️ {error}
+            </p>
+          )}
+        </div>
+
+        <div className="profile__logout-actions" style={{ marginTop: "24px" }}>
+          <button className="btn btn--primary" onClick={handleSave}>
+            Save Changes
+          </button>
+          <button className="btn btn--outline" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
 const labelStyle = {
   fontWeight: "bold",
@@ -142,4 +91,4 @@ const labelStyle = {
   textAlign: "left",
 };
 
-export default EditDrinkModal;
+export default EditStoreHoursModal;

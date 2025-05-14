@@ -73,9 +73,9 @@ function ManageStores() {
   const formatTime = (t) =>
     t
       ? new Date(`1970-01-01T${t}`).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+        hour: "2-digit",
+        minute: "2-digit",
+      })
       : "N/A";
 
   useEffect(() => {
@@ -266,6 +266,7 @@ function ManageStores() {
   };
 
   const handleEditHours = (storeId, openTime, closeTime) => {
+    console.log("Opening edit modal for store", storeId);
     setCurrentStoreHours({
       store_id: storeId,
       open_time: openTime,
@@ -273,6 +274,7 @@ function ManageStores() {
     });
     setEditModalOpen(true);
   };
+  
 
   const handleSaveStoreHours = async (store_id, open_time, close_time) => {
     // Retrieve the 'user' object from sessionStorage and parse it
@@ -542,7 +544,7 @@ function ManageStores() {
 
                           {/* Edit Icon for Time */}
                           {isManager ||
-                          (isAdmin && userStoreId === store.store_id) ? (
+                            (isAdmin && userStoreId === store.store_id) ? (
                             <Tooltip title="Edit Store Hours">
                               <IconButton
                                 size="small"
@@ -589,21 +591,21 @@ function ManageStores() {
                               fontWeight: 600,
                               color:
                                 isManager ||
-                                (isAdmin && userStoreId === store.store_id)
+                                  (isAdmin && userStoreId === store.store_id)
                                   ? isOpen
                                     ? "var(--success)"
                                     : "var(--danger)"
                                   : "gray",
                               borderColor:
                                 isManager ||
-                                (isAdmin && userStoreId === store.store_id)
+                                  (isAdmin && userStoreId === store.store_id)
                                   ? isOpen
                                     ? "var(--success)"
                                     : "var(--danger)"
                                   : "gray",
                               cursor:
                                 isManager ||
-                                (isAdmin && userStoreId === store.store_id)
+                                  (isAdmin && userStoreId === store.store_id)
                                   ? "pointer"
                                   : "not-allowed",
                               flex: 1,
@@ -611,15 +613,15 @@ function ManageStores() {
                               borderWidth: "3px",
                               opacity:
                                 isManager ||
-                                (isAdmin && userStoreId === store.store_id)
+                                  (isAdmin && userStoreId === store.store_id)
                                   ? 1
                                   : 0.5,
                             }}
                             onClick={
                               isManager ||
-                              (isAdmin && userStoreId === store.store_id)
+                                (isAdmin && userStoreId === store.store_id)
                                 ? () =>
-                                    handleToggleStore(store.store_id, isOpen)
+                                  handleToggleStore(store.store_id, isOpen)
                                 : undefined
                             }
                           />
@@ -701,9 +703,9 @@ function ManageStores() {
                                             "var(--component-border)",
                                         },
                                         "&:hover .MuiOutlinedInput-notchedOutline":
-                                          {
-                                            borderColor: "var(--primary)",
-                                          },
+                                        {
+                                          borderColor: "var(--primary)",
+                                        },
                                       }}
                                     >
                                       {stores.map((s) => (
@@ -746,8 +748,8 @@ function ManageStores() {
                   🕳️ Unassigned Staff
                 </Typography>
                 {unassignedGroup &&
-                Array.isArray(unassignedGroup.staff) &&
-                unassignedGroup.staff.length > 0 ? (
+                  Array.isArray(unassignedGroup.staff) &&
+                  unassignedGroup.staff.length > 0 ? (
                   <Stack spacing={2}>
                     {unassignedGroup.staff.map((user) => (
                       <Box
@@ -803,20 +805,22 @@ function ManageStores() {
       </div>
       {editModalOpen && (
         <EditStoreHoursModal
-          store_id={currentStoreHours.store_id}
-          open_time={currentStoreHours.open_time}
-          close_time={currentStoreHours.close_time}
-          onSave={handleSaveStoreHours}
-          onCancel={() => setEditModalOpen(false)}
-        />
+  store_id={currentStoreHours.store_id}
+  open_time={currentStoreHours.open_time}
+  close_time={currentStoreHours.close_time}
+  onSave={handleSaveStoreHours}
+  onCancel={() => setEditModalOpen(false)}
+  open={editModalOpen}
+/>
+
       )}
+
 
       {confirmToggle && (
         <TwoChoicesModal
           title={confirmToggle.isOpen ? "Close Store?" : "Open Store?"}
-          text={`Are you sure you want to ${
-            confirmToggle.isOpen ? "close" : "open"
-          } this store?`}
+          text={`Are you sure you want to ${confirmToggle.isOpen ? "close" : "open"
+            } this store?`}
           confirmLabel="Yes"
           cancelLabel="No"
           onConfirm={confirmToggleAction}
