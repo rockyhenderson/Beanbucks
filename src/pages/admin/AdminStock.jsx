@@ -105,9 +105,37 @@ function AdminStock() {
   const [open, setOpen] = useState(false);
 
   const handleEdit = (item) => {
-    setSelected(item);
-    setOpen(true);
+    console.log("Item being edited:", item);  // Log item for debugging
+
+    // Get the active store_id (from the state where the store is managed)
+    const activeStoreId = storeId; // This comes from your state, which tracks the active store
+
+    // Check if activeStoreId is available
+    if (!activeStoreId) {
+      console.error("Missing store_id:", activeStoreId);
+      setToast({
+        type: "error",
+        title: "Error",
+        message: "No store selected. Please select a store.",
+      });
+      return; // Exit early if store_id is missing
+    }
+
+    // Ensure the item passed has the store_id (optional, in case you still want to use it for validation)
+    setSelected({
+      ...item,
+      store_id: activeStoreId,  // Make sure store_id from the selected store is included
+    });
+    setOpen(true);  // Open the modal
   };
+
+
+
+
+
+
+
+
 
   const handleClose = () => {
     setSelected(null);
@@ -118,17 +146,22 @@ function AdminStock() {
   const handleCloseMenu = () => setAnchorEl(null);
   const stockRows = Array.isArray(stockData?.data)
     ? stockData.data
-      .filter((item) => item.id != null) // ✅ Filter out rows without ID
+      .filter((item) => item.id != null)
       .map((item) => ({
-        id: item.id,
+        id: item.id, // This is BB_Store_Ingredients.id
+        ingredient_id: item.ingredient_id, // Add this line
         name: item.ingredient_name || "Unnamed",
         stock: parseInt(item.stock_quantity ?? "0", 10),
         unit: item.unit || "unit",
         threshold: parseInt(item.threshold ?? "0", 10),
         expiry_date: item.expiry_date ? new Date(item.expiry_date) : null,
         is_out_of_stock: item.is_out_of_stock === "1" || item.is_out_of_stock === 1,
+        store_id: item.store_id,
+        ingredients: item.ingredients || [],
       }))
     : [];
+
+
 
 
 
@@ -168,6 +201,7 @@ function AdminStock() {
   const outOfStock = stockRows.filter(
     (d) => d.stock === 0 || d.is_out_of_stock === true
   ).length;
+
   const oosPercentage = stockRows.length > 0 ? (outOfStock / stockRows.length) * 100 : 0;
 
   const oosColor =
@@ -177,18 +211,37 @@ function AdminStock() {
         ? "#ffc107" // Yellow
         : "#dc3545"; // Red
 
-  const belowThreshold = stockRows.filter((d) => d.stock < d.threshold).length;
+  const belowThreshold = stockRows.filter(
+    (d) => d.stock > 0 && d.stock < d.threshold
+  ).length;
+
   const lowestItem = [...stockRows].sort((a, b) => a.stock - b.stock)[0];
 
   const uniqueUnits = [...new Set(stockRows.map((d) => d.unit))];
 
   const handleSave = async (updatedItem) => {
+    // Check if store_id exists in updatedItem before proceeding
+    if (!updatedItem.store_id) {
+      console.error("Missing store_id in updatedItem:", updatedItem);
+      setToast({
+        type: "error",
+        title: "Error",
+        message: "Store ID is missing. Cannot save stock data.",
+      });
+      return; // Prevent further execution if store_id is missing
+    }
+
     try {
       // 1. Update stock
       const res1 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_stock_quantity.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: updatedItem.id, stock_quantity: updatedItem.stock }),
+        body: JSON.stringify({
+          store_id: updatedItem.store_id,  // Added store_id
+          ingredients: updatedItem.ingredients,  // Added ingredients
+          id: updatedItem.id,
+          stock_quantity: updatedItem.stock,
+        }),
       });
       const data1 = await res1.json();
       if (!data1.success) throw new Error("Failed to update stock.");
@@ -197,24 +250,52 @@ function AdminStock() {
       const res2 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_threshold.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: updatedItem.id, threshold: updatedItem.threshold }),
+        body: JSON.stringify({
+          store_id: updatedItem.store_id,  // Added store_id
+          ingredients: updatedItem.ingredients,  // Added ingredients
+          id: updatedItem.id,
+          threshold: updatedItem.threshold,
+        }),
       });
       const data2 = await res2.json();
       if (!data2.success) throw new Error("Failed to update threshold.");
 
-      // 3. Update expiry date
+      // 3. Update expiry date (ensure expiry_date is null when stock is 0)
+      const expiryDate = updatedItem.stock === 0 ? null : updatedItem.expiry_date;
+
+      console.log("Sending expiry date update data:", {
+        store_id: updatedItem.store_id,  // Added store_id
+        ingredients: updatedItem.ingredients,  // Added ingredients
+        id: updatedItem.id,
+        expiry_date: expiryDate,
+      });
+
       const res3 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_expiry_date.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: updatedItem.id, expiry_date: updatedItem.expiry_date }),
+        body: JSON.stringify({
+          store_id: updatedItem.store_id,  // Added store_id
+          ingredients: updatedItem.ingredients,  // Added ingredients
+          id: updatedItem.id,
+          expiry_date: expiryDate,
+        }),
       });
+
       const data3 = await res3.json();
+      console.log("Response from expiry date update:", data3);
+
       if (!data3.success) throw new Error("Failed to update expiry date.");
+
       // 4. Update out of stock flag
       const res4 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_out_of_stock.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: updatedItem.id, is_out_of_stock: updatedItem.is_out_of_stock }),
+        body: JSON.stringify({
+          store_id: updatedItem.store_id,  // Added store_id
+          ingredients: updatedItem.ingredients,  // Added ingredients
+          id: updatedItem.id,
+          is_out_of_stock: updatedItem.is_out_of_stock,
+        }),
       });
       const data4 = await res4.json();
       if (!data4.success) throw new Error("Failed to update out of stock status.");
@@ -237,8 +318,6 @@ function AdminStock() {
 
       retryStock(); // ✅ fetch data immediately
 
-
-
       setSelected(null);
       setOpen(false);
       retryStock(); // reload table
@@ -249,9 +328,14 @@ function AdminStock() {
         title: "Error",
         message: err.message || "Something went wrong.",
       });
-
     }
   };
+
+
+
+
+
+
 
 
 
@@ -319,6 +403,64 @@ function AdminStock() {
     return "rgba(0,0,0,0.03)"; // default fallback
   };
   const getColorFromPercent = (pct) => pct < 10 ? "#28a745" : pct < 30 ? "#ffc107" : "#dc3545";
+const handleJettisonStock = async (item) => {
+  try {
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const admin_id = user.id; // Admin ID is stored in sessionStorage as part of the user object
+
+    // Check if admin_id exists
+    if (!admin_id) {
+      console.error("Admin ID not found in sessionStorage.");
+      setToast({
+        type: "error",
+        title: "Error",
+        message: "Admin ID not found. Cannot perform this action.",
+      });
+      return;
+    }
+
+    console.log("Requesting jettison for store:", item.store_id, "ingredient:", item.id, "ingredient_id:", item.ingredient_id);
+
+    const requestData = {
+      store_id: item.store_id,
+      ingredient_id: item.ingredient_id || item.id, // Use ingredient_id if available, fallback to id
+      admin_id: admin_id,  // Add admin_id to the payload
+    };
+
+    const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/jettison_stock.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    const data = await response.json();
+    if (data.status !== "success") throw new Error(data.message || "Failed to jettison stock.");
+
+    setToast({
+      type: "success",
+      title: "Stock Jettisoned",
+      message: `"${item.name}" stock was set to 0.`,
+    });
+
+    handleClose();
+
+    setTimeout(() => {
+      retryStock();
+    }, 2000);
+  } catch (err) {
+    console.error("Error during stock jettison:", err);
+    setToast({
+      type: "error",
+      title: "Error",
+      message: err.message || "Something went wrong while jettisoning stock.",
+    });
+  }
+};
+
+
+
 
   return (
     <Box sx={{ px: { xs: 1, sm: 2, md: 4 }, py: 4 }}>
@@ -456,7 +598,7 @@ function AdminStock() {
         })}
       </Box>
       {activeTab === "bulk" && (
-        
+
         <BulkUpdateView
           stockRows={stockRows}
           onBulkSave={async (updates) => {
@@ -472,73 +614,94 @@ function AdminStock() {
       {activeTab === "inventory" && (
         <>
           {expiredCount > 0 && (
-        <div
-          style={{
-            backgroundColor: "#fff3cd",
-            color: "#856404",
-            border: "2px solid #ffeeba",
-            borderRadius: "10px",
-            padding: "1.5rem",
-            marginBottom: "2rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "1.25rem",
-            flexDirection: "row", // Default row for larger screens
-            justifyContent: "space-between", // Keep the space between icon, text, and button
-            flexWrap: "wrap", // Allows content to stack on mobile
-          }}
-        >
-          <ReportProblemOutlined style={{ fontSize: "2.5rem", color: "#ffc107" }} />
-          <div style={{ flex: 1 }}>
-            <h2
+            <div
               style={{
-                margin: 0,
-                fontSize: "1.35rem",
-                fontWeight: "bold",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                backgroundColor: "#fff3cd",
+                color: "#856404",
+                border: "2px solid #ffeeba",
+                borderRadius: "10px",
+                padding: "1.5rem",
+                marginBottom: "2rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "1.25rem",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
               }}
             >
-              {expiredCount} Ingredient{expiredCount > 1 ? "s" : ""} Expired
-            </h2>
-            <p style={{ marginTop: "0.4rem", fontSize: "1rem", lineHeight: 1.4 }}>
-              These ingredients are past their expiry. Please{" "}
-              <strong>mark them out of stock</strong> to avoid use in drinks.
-            </p>
-          </div>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#ffc107",
-              color: "#212529",
-              fontWeight: "bold",
-              fontSize: "1rem",
-              padding: "0.7rem 1.2rem",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#fb8c00", // hover color
-              },
-            }}
-            onClick={() => {
-              const updates = {};
-              for (const item of lowStockItems) {
-                updates[item.ingredient_id] = 500; // Quick order all low stock items
-              }
-              setOrderQuantities((prev) => ({ ...prev, ...updates }));
-              setToast({
-                type: "info",
-                title: "Quick Order Added",
-                message: `${lowStockItems.length} low-stock ingredients set to 500.`,
-              });
-            }}
-          >
-            Resolve Now
-          </Button>
-        </div>
-      )}
+              {/* Icon */}
+              <ReportProblemOutlined
+                style={{
+                  fontSize: "2.5rem",
+                  color: "#ffc107",
+                }}
+              />
+
+              {/* Text and Information */}
+              <div style={{ flex: 1 }}>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "1.35rem",
+                    fontWeight: "bold",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {expiredCount} Ingredient{expiredCount > 1 ? "s" : ""} Expired
+                </h2>
+                <p
+                  style={{
+                    marginTop: "0.4rem",
+                    fontSize: "1rem",
+                    lineHeight: 1.4,
+                    color: "#856404",
+                  }}
+                >
+                  These ingredients are past their expiry. Please{" "}
+                  <strong>jettison them</strong> to completely remove them from stock and avoid use in drinks.
+                </p>
+              </div>
+
+              {/* Updated Jettison Now Button */}
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#fff3cd", // Light yellow background
+                  color: "#856404", // Dark yellow text
+                  fontWeight: "bold",
+                  fontSize: "1rem",
+                  padding: "0.7rem 1.2rem",
+                  borderRadius: "8px",
+                  border: "2px solid #ffc107", // Dark yellow border
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "#ffeeba", // Slightly darker yellow on hover
+                    borderColor: "#ffab00", // Darker border on hover
+                  },
+                }}
+                onClick={() => {
+                  // You'll want to implement actual jettison logic here
+                  // For now it's keeping your existing quick order functionality
+                  const updates = {};
+                  for (const item of lowStockItems) {
+                    updates[item.ingredient_id] = 500;
+                  }
+                  setOrderQuantities((prev) => ({ ...prev, ...updates }));
+                  setToast({
+                    type: "info",
+                    title: "Quick Order Added",
+                    message: `${lowStockItems.length} low-stock ingredients set to 500.`,
+                  });
+                }}
+              >
+                Jettison Now
+              </Button>
+            </div>
+          )}
+
           {userRole === "manager" && (
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
               {stores?.map((store) => (
@@ -761,24 +924,78 @@ This value directly affects the color and icon of this card.`,
               boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <h2 style={{ marginBottom: "1rem" }}>Ingredient Inventory</h2>
-
-              <IconButton
-                onClick={() => setShowInventoryTable((prev) => !prev)}
-                sx={{ color: "var(--primary)" }}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, marginBottom: "1rem" }}>
+              <h2 style={{ margin: 0 }}>Ingredient Inventory</h2>
+              <Tooltip
+                title={
+                  <div style={{ fontSize: "1rem", lineHeight: 1.6 }}>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(220, 53, 69, 0.1)", // Light red
+                        border: "1px solid #dc3545", // Red border
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <strong style={{ color: "#dc3545" }}>❌ Red:</strong> Manually marked out of stock
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(255, 193, 7, 0.15)", // Light yellow
+                        border: "1px solid #ffc107", // Yellow border
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <strong style={{ color: "#ffc107" }}>⚠️ Yellow:</strong> Expired
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(253, 126, 20, 0.2)", // Light orange
+                        border: "1px solid #fd7e14", // Orange border
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <strong style={{ color: "#fd7e14" }}>🟠 Orange:</strong> Below threshold
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(0,0,0,0.03)", // Default light gray
+                        border: "1px solid var(--component-border)", // Default border color
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <strong>Default:</strong> Stock level is OK
+                    </div>
+                  </div>
+                }
+                placement="top"
+                arrow
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      bgcolor: "var(--card)", // Default background color
+                      color: "var(--text)",
+                      border: "1px solid var(--component-border)", // Border color for the tooltip itself
+                      boxShadow: 2,
+                      px: 2,
+                      py: 1,
+                      maxWidth: 280, // Tooltip max width for better readability
+                    },
+                  },
+                }}
               >
-                {showInventoryTable ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
-
-
+                <IconButton size="small" sx={{ color: "var(--text)", p: 0 }}>
+                  <HelpOutline fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Box>
+
 
             <Collapse in={showInventoryTable} timeout="auto" unmountOnExit>
               <Box
@@ -904,6 +1121,7 @@ This value directly affects the color and icon of this card.`,
                     <DataGrid
                       autoHeight
                       rows={filteredData}
+                      onRowClick={(params) => handleEdit(params.row)}
                       getRowClassName={(params) => {
                         const isExpired =
                           params.row.expiry_date instanceof Date
@@ -1045,13 +1263,14 @@ This value directly affects the color and icon of this card.`,
                           ),
                         },
                       ]}
-                      disableRowSelectionOnClick
+
                       hideFooterPagination
                       getRowId={(row) => row.id}
                       localeText={{
                         noRowsLabel: "No ingredients match your filters.",
                       }}
                       sx={{
+                        cursor: "pointer",
                         color: "var(--text) !important",
                         borderColor: "var(--component-border)",
                         backgroundColor: "var(--card)",
@@ -1124,11 +1343,17 @@ This value directly affects the color and icon of this card.`,
           open={open}
           onClose={handleClose}
           onSave={handleSave}
-          item={selected}
+          onDelete={handleJettisonStock}  // This passes the function down
+          item={selected}  // This passes the current item
+          setToast={setToast}
+          retryStock={retryStock}
         />
-
-
       )}
+
+
+
+
+
 
     </Box>
   );

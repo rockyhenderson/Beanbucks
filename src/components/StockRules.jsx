@@ -4,6 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import Toast from "./Toast";
 import EditExpiryModal from "./EditExpiryModal";
+import ViewStockRuleModal from "./ViewStockRuleModal";
 
 const StockRules = () => {
   const [open, setOpen] = useState(true);
@@ -13,7 +14,12 @@ const StockRules = () => {
   const [loading, setLoading] = useState(false); // State for loading indicator
   const [toast, setToast] = useState(null); // State for toast notifications
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const storeId = sessionStorage.getItem("selectedStoreId") || "1"; // Get store ID from session
+  const storeId = sessionStorage.getItem("selectedStoreId") || "1";
+  const [viewModalOpen, setViewModalOpen] = useState(false);  // For View Stock Rule Modal
+  const [editModalOpen, setEditModalOpen] = useState(false);  // For Edit Expiry Modal
+
+
+
 
   // Columns for the DataGrid
   const columns = [
@@ -35,61 +41,51 @@ const StockRules = () => {
       flex: 2,
       headerClassName: "header-style",
     },
-   {
-  field: "ingredients",
-  headerName: "Items in Group", // Changed header to "Items in Group"
-  flex: 2,
-  headerClassName: "header-style",
-  renderCell: (params) => {
-    // Log the raw value of ingredients to see the incoming data
-    console.log("Raw ingredients value:", params.value);
-
-    // Split the comma-separated ingredients into an array
-    const ingredients = params.value ? params.value.split(",") : [];
-    console.log("Split ingredients:", ingredients);
-
-    // Log the individual ingredients after trimming spaces
-    const trimmedIngredients = ingredients.map((ingredient) => ingredient.trim());
-    console.log("Trimmed ingredients:", trimmedIngredients);
-
-    return (
-      <div>
-        {trimmedIngredients.map((ingredient, index) => (
-          <div key={index}>{ingredient}</div> // Ensure each ingredient is displayed on a new line
-        ))}
-      </div>
-    );
-  },
-},
-
-
     {
-      field: "actions",
-      headerName: "Actions",
-      flex: 0.8,
-      sortable: false,
-      renderCell: (params) => (
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            setSelectedRule(params.row); // Set the selected rule
-            setModalOpen(true); // Open the modal
-          }}
-          sx={{
-            textTransform: "none",
-            color: "var(--primary)",
-            borderColor: "var(--primary)",
-            "&:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-              borderColor: "var(--primary)",
-            },
-          }}
-        >
-          Edit
-        </Button>
-      ),
+      field: "ingredients",
+      headerName: "Items in Group", // Changed header to "Items in Group"
+      flex: 2,
+      headerClassName: "header-style",
+      renderCell: (params) => {
+        const ingredients = params.value
+          ? params.value.split(",").map((ingredient) => ingredient.trim()).join(", ")
+          : "";
+        return <span>{ingredients}</span>;
+      },
+
     },
+
+
+{
+  field: "actions",
+  headerName: "Actions",
+  flex: 0.8,
+  sortable: false,
+  renderCell: (params) => (
+    <Button
+      variant="outlined"
+      size="small"
+      onClick={(event) => {
+        event.stopPropagation();  // Stop the row click from firing
+        setSelectedRule(params.row); // Set the selected rule
+        setEditModalOpen(true); // Open the Edit Modal
+      }}
+      sx={{
+        textTransform: "none",
+        color: "var(--primary)",
+        borderColor: "var(--primary)",
+        "&:hover": {
+          backgroundColor: "rgba(0, 0, 0, 0.04)",
+          borderColor: "var(--primary)",
+        },
+      }}
+    >
+      Edit
+    </Button>
+  ),
+}
+
+
   ];
 
 
@@ -106,11 +102,7 @@ const StockRules = () => {
 
       if (result.success) {
         setStockRules(result.data); // Update stock rules state
-        setToast({
-          type: "success",
-          title: "Success",
-          message: "Stock rules loaded successfully.",
-        });
+
       } else {
         throw new Error(result.message || "Failed to fetch stock rules.");
       }
@@ -136,10 +128,13 @@ const StockRules = () => {
   };
 
   // Filtered data based on search query
-  const filteredStockRules = stockRules.filter((rule) =>
-    rule.ingredient_group.toLowerCase().includes(searchQuery) ||
-    rule.description.toLowerCase().includes(searchQuery)
-  );
+  const filteredStockRules = stockRules.filter((rule) => {
+    const groupMatch = rule.ingredient_group.toLowerCase().includes(searchQuery);
+    const descriptionMatch = rule.description.toLowerCase().includes(searchQuery);
+    const ingredientsMatch = rule.ingredients?.toLowerCase().includes(searchQuery);
+    return groupMatch || descriptionMatch || ingredientsMatch;
+  });
+
 
   return (
     <Box
@@ -168,32 +163,52 @@ const StockRules = () => {
 
       {/* Search Bar */}
       <TextField
-        label="Search Stock Rules"
+        size="small"
+        placeholder="Search Stock Rules..."
         variant="outlined"
-        fullWidth
         value={searchQuery}
         onChange={handleSearchChange}
         sx={{
+          width: "100%",
+          maxWidth: 240,
           marginBottom: "1rem",
-          backgroundColor: "var(--card)",
-          "& .MuiInputBase-root": {
-            borderColor: "var(--component-border)",
+          input: {
+            color: "var(--text)",
+            backgroundColor: "var(--card)",
+            borderRadius: "4px",
+          },
+          "& .MuiOutlinedInput-root": {
+            "& fieldset": {
+              borderColor: "var(--primary)", // default border
+            },
+            "&:hover fieldset": {
+              borderColor: "var(--primary)", // on hover
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "var(--primary)", // on focus
+            },
           },
         }}
       />
+
 
       {/* Collapsible Section */}
       <Collapse in={open}>
         <Box sx={{ width: "100%" }}>
           <DataGrid
-            autoHeight // Automatically adjusts height to fit rows
-            rows={filteredStockRules} // Use filtered rows
+            autoHeight
+            rows={filteredStockRules}
             columns={columns}
             disableRowSelectionOnClick
             hideFooterPagination
-            loading={loading} // Show loading indicator
-            getRowId={(row) => row.rule_id} // Use rule_id as unique row ID
+            loading={loading}
+            getRowId={(row) => row.rule_id}
+            onRowClick={(param) => {
+              setSelectedRule(param.row); // Set the selected rule
+              setViewModalOpen(true); // Open the View Modal
+            }}
             sx={{
+              cursor: "pointer",
               color: "var(--text)",
               borderColor: "var(--component-border)",
               backgroundColor: "var(--card)",
@@ -211,6 +226,8 @@ const StockRules = () => {
               },
             }}
           />
+
+
         </Box>
       </Collapse>
 
@@ -233,25 +250,32 @@ const StockRules = () => {
           />
         </div>
       )}
+{/* View Stock Rule Modal */}
+<ViewStockRuleModal
+  open={viewModalOpen}
+  onClose={() => setViewModalOpen(false)}
+  rule={selectedRule}
+/>
 
-      {/* Edit Expiry Modal */}
-      <EditExpiryModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        rule={selectedRule}
-        onSave={(updatedRule) => {
-          setStockRules((prevRules) =>
-            prevRules.map((rule) => (rule.rule_id === updatedRule.rule_id ? updatedRule : rule))
-          );
-          setToast({
-            type: "success",
-            title: "Success",
-            message: "Stock rule updated successfully.",
-          });
-          setModalOpen(false);
-        }}
-        setToast={setToast} // Pass setToast here
-      />
+{/* Edit Expiry Modal */}
+<EditExpiryModal
+  open={editModalOpen}
+  onClose={() => setEditModalOpen(false)}
+  rule={selectedRule}
+  onSave={(updatedRule) => {
+    setStockRules((prevRules) =>
+      prevRules.map((rule) => (rule.rule_id === updatedRule.rule_id ? updatedRule : rule))
+    );
+    setToast({
+      type: "success",
+      title: "Success",
+      message: "Stock rule updated successfully.",
+    });
+    setEditModalOpen(false);
+  }}
+  setToast={setToast}
+/>
+
     </Box>
   );
 };

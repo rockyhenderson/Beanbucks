@@ -1,38 +1,28 @@
 import React, { useState, useEffect } from "react";
 import TwoChoicesModal from "./TwoChoices";
-const EditStockModal = ({ open, onClose, onSave, item }) => {
+import CloseIcon from "@mui/icons-material/Close";
+
+const EditStockModal = ({ open, onClose, onSave, onDelete, item, setToast, retryStock }) => {
   const [stock, setStock] = useState(0);
   const [threshold, setThreshold] = useState(0);
   const [expiryDate, setExpiryDate] = useState("");
   const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [showExpiryConfirm, setShowExpiryConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [originalExpiry, setOriginalExpiry] = useState("");
+  const [showOutOfStockConfirm, setShowOutOfStockConfirm] = useState(false);
+  const [pendingOutOfStock, setPendingOutOfStock] = useState(false);
   const [warningAccepted, setWarningAccepted] = useState(() => {
     return sessionStorage.getItem("stock_warning_ack") === "true";
   });
 
-  const handleSave = () => {
-    // If expiry changed and the warning has been accepted, show confirm modal
-    if (expiryDate !== originalExpiry && warningAccepted) {
-      setShowExpiryConfirm(true);
-      return;
-    }
-
-    // Otherwise, proceed
-    onSave({
-      ...item,
-      stock,
-      threshold,
-      expiry_date: expiryDate || null,
-      is_out_of_stock: isOutOfStock ? 1 : 0,
-    });
-  };
-
   useEffect(() => {
     if (item) {
+      console.log("Item in modal:", item); // Check the item passed to the modal
       setStock(item.stock);
       setThreshold(item.threshold);
 
+      // Ensure expiry_date and store_id are set
       if (item.expiry_date instanceof Date) {
         const formatted = item.expiry_date.toISOString().split("T")[0];
         setExpiryDate(formatted);
@@ -50,16 +40,53 @@ const EditStockModal = ({ open, onClose, onSave, item }) => {
         }
       }
 
-
       setIsOutOfStock(item.is_out_of_stock === "1" || item.is_out_of_stock === true);
-      const stored = sessionStorage.getItem("stock_warning_ack");
-      setWarningAccepted(stored === "true");
+      setWarningAccepted(sessionStorage.getItem("stock_warning_ack") === "true");
     }
   }, [item]);
 
 
+const handleSave = () => {
+  if (stock < 1) {
+    setToast("Stock quantity cannot be less than 1", "error"); // Display error if stock is less than 1
+    return;
+  }
 
-  const isExpiredAndActive = !isOutOfStock && expiryDate && new Date(expiryDate) < new Date();
+  // Preventing stock increase of more than 49%
+  if (stock > item.stock * 1.49) {
+    setToast("Big stock changes must be done in the Bulk Update tab", "error"); // Display error if stock increase is more than 49%
+    return;
+  }
+
+  if (expiryDate !== originalExpiry && warningAccepted) {
+    setShowExpiryConfirm(true);
+    return;
+  }
+
+  onSave({
+    ...item,
+    store_id: item.store_id,
+    ingredients: item.ingredients,
+    stock,
+    threshold,
+    expiry_date: expiryDate || null,
+    is_out_of_stock: isOutOfStock ? 1 : 0,
+  });
+};
+
+  const handleClose = () => {
+    onClose();
+
+  };
+
+
+
+
+
+
+
+
+
 
   if (!open) return null;
 
@@ -76,154 +103,78 @@ const EditStockModal = ({ open, onClose, onSave, item }) => {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
+        overflow: "auto",
+        padding: "1rem",
       }}
     >
       <div
         style={{
+          position: "relative",
           backgroundColor: "var(--card)",
           padding: "2rem",
           borderRadius: "12px",
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "500px",
+          maxHeight: "90vh",
+          overflowY: "auto",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
         }}
       >
+        {/* Close X Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            right: "1rem",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--text)",
+            fontSize: "1.2rem",
+          }}
+          aria-label="Close"
+        >
+          <CloseIcon />
+        </button>
+
         <h2 style={{ marginBottom: "1rem", color: "var(--heading-color)" }}>
           Edit "{item?.name}"
         </h2>
 
-
-
-        {/* Show a red alert if the item is marked as out of stock */}
         {isOutOfStock && (
-          <div
-            style={{
-              backgroundColor: "#f8d7da",
-              color: "#721c24",
-              padding: "0.75rem 1rem",
-              borderRadius: "6px",
-              fontSize: "0.95rem",
-              marginBottom: "1rem",
-              border: "1px solid #f5c6cb",
-              fontWeight: "bold",
-            }}
-          >
-            ❌ This item is currently marked as <strong>out of stock</strong>. It will not be available for any drink orders.
+          <div style={alertStyle("red")}>
+            ❌ This item is currently marked as <strong>out of stock</strong>.
           </div>
         )}
 
-        {/* Show a yellow warning if it's expired and still active */}
         {!isOutOfStock && expiryDate && new Date(expiryDate) < new Date() && (
-          <div
-            style={{
-              backgroundColor: "#fff3cd",
-              color: "#856404",
-              padding: "0.75rem 1rem",
-              borderRadius: "6px",
-              fontSize: "0.95rem",
-              marginBottom: "1rem",
-              border: "1px solid #ffeeba",
-              fontWeight: "bold",
-            }}
-          >
-            ⚠️ This item is <strong>expired</strong> but still active. Please mark it as out of stock to avoid order issues.
+          <div style={alertStyle("yellow")}>
+            ⚠️ This item is <strong>expired</strong> but still active.
           </div>
         )}
-
 
         {!warningAccepted && (
-          <div
-            style={{
-              backgroundColor: "#fff3cd",
-              color: "#856404",
-              padding: "0.75rem 1rem",
-              borderRadius: "6px",
-              fontSize: "0.92rem",
-              marginBottom: "1.5rem",
-              border: "1px solid #ffeeba",
-            }}
-          >
-            ⚠️ Do not manually change the stock or expiry date unless instructed to do so by a manager.
+          <div style={alertStyle("yellow")}>
+            ⚠️ Do not manually change the stock or expiry unless instructed by a manager.
             <div style={{ textAlign: "right", marginTop: "0.75rem" }}>
               <button
                 onClick={() => {
                   sessionStorage.setItem("stock_warning_ack", "true");
                   setWarningAccepted(true);
                 }}
-                style={{
-                  backgroundColor: "#856404",
-                  color: "white",
-                  padding: "0.6rem 1rem",
-                  fontSize: "0.95rem",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
+                style={ackButtonStyle}
               >
                 I Understand
               </button>
-
             </div>
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          <div>
-            <label style={{ fontSize: "0.9rem", color: "var(--text)" }}>Stock Quantity</label>
-            <input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(parseInt(e.target.value) || 0)}
-              style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                fontSize: "1rem",
-                border: "1px solid var(--primary)",
-                borderRadius: "6px",
-                backgroundColor: "var(--input-bg)",
-                color: "var(--text)",
-              }}
-            />
-          </div>
-
-          <div>
-            <label style={{ fontSize: "0.9rem", color: "var(--text)" }}>Minimum Threshold</label>
-            <input
-              type="number"
-              value={threshold}
-              onChange={(e) => setThreshold(parseInt(e.target.value) || 0)}
-              style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                fontSize: "1rem",
-                border: "1px solid var(--primary)",
-                borderRadius: "6px",
-                backgroundColor: "var(--input-bg)",
-                color: "var(--text)",
-              }}
-            />
-          </div>
-
-          <div>
-            <label style={{ fontSize: "0.9rem", color: "var(--text)" }}>Expiry Date</label>
-            <input
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                fontSize: "1rem",
-                border: "1px solid var(--primary)",
-                borderRadius: "6px",
-                backgroundColor: "var(--input-bg)",
-                color: "var(--text)",
-              }}
-            />
-          </div>
-
-          {/* Modern Toggle Switch */}
+          <LabeledInput label="Stock Quantity" value={stock} onChange={setStock} />
+          <LabeledInput label="Minimum Threshold" value={threshold} onChange={setThreshold} />
+          <LabeledDate label="Expiry Date" value={expiryDate} onChange={setExpiryDate} />
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <label style={{ fontSize: "0.9rem", color: "var(--text)", flex: 1 }}>
               Mark as Out of Stock
@@ -232,7 +183,16 @@ const EditStockModal = ({ open, onClose, onSave, item }) => {
               <input
                 type="checkbox"
                 checked={isOutOfStock}
-                onChange={(e) => setIsOutOfStock(e.target.checked)}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  if (checked && !isOutOfStock) {
+                    setPendingOutOfStock(true);
+                    setShowOutOfStockConfirm(true);
+                  } else {
+                    setIsOutOfStock(checked);
+                  }
+                }}
+
                 style={{ opacity: 0, width: 0, height: 0 }}
               />
               <span
@@ -263,27 +223,77 @@ const EditStockModal = ({ open, onClose, onSave, item }) => {
             </label>
           </div>
         </div>
+        <div
+          style={{
+            marginTop: "2.5rem",
+            padding: "1.25rem",
+            borderRadius: "12px",
+            backgroundColor: "rgba(255, 0, 0, 0.05)", // very light red
+            border: "1px solid rgba(220, 53, 69, 0.4)", // darker red border
 
-        <div className="profile__logout-actions" style={{ marginTop: "2rem" }}>
+          }}
+        >
+          Please only click this if you have permission from a manager.
+          This will set the stock to <strong>zero</strong> and mark the ingredient as <strong>out of stock</strong>.
+
           <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => handleSave({ ...item, stock, threshold, expiry_date: expiryDate })}
-            style={{ marginRight: "0.5rem" }}
+            onClick={() => {
+              setShowDeleteConfirm(true); // Show confirmation dialog first
+            }}
+            style={{
+              width: "100%",
+              padding: "0.9rem 1.5rem",
+              fontSize: "1rem",
+              fontWeight: "600",
+              borderRadius: "10px",
+              backgroundColor: "rgba(255, 0, 0, 0.1)", // light red background
+              color: "#dc3545", // red text
+              border: "2px solid #dc3545", // strong red border
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+              marginTop: "1rem",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.15)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.1)";
+            }}
           >
+            Jettison Ingredient
+          </button>
+        </div>
+
+
+        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "space-between" }}>
+          <button className="btn btn--primary" onClick={handleSave}>
             Save Changes
           </button>
-
-          <button
-            type="button"
-            className="btn btn--outline"
-            onClick={onClose}
-          >
+          <button className="btn btn--outline" onClick={onClose}>
             Cancel
           </button>
 
         </div>
       </div>
+      {showOutOfStockConfirm && (
+        <TwoChoicesModal
+          title="Manual Out of Stock"
+          text="This is a manual override. You must remember to remove this flag when the item is back in stock."
+          confirmLabel="Understood"
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            setIsOutOfStock(true);
+            setShowOutOfStockConfirm(false);
+            setPendingOutOfStock(false);
+          }}
+          onCancel={() => {
+            setShowOutOfStockConfirm(false);
+            setPendingOutOfStock(false);
+          }}
+        />
+      )}
+
+      {/* Confirm Change Expiry */}
       {showExpiryConfirm && (
         <TwoChoicesModal
           title="Change Expiry Date?"
@@ -304,8 +314,94 @@ const EditStockModal = ({ open, onClose, onSave, item }) => {
         />
       )}
 
+      {/* Confirm Delete */}
+      {showDeleteConfirm && (
+        <TwoChoicesModal
+          title="Jettison Ingredient Stock?"
+          text={`This will set the stock of "${item?.name}" to 0 for this store.`}
+          confirmLabel="Yes, Set to Zero"
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            onDelete(item); // This will trigger handleJettisonStock
+            setShowDeleteConfirm(false);
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+
     </div>
   );
 };
 
 export default EditStockModal;
+
+// Helper Components & Styles
+const LabeledInput = ({ label, value, onChange, minValue = 1 }) => (
+  <div>
+    <label style={{ fontSize: "0.9rem", color: "var(--text)" }}>{label}</label>
+    <input
+      type="number"
+      value={value}
+      onChange={(e) => {
+        // Ensure it's a whole number and no less than minValue
+        const newValue = parseInt(e.target.value, 10);
+        if (newValue >= minValue) {
+          onChange(newValue);
+        }
+      }}
+      min={minValue} // Prevents entering values less than 1
+      style={inputStyle}
+    />
+  </div>
+);
+
+const LabeledDate = ({ label, value, onChange }) => (
+  <div>
+    <label style={{ fontSize: "0.9rem", color: "var(--text)" }}>{label}</label>
+    <input
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={inputStyle}
+    />
+  </div>
+);
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.75rem 1rem",
+  fontSize: "1rem",
+  border: "1px solid var(--primary)",
+  borderRadius: "6px",
+  backgroundColor: "var(--input-bg)",
+  color: "var(--text)",
+};
+
+const alertStyle = (type) => {
+  const colors = {
+    red: { bg: "#f8d7da", border: "#f5c6cb", text: "#721c24" },
+    yellow: { bg: "#fff3cd", border: "#ffeeba", text: "#856404" },
+  };
+  const { bg, border, text } = colors[type] || {};
+  return {
+    backgroundColor: bg,
+    color: text,
+    padding: "0.75rem 1rem",
+    borderRadius: "6px",
+    fontSize: "0.95rem",
+    marginBottom: "1rem",
+    border: `1px solid ${border}`,
+    fontWeight: "bold",
+  };
+};
+
+const ackButtonStyle = {
+  backgroundColor: "#856404",
+  color: "white",
+  padding: "0.6rem 1rem",
+  fontSize: "0.95rem",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "bold",
+};
