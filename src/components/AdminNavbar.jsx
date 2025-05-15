@@ -24,12 +24,12 @@ function AdminNavbar() {
   const navItems = [
     { text: "Overview ❌", path: "/admin" },
     { text: "Manage Menu 🔵", path: "/admin/managemenu" },
-    { text: "Users ✅", path: "/admin/manageusers" },
-    { text: "BaristaPortal ✅", path: "/admin/baristaPortal" },
-    { text: "Store Options ✅", path: "/admin/managestores" },
-    { text: "Stock ❌", path: "/admin/adminstock" },
-    { text: "Logs ✅", path: "/admin/adminlogs" },
-    { text: "Back to main site ✅", path: "/" },
+    { text: "Users", path: "/admin/manageusers" },
+    { text: "BaristaPortal", path: "/admin/baristaPortal" },
+    { text: "Store Options", path: "/admin/managestores" },
+    { text: "Stock", path: "/admin/adminstock" },
+    { text: "Logs", path: "/admin/adminlogs" },
+    { text: "Back to main site", path: "/" },
   ];
 
   const NavContent = ({ onClick }) => (

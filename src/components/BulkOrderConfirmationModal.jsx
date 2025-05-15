@@ -58,7 +58,7 @@ const styles = {
     padding: "10px", // Ensure some space for mobile screens
   },
   modal: {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--card)",
     borderRadius: "8px",
     padding: "2rem",
     width: "90%", // Make modal take most of the screen on mobile

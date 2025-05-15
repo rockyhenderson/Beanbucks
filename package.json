@@ -20,6 +20,8 @@
     "@mui/x-date-pickers": "^8.1.0",
     "mapbox": "^1.0.0-beta10",
     "mapbox-gl": "^3.10.0",
-    "react-router-dom": "^7.3.0"
+    "react-router-dom": "^7.3.0",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1"
   }
 }

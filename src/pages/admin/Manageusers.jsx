@@ -6,6 +6,9 @@ import EditUserModal from "../../components/EditUserModal";
 import TwoChoicesModal from "../../components/TwoChoices";
 import CreateUserModal from "../../components/CreateUserModal";
 
+import { HelpOutline } from "@mui/icons-material";
+
+
 import {
   Box,
   Typography,
@@ -25,6 +28,7 @@ import {
   getUserRoleNumber,
 } from "../../utils/sessionHelpers";
 import { Add } from "@mui/icons-material";
+import { Tooltip } from "@mui/material";
 
 const baseColumns = [
   { field: "id", headerName: "ID", flex: 0.4 },
@@ -44,7 +48,18 @@ function UserTable({
 }) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(true);
-
+  const warningIconColumn = {
+    field: "warning",
+    headerName: "",
+    width: 50,
+    sortable: false,
+    renderCell: (params) =>
+      params.row.isVerified === 0 ? (
+        <span role="img" aria-label="warning" style={{ fontSize: "1.2rem" }}>
+          ⚠️
+        </span>
+      ) : null,
+  };
   const deleteColumn = {
     field: "delete",
     headerName: "Delete",
@@ -64,12 +79,13 @@ function UserTable({
 
   const columns = includeLoyalty
     ? [
-        ...baseColumns.slice(0, 4),
-        { field: "loyaltyPoints", headerName: "Loyalty Points", flex: 1 },
-        ...baseColumns.slice(4),
-        deleteColumn,
-      ]
-    : [...baseColumns, deleteColumn];
+      warningIconColumn,
+      ...baseColumns.slice(0, 4),
+      { field: "loyaltyPoints", headerName: "Loyalty Points", flex: 1 },
+      ...baseColumns.slice(4),
+      deleteColumn,
+    ]
+    : [warningIconColumn, ...baseColumns, deleteColumn];
 
   const filteredRows = rows.filter((row) => {
     const combined = Object.values(row).join(" ").toLowerCase();
@@ -94,9 +110,36 @@ function UserTable({
           alignItems: "center",
         }}
       >
-        <Typography variant="h5" gutterBottom>
-          {title}
-        </Typography>
+<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+  <h2 style={{ margin: 0 }}>{title}</h2>
+  <Tooltip
+    title={
+      <div style={{ fontSize: "0.9rem", lineHeight: 1.4, maxWidth: 220 }}>
+        ⚠️ Yellow rows show users who haven’t verified their email.
+      </div>
+    }
+    placement="top"
+    arrow
+    componentsProps={{
+      tooltip: {
+        sx: {
+          bgcolor: "var(--card)",
+          color: "var(--text)",
+          border: "1px solid var(--component-border)",
+          boxShadow: 2,
+          px: 2,
+          py: 1,
+        },
+      },
+    }}
+  >
+    <IconButton size="small" sx={{ color: "var(--text)", p: 0 }}>
+      <HelpOutline fontSize="small" />
+    </IconButton>
+  </Tooltip>
+</Box>
+
+
         <IconButton onClick={() => setOpen(!open)}>
           {open ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
@@ -185,6 +228,9 @@ function UserTable({
               "& .MuiDataGrid-row": {
                 borderBottom: "1px solid var(--component-border)",
               },
+              "& .row-unverified": {
+                backgroundColor: "var(--warning-bg)",
+              },
             }}
           />
         </Box>
@@ -244,11 +290,11 @@ function ManageUsers() {
   const handleRowClick = (params) => setSelectedUser(params.row);
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   const admin_id = user?.id;
-  
+
   const handleEditSave = async (updatedData) => {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const admin_id = user?.id;
-  
+
     try {
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/update_user.php",
@@ -265,14 +311,14 @@ function ManageUsers() {
           }),
         }
       );
-  
+
       const result = await response.json();
       console.log("Update response:", result);
-  
+
       if (result.error) {
         throw new Error(result.error);
       }
-  
+
       if (response.ok && result.success) {
         setToast({
           type: "success",
@@ -292,7 +338,7 @@ function ManageUsers() {
       });
     }
   };
-  
+
 
   const handleDeleteClick = (user) => setDeleteTarget(user);
 
@@ -375,7 +421,7 @@ function ManageUsers() {
       });
       const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       const admin_id = user?.id;
-      
+
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/create_user.php",
         {
@@ -432,10 +478,10 @@ function ManageUsers() {
       ) : (
         <>
           <h1>User Management</h1>
-          <Typography sx={{ marginBottom: 2 }}>
-            Admins can manage users, but not other admins or managers. Managers
-            have access to manage both users and admins.
-          </Typography>
+          <p style={{ marginBottom: "1rem", color: "var(--text)", lineHeight: 1.6 }}>
+            Admins can manage users, but not other admins or managers. Managers have access to manage both users and admins.
+          </p>
+
 
           <UserTable
             title="Users"

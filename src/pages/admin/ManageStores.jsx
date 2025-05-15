@@ -274,7 +274,7 @@ function ManageStores() {
     });
     setEditModalOpen(true);
   };
-  
+
 
   const handleSaveStoreHours = async (store_id, open_time, close_time) => {
     // Retrieve the 'user' object from sessionStorage and parse it
@@ -383,7 +383,7 @@ function ManageStores() {
       <div style={{ display: "flex" }}>
         <div
           className="main-page-content"
-          style={{ flexGrow: 1, padding: "30px" }}
+          style={{ flexGrow: 1, padding: "30px", minHeight: "90vh" }}
         >
           {confirmCloseRequest && (
             <TwoChoicesModal
@@ -521,9 +521,9 @@ function ManageStores() {
                           onClick={() => toggleCard(store.store_id)}
                           sx={{ cursor: "pointer" }}
                         >
-                          <Typography variant="h6">
+                          <h2>
                             {store.store_name}
-                          </Typography>
+                            </h2>
                           <Typography variant="body2" color="var(--body-text)">
                             {staffCount} staff
                           </Typography>
@@ -738,15 +738,13 @@ function ManageStores() {
                 elevation={1}
                 sx={{
                   padding: 2,
-                  border: "1px dashed var(--component-border)",
-                  backgroundColor: "var(--warning)",
+                  border: "1px dashed var(--warning-border)",
+                  backgroundColor: "var(--warning-bg)",
                   overflow: "auto",
                   color: "black",
                 }}
               >
-                <Typography variant="h6" sx={{ marginBottom: 1 }}>
-                  🕳️ Unassigned Staff
-                </Typography>
+                <h2 style={{ color: 'var(--warning-text)' }}>Unassigned Staff</h2>
                 {unassignedGroup &&
                   Array.isArray(unassignedGroup.staff) &&
                   unassignedGroup.staff.length > 0 ? (
@@ -805,13 +803,13 @@ function ManageStores() {
       </div>
       {editModalOpen && (
         <EditStoreHoursModal
-  store_id={currentStoreHours.store_id}
-  open_time={currentStoreHours.open_time}
-  close_time={currentStoreHours.close_time}
-  onSave={handleSaveStoreHours}
-  onCancel={() => setEditModalOpen(false)}
-  open={editModalOpen}
-/>
+          store_id={currentStoreHours.store_id}
+          open_time={currentStoreHours.open_time}
+          close_time={currentStoreHours.close_time}
+          onSave={handleSaveStoreHours}
+          onCancel={() => setEditModalOpen(false)}
+          open={editModalOpen}
+        />
 
       )}
 

@@ -6,6 +6,9 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useMediaQuery, Box } from "@mui/material";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 
 // Components
 import Navbar from "./components/Navbar";

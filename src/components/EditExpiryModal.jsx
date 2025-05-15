@@ -14,7 +14,6 @@ const EditExpiryModal = ({ open, onClose, rule, onSave, setToast }) => {
 
   const handleSave = async () => {
     if (expiryDays <= 0) {
-      // Using existing toast system to show the error message
       setToast({
         type: "danger",
         title: "Error",
@@ -22,8 +21,10 @@ const EditExpiryModal = ({ open, onClose, rule, onSave, setToast }) => {
       });
       return;
     }
-
-    setLoading(true); // Start loading
+  
+    const adminId = JSON.parse(sessionStorage.getItem("user"))?.id;
+  
+    setLoading(true);
     try {
       const response = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_stock_rule.php",
@@ -35,14 +36,14 @@ const EditExpiryModal = ({ open, onClose, rule, onSave, setToast }) => {
           body: JSON.stringify({
             rule_id: rule.rule_id,
             default_expiry: expiryDays,
+            admin_id: adminId, // ✅ Pass the admin ID here
           }),
         }
       );
-
+  
       const result = await response.json();
-
+  
       if (response.ok && result.success) {
-        // Success toast
         setToast({
           type: "success",
           title: "Success",
@@ -50,21 +51,21 @@ const EditExpiryModal = ({ open, onClose, rule, onSave, setToast }) => {
         });
         const updatedRule = { ...rule, default_expiry: expiryDays };
         onSave(updatedRule);
-        onClose(); // Close modal
+        onClose();
       } else {
         throw new Error(result.error || "Failed to update stock rule.");
       }
     } catch (error) {
-      // Error toast
       setToast({
         type: "danger",
         title: "Error",
         message: error.message || "An error occurred while updating the stock rule.",
       });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
+  
 useEffect(() => {
   if (rule) {
     setExpiryDays(rule.default_expiry || 0); // Set expiryDays to the rule's default_expiry

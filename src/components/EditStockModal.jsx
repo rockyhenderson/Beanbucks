@@ -48,13 +48,21 @@ const EditStockModal = ({ open, onClose, onSave, onDelete, item, setToast, retry
 
 const handleSave = () => {
   if (stock < 1) {
-    setToast("Stock quantity cannot be less than 1", "error"); // Display error if stock is less than 1
+    setToast({
+      type: "error",
+      title: "Invalid Stock",
+      message: "Stock quantity cannot be less than 1 If you want to wipe use jettison",
+    });
     return;
   }
 
   // Preventing stock increase of more than 49%
   if (stock > item.stock * 1.49) {
-    setToast("Big stock changes must be done in the Bulk Update tab", "error"); // Display error if stock increase is more than 49%
+    setToast({
+      type: "error",
+      title: "Too Much Stock",
+      message: "Big stock changes(Over 50%) must be done in the Bulk Update tab.",
+    }); // Display error if stock increase is more than 49%
     return;
   }
 

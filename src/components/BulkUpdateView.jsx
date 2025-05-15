@@ -98,8 +98,11 @@ function BulkUpdateView({ onBulkSave }) {
     const handleModalConfirm = async () => {
         setModalOpen(false); // Close the modal
 
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+
         const payload = {
             store_id: storeId,
+            admin_id: user.id, // ✅ Include admin ID for logging
             ingredients: orderList.map(item => ({
                 ingredient_id: item.id,
                 quantity: item.quantity,
@@ -141,6 +144,7 @@ function BulkUpdateView({ onBulkSave }) {
         }
     };
 
+
     const handleModalCancel = () => {
         setModalOpen(false); // Close the modal without saving
     };
@@ -179,14 +183,14 @@ function BulkUpdateView({ onBulkSave }) {
     const itemCount = orderedItems.length;
     const totalUnits = orderedItems.reduce((sum, [, qty]) => sum + parseInt(qty), 0);
     const getItemBackground = (isBelowThreshold) => {
-        return isBelowThreshold ? "#fff3cd" : "var(--card)";  // Apply yellow for low-stock items
+        return isBelowThreshold ? "var(--warning-bg)" : "var(--card)";  // Apply yellow for low-stock items
     };
     return (
         <Box sx={{ mt: 2 }}>
             {lowStockItems.length > 0 && (
                 <Box
                     sx={{
-                        backgroundColor: "#fff3cd",
+                        backgroundColor: "var(--warning-bg)",
                         color: "#856404",
                         border: "2px solid #ffeeba",
                         borderRadius: "10px",
@@ -210,6 +214,7 @@ function BulkUpdateView({ onBulkSave }) {
                                 whiteSpace: "normal", // Allow the text to wrap
                                 overflow: "hidden",
                                 textOverflow: "ellipsis", // Add ellipsis if text is too long
+                                color: "var(--warning-text)"
                             }}
                         >
                             {lowStockItems.length} Ingredient{lowStockItems.length > 1 ? "s" : ""} Below Threshold
@@ -219,7 +224,8 @@ function BulkUpdateView({ onBulkSave }) {
                                 marginTop: "0.4rem",
                                 fontSize: "1rem",
                                 lineHeight: 1.4,
-                                wordWrap: "break-word", // Ensure words break to fit the box
+                                wordWrap: "break-word", 
+                                color: "var(--warning-text)"
                             }}
                         >
                             These ingredients are below their stock threshold. Quick order them now to replenish.
@@ -280,11 +286,20 @@ function BulkUpdateView({ onBulkSave }) {
                     onClick={toggleOrderSection}
                     sx={{
                         display: "flex",
+                        flexDirection: {
+                            xs: "column", // Stack on mobile
+                            sm: "row",    // Row layout on larger screens
+                        },
+                        flexWrap: "wrap",
                         justifyContent: "space-between",
-                        alignItems: "center",
+                        alignItems: {
+                            xs: "flex-start",
+                            sm: "center",
+                        },
                         cursor: "pointer",
                         padding: "1rem",
-                        backgroundColor: "var(--card)", // Use card color for header background
+                        backgroundColor: "var(--card)",
+                        gap: 1.5, // Adds spacing between items when stacked
                     }}
                 >
                     <h2 style={{ margin: 0, color: "var(--heading-color)" }}>
@@ -300,14 +315,20 @@ function BulkUpdateView({ onBulkSave }) {
                             color: "var(--primary)",
                             backgroundColor: "var(--card)",
                             minWidth: 220,
-                            mb: 1.5,
-                            padding: "0.6rem 1.5rem", // Ensures good padding for button size
-                            fontSize: "1.2rem", // Increased font size
+                            padding: "0.6rem 1.5rem",
+                            fontSize: "1.2rem",
+                            alignSelf: {
+                                xs: "stretch", // Full width on mobile
+                                sm: "auto",
+                            },
                             "&:hover": {
-                                backgroundColor: "var(--primary-light, #f7f7f7)", // lighter hover color for contrast
+                                backgroundColor: "var(--primary-light, #f7f7f7)",
                             },
                         }}
-                        onClick={() => handleMassUpdate(massUpdateQuantity)} // Pass the input value as the quantity
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent collapsing when clicking button
+                            handleMassUpdate(massUpdateQuantity);
+                        }}
                     >
                         Mass Update Stock
                     </Button>
@@ -317,6 +338,7 @@ function BulkUpdateView({ onBulkSave }) {
                         <ExpandMore sx={{ color: "var(--primary)" }} />
                     )}
                 </Box>
+
 
                 <Collapse in={orderSectionExpanded} timeout="auto" unmountOnExit>
                     <Box sx={{ p: 2 }}>
@@ -376,10 +398,10 @@ function BulkUpdateView({ onBulkSave }) {
                                     cursor: "pointer",
                                 }}
                             >
-                                <h2 style={{ margin: 0, fontSize: "1.3rem", color: "var(--heading-color)" }}>
+                                <h2 style={{ margin: 0, color: "var(--text)" }}>
                                     {group}
                                     {lowStockCount > 0 && (
-                                        <span style={{ color: "#ffc107" }}> ({lowStockCount} Below Threshold)</span>
+                                        <span style={{ color: "var(--warning-text)" }}> ({lowStockCount} Below Threshold)</span>
                                     )}
                                 </h2>
 
@@ -418,7 +440,7 @@ function BulkUpdateView({ onBulkSave }) {
                                                             fontWeight: 600,
                                                             fontSize: "1rem",
                                                             margin: 0,
-                                                            color: "var(--text)",
+                                                            color: item.isBelowThreshold ? "var(--warning-text)" : "var(--text)",
                                                             whiteSpace: "normal", // Allow text to wrap
                                                             overflow: "visible", // Allow text to overflow if it's too long
                                                             textOverflow: "clip", // Remove the ellipsis

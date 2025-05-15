@@ -148,18 +148,33 @@ const StockRules = () => {
     >
       {/* Header with Toggle Button */}
       <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: open ? 2 : 0,
-        }}
-      >
-        <h2 style={{ margin: 0, color: "var(--heading-color)" }}>Stock Rules</h2>
-        <IconButton onClick={() => setOpen((prev) => !prev)} sx={{ color: "var(--primary)" }}>
-          {open ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </Box>
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: open ? 1 : 0,
+  }}
+>
+  <h2 style={{ margin: 0, color: "var(--heading-color)" }}>Stock Rules</h2>
+  <IconButton onClick={() => setOpen((prev) => !prev)} sx={{ color: "var(--primary)" }}>
+    {open ? <ExpandLess /> : <ExpandMore />}
+  </IconButton>
+</Box>
+
+{open && (
+  <p
+    style={{
+      marginTop: 0,
+      marginBottom: "1.5rem",
+      color: "var(--text)",
+      fontSize: "0.95rem",
+      lineHeight: 1.5,
+    }}
+  >
+    These rules define default expiry durations and groupings of ingredients for automated stock expiry logic.
+  </p>
+)}
+
 
       {/* Search Bar */}
       <TextField
