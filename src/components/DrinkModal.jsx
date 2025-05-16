@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "../DrinkModal.css";
-import fillerImage from "../assets/no_image_found.png";
+import noImage from '../../public/img/Fallback.png'
 import CoffeeIcon from "@mui/icons-material/Coffee";
 import AgricultureIcon from "@mui/icons-material/Agriculture"; // for Whole
 import SpaIcon from "@mui/icons-material/Spa"; // for Oat

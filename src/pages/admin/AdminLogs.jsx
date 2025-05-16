@@ -4,11 +4,13 @@ import RetryFallback from "../../components/RetryFallback";
 import Toast from "../../components/Toast";
 import { Box, Typography, TextField } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import AdminLogModal from "../../components/AdminLogModal"; // add this
 
 function AdminLogs() {
   const [toast, setToast] = useState(null);
   const [search, setSearch] = useState("");
   const user = JSON.parse(sessionStorage.getItem("user"));
+  const [selectedLog, setSelectedLog] = useState(null);
 
   const {
     data: logs,
@@ -72,10 +74,10 @@ function AdminLogs() {
 
   const filteredRows = Array.isArray(logs)
     ? logs.filter((log) =>
-        Object.values(log).some((value) =>
-          String(value).toLowerCase().includes(search.toLowerCase())
-        )
+      Object.values(log).some((value) =>
+        String(value).toLowerCase().includes(search.toLowerCase())
       )
+    )
     : [];
 
   return (
@@ -110,7 +112,9 @@ function AdminLogs() {
             pageSize={8}
             rowsPerPageOptions={[8, 15, 25]}
             disableSelectionOnClick
+            onRowClick={(params) => setSelectedLog(params.row)}
             sx={{
+              cursor:"pointer",
               backgroundColor: "var(--card)",
               borderColor: "var(--component-border)",
               color: "var(--text)",
@@ -124,6 +128,7 @@ function AdminLogs() {
               },
             }}
           />
+
         </>
       )}
 
@@ -146,6 +151,12 @@ function AdminLogs() {
           />
         </div>
       )}
+      <AdminLogModal
+        open={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+        log={selectedLog}
+      />
+
     </Box>
   );
 }

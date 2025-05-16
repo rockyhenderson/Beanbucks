@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogActions, Button, Box, Typography } from "@mui/material";
-import FillerHero from "../assets/FILLER_HERO_IMG.jpg";
+import FillerHero from '../../public/img/Fallback.png'
 
 function EditDrinkModal({ drink, onCancel, onSave }) {
   const [formData, setFormData] = useState({

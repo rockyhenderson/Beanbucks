@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
-import noImage from '../assets/no_image_found.png';
+import noImage from '../../public/img/Fallback.png'
 
 const DrinkCard = ({ drink, onClick }) => {
   const image = drink.image || noImage;

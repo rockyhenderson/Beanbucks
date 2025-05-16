@@ -1,49 +1,38 @@
 import React from "react";
-import HomepageCTA from "../components/HomepageCTA";
-import "../Home_Style.css";
+import { Box } from "@mui/material";
+
+import HeroBanner from "../components/HeroBanner";
+import FeaturedMenuCarousel from "../components/FeaturedMenuCarousel";
+import LoyaltyPreview from "../components/LoyaltyPreview";
+import AllergenFeatureAdvert from "../components/AllergenFeatureAdvert";
+import SocialProof from "../components/SocialProof";
+import HowItWorksSteps from "../components/HowItWorksSteps";
 
 function Home() {
   return (
-    <div class="home">
-      <HomepageCTA />
-      <h1>Welcome to BeanBucks Home ☕</h1>
+    <Box className="home" sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
+      <HeroBanner />
 
-      <div class="temp-component-box">
-        <strong>Hero Banner with CTA</strong>
-        <p>Promotes new menu items, seasonal drinks, or limited-time offers.</p>
-        <p>Includes a strong call-to-action (e.g., "Try Now", "Order Today").</p>
-      </div>
+      <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
+        <FeaturedMenuCarousel />
+      </Box>
 
-      <div class="temp-component-box">
-        <strong>Featured & Trending Menu Items</strong>
-        <p>Displays best-selling drinks based on real-time sales data.</p>
-        <p>Helps users quickly see what’s popular.</p>
-      </div>
+      <Box sx={{ backgroundColor: '#fff8e1', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+        <LoyaltyPreview />
+      </Box>
 
-      <div class="temp-component-box">
-        <strong>Loyalty Points Advert (If Logged In)</strong>
-        <p>Quick preview of earned points and how to redeem them.</p>
-        <p>Encourages engagement with the rewards system.</p>
-      </div>
+      <Box sx={{ backgroundColor: '#e3f2fd', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+        <AllergenFeatureAdvert />
+      </Box>
 
-      <div class="temp-component-box">
-        <strong>New Allergen Feature Advert</strong>
-        <p>Highlights the ability to filter the menu based on allergens & dietary preferences.</p>
-        <p>If logged in, includes a link to update user preferences.</p>
-      </div>
+      <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
+        <SocialProof />
+      </Box>
 
-      <div class="temp-component-box">
-        <strong>Social Proof</strong>
-        <p>Showcases diversity & inclusivity of BeanBucks’ customer base.</p>
-        <p>Could include testimonials, reviews, or a “Loved by Many” statement.</p>
-      </div>
-
-      <div class="temp-component-box">
-        <strong>How It Works</strong>
-        <p>Simple, step-by-step guide for new users.</p>
-        <p>Example: “Order Online → Pick Up In-Store → Earn Rewards.”</p>
-      </div>
-    </div>
+      <Box sx={{ backgroundColor: '#f1f8e9', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+        <HowItWorksSteps />
+      </Box>
+    </Box>
   );
 }
 
