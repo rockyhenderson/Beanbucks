@@ -541,7 +541,33 @@ function AdminStock() {
         <h1 style={{ color: "var(--heading-color)", margin: 0 }}>Admin Stock</h1>
         <Button
           variant="outlined"
-          onClick={() => alert("Test DB forward triggered")}
+          onClick={async () => {
+            try {
+              const response = await fetch(
+                `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/simulate_stock_issues.php?store_id=${storeId}`
+              );
+              const data = await response.json();
+          
+              if (data.success) {
+                setToast({
+                  type: "success",
+                  title: "Stock Simulated",
+                  message: `Stock updated: ${data.details.below_threshold} below threshold, ${data.details.expired} expired, ${data.details.out_of_stock} OOS.`,
+                });
+                retryStock(); // refresh data
+              } else {
+                throw new Error(data.error || "Simulation failed.");
+              }
+            } catch (err) {
+              console.error("Simulation error:", err);
+              setToast({
+                type: "error",
+                title: "Simulation Failed",
+                message: err.message || "Something went wrong.",
+              });
+            }
+          }}
+          
           sx={{
             backgroundColor: "rgba(40, 167, 69, 0.1)", // light green
             color: "#28a745", // dark green text

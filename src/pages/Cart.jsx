@@ -21,6 +21,21 @@ function Cart({ cartItemCount, setCartItemCount }) {
   useEffect(() => {
     const stored = localStorage.getItem("beanbucks_cart");
     if (stored) setCartItems(JSON.parse(stored));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const patched = parsed.map((item) => ({
+        size: item.size || "",
+        milk: item.milk || "",
+        beans: item.beans || "",
+        shots: item.shots ?? 1,
+        syrups: item.syrups || {},
+        toppings: item.toppings || [],
+        qty: item.qty || 1,
+        ...item,
+      }));
+      setCartItems(patched);
+    }
+    
   }, []);
 
   const updateQuantity = (id, delta) => {
@@ -48,19 +63,20 @@ function Cart({ cartItemCount, setCartItemCount }) {
 
 
   const getItemTotal = (item) => {
-    const base = parseFloat(item.price) || 2.5;
+    const base = Number.isFinite(parseFloat(item.price)) ? parseFloat(item.price) : 2.5;
     const size = priceModifiers.size[item.size] || 0;
     const milk = priceModifiers.milk[item.milk] || 0;
     const beans = priceModifiers.beans[item.beans] || 0;
-    const shots = Math.max(0, item.shots - 1) * priceModifiers.shot;
+    const shots = Math.max(0, (item.shots || 1) - 1) * priceModifiers.shot;
     const syrups =
       Object.values(item.syrups || {}).reduce((sum, c) => sum + c, 0) *
       priceModifiers.syrup;
     const toppings = (item.toppings?.length || 0) * priceModifiers.topping;
-
+  
     const unitPrice = base + size + milk + beans + shots + syrups + toppings;
     return (unitPrice * (item.qty || 1)).toFixed(2);
   };
+  
 
   const total = cartItems
     .reduce((sum, item) => sum + parseFloat(getItemTotal(item)), 0)

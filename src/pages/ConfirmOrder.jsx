@@ -17,6 +17,8 @@ import {
 import Toast from "../components/Toast";
 import useFetchWithRetry from "../utils/useFetchWithRetry";
 import RetryFallback from "../components/RetryFallback";
+import { useMemo } from "react";
+
 
 function ConfirmOrder() {
   const navigate = useNavigate();
@@ -29,6 +31,7 @@ function ConfirmOrder() {
   const [showCardForm, setShowCardForm] = useState(false);
   const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
   const [cardProcessing, setCardProcessing] = useState(false);
+  let discountApplied = false;
 
   const [cardDetails, setCardDetails] = useState({
     name: "",
@@ -85,6 +88,85 @@ function ConfirmOrder() {
       return sum + unitPrice * (item.qty || 1);
     }, 0)
     .toFixed(2);
+  const applyRewardDiscount = (originalTotal, cartItems, rewardValue) => {
+    let discount = 0;
+
+    console.log("Reward being applied:", rewardValue);
+    console.log("Cart items:", cartItems);
+
+    if (rewardValue === "free-shot") {
+      const drinkWithExtraShot = cartItems.find(item => item.shots > 1);
+      if (drinkWithExtraShot) {
+        discount = 0.5;
+        console.log("Applied free-shot discount: -£0.50 for", drinkWithExtraShot.name);
+      } else {
+        console.log("No drink with extra shot found.");
+      }
+    }
+
+
+    else if (rewardValue === "free-small") {
+      const smallDrink = cartItems.find((item) => item.size === "Small");
+      if (smallDrink) {
+        discount = parseFloat(smallDrink.price);
+        console.log(`Applied small drink discount: -£${discount} for`, smallDrink.name);
+      } else {
+        console.log("No small drink found.");
+      }
+    }
+
+    else if (rewardValue === "free-large") {
+      const largeDrink = cartItems.find((item) => item.size === "Large");
+      if (largeDrink) {
+        discount = parseFloat(largeDrink.price);
+        console.log(`Applied large drink discount: -£${discount} for`, largeDrink.name);
+      } else {
+        console.log("No large drink found.");
+      }
+    }
+
+    else if (rewardValue === "free-snack") {
+      const snack = cartItems.find((item) => item.category?.toLowerCase() === "food");
+      if (snack && !isNaN(parseFloat(snack.price))) {
+        discount += parseFloat(snack.price);
+        console.log(`Applied snack discount: -£${discount} for`, snack.name);
+      } else {
+        console.warn("Snack missing or has invalid price:", snack);
+      }
+    }
+
+
+    else if (rewardValue === "free-combo") {
+      const snack = cartItems.find((item) => item.category?.toLowerCase() === "food");
+      const drink = cartItems.find((item) => item.category?.toLowerCase() !== "food");
+      if (snack) {
+        discount += parseFloat(snack.price);
+        console.log(`Snack part of combo discount: -£${discount} for`, snack.name);
+      } else {
+        console.log("No snack found for combo.");
+      }
+      if (drink) {
+        const drinkDiscount = parseFloat(drink.price);
+        discount += drinkDiscount;
+        console.log(`Drink part of combo discount: -£${drinkDiscount} for`, drink.name);
+      } else {
+        console.log("No drink found for combo.");
+      }
+    }
+
+    const adjusted = Math.max(0, originalTotal - discount);
+    console.log(`Original total: £${originalTotal} → Adjusted total: £${adjusted}`);
+    return adjusted;
+  };
+
+
+
+  const adjustedTotal = useMemo(() => {
+    const parsedTotal = parseFloat(total);
+    if (!Number.isFinite(parsedTotal)) return 0;
+    return applyRewardDiscount(parsedTotal, cartItems, selectedReward);
+  }, [total, cartItems, selectedReward]);
+
 
   const handleConfirm = async () => {
     setConfirming(true);
@@ -118,7 +200,8 @@ function ConfirmOrder() {
       user_id: userId,
       store_id: parseInt(selectedStore),
       pickup_time: formattedPickupTime, // Corrected pickup time
-      total_price: parseFloat(total),
+      total_price: adjustedTotal,
+
       reward_used: selectedReward || null,
       cart: cartItems,
     };
@@ -139,7 +222,40 @@ function ConfirmOrder() {
 
       if (result.success) {
         const orderId = result.order_id;
-      
+        localStorage.removeItem("SelectedReward");
+        // After order is placed successfully
+        const loyaltyPayload = {
+          user_id: userId,
+          total_paid: adjustedTotal,
+          reward_used: selectedReward
+        };
+
+        console.log("🧾 Loyalty Payload:", loyaltyPayload);
+
+        fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_loyalty_points.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            total_paid: adjustedTotal,
+            reward_used: selectedReward
+          })
+        })
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
+              console.log("✅ Loyalty updated successfully:", res);
+            } else {
+              console.log("❌ Loyalty update failed:", res.error || res);
+            }
+          })
+          .catch(err => {
+            console.error("❌ Loyalty fetch error:", err.message || err);
+          });
+
+
         // ✅ Store for ActiveOrderWidget
         sessionStorage.setItem(
           "activeOrder",
@@ -149,7 +265,7 @@ function ConfirmOrder() {
             storeName: storeData?.store_name || `Store #${selectedStore}`,
           })
         );
-      
+
         // ✅ Optional extra storage
         localStorage.setItem("last_order_id", orderId);
         localStorage.setItem(
@@ -159,12 +275,12 @@ function ConfirmOrder() {
             storeName: storeData?.store_name || `Store #${selectedStore}`,
           })
         );
-      
+
         // ✅ Clean up cart
         localStorage.removeItem("beanbucks_cart");
-      
+
         showToast("success", "Order Placed", "Your order has been successfully placed!");
-      
+
         setTimeout(() => {
           navigate("/order-success", {
             state: {
@@ -175,8 +291,8 @@ function ConfirmOrder() {
           });
         }, 1500);
       }
-      
-       else {
+
+      else {
         throw new Error(result.error || "Order failed.");
       }
     } catch (error) {
@@ -229,7 +345,9 @@ function ConfirmOrder() {
       setDisplayedRewards(randomThree);
     }
   }, []);
-
+  if (selectedReward === "free-combo") {
+    window.__comboState = { food: false, drink: false };
+  }
   return (
     <Box sx={{ maxWidth: "900px", margin: "2rem auto", padding: "1rem" }}>
       <Box
@@ -282,6 +400,7 @@ function ConfirmOrder() {
       )}
 
       <h1>Confirm Your Order</h1>
+      
 
       {cartItems.length === 0 ? (
         <Typography align="center" color="text.secondary">
@@ -291,27 +410,86 @@ function ConfirmOrder() {
         <Box display="flex" flexDirection="column" gap={3}>
           <Paper sx={{ padding: "1.5rem", backgroundColor: "var(--card)" }}>
             <h2>Order Summary</h2>
-            {cartItems.map((item, i) => (
-              <Box
-                key={i}
-                display="flex"
-                justifyContent="space-between"
-                py={0.5}
-              >
-                <p>
-                  {item.name} x{item.qty || 1}
-                </p>
-                <p>£{item.price}</p>
-              </Box>
-            ))}
+            {cartItems.map((item, i) => {
+              let isFree = false;
+              let showShotDiscount = false;
+              if (!discountApplied && selectedReward === "free-shot" && item.shots > 1) {
+                showShotDiscount = true;
+                discountApplied = true;
+              }
+
+              if (!discountApplied) {
+                const cat = item.category?.toLowerCase();
+                if (selectedReward === "free-small" && item.size === "Small") {
+                  isFree = true;
+                  discountApplied = true;
+                } else if (selectedReward === "free-large" && item.size === "Large") {
+                  isFree = true;
+                  discountApplied = true;
+                } else if (selectedReward === "free-snack" && cat === "food") {
+                  isFree = true;
+                  discountApplied = true;
+                } else if (selectedReward === "free-combo") {
+                  if (!window.__comboState) window.__comboState = { food: false, drink: false };
+
+                  if (cat === "food" && !window.__comboState.food) {
+                    isFree = true;
+                    window.__comboState.food = true;
+                  } else if (cat !== "food" && !window.__comboState.drink) {
+                    isFree = true;
+                    window.__comboState.drink = true;
+                  }
+
+                  // Mark discount applied if both conditions are met
+                  if (window.__comboState.food && window.__comboState.drink) {
+                    discountApplied = true;
+                  }
+                }
+              }
+
+
+              const originalTotal = parseFloat(item.price) * (item.qty || 1);
+              const discountedPrice = (originalTotal - 0.5).toFixed(2);
+              const displayPrice = showShotDiscount ? (
+                <>
+                  <span style={{ color: "var(--body-text)", fontWeight: 500 }}>
+                    £{discountedPrice}
+                  </span>{" "}
+                  <span style={{ color: "var(--primary)", fontWeight: 600 }}>
+                    (-£0.50)
+                  </span>
+                </>
+              )
+                : isFree ? (
+                  <>
+                    <span style={{ textDecoration: "line-through", color: "gray" }}>
+                      £{originalTotal.toFixed(2)}
+                    </span>{" "}
+                    <span style={{ color: "var(--primary)", fontWeight: 600 }}>
+                      (-£{originalTotal.toFixed(2)})
+                    </span>
+                  </>
+                ) : `£${originalTotal.toFixed(2)}`;
+              `£${originalTotal.toFixed(2)}`;
+
+              return (
+                <Box key={i} display="flex" justifyContent="space-between" py={0.5}>
+                  <p>{item.name} x{item.qty || 1}</p>
+                  <p>{displayPrice}</p>
+                </Box>
+              );
+            })}
+
+
             <Divider sx={{ my: 2 }} />
             <Box display="flex" justifyContent="space-between" fontWeight={600}>
               <p>
                 <strong>Total:</strong>
               </p>
               <p>
-                <strong>£{total}</strong>
+                <strong>£{adjustedTotal.toFixed(2)}</strong>
               </p>
+
             </Box>
           </Paper>
 
@@ -425,24 +603,31 @@ function ConfirmOrder() {
                         <Grid item xs={12} sm={4} key={reward.value}>
                           <Box
                             onClick={() => {
-                              setSelectedReward(reward.value);
-                              localStorage.setItem(
-                                "SelectedReward",
-                                JSON.stringify({
-                                  id: reward.id,
-                                  value: reward.value,
-                                })
-                              );
+                              if (selectedReward === reward.value) {
+                                // Deselect reward
+                                setSelectedReward("");
+                                localStorage.removeItem("SelectedReward");
+                              } else {
+                                // Select new reward
+                                setSelectedReward(reward.value);
+                                localStorage.setItem(
+                                  "SelectedReward",
+                                  JSON.stringify({
+                                    id: reward.id,
+                                    value: reward.value,
+                                  })
+                                );
+                              }
                             }}
+
                             sx={{
                               backgroundColor: isSelected
                                 ? "#ffe8d9"
                                 : "var(--card)",
-                              border: `2px solid ${
-                                isSelected
-                                  ? "var(--primary)"
-                                  : "var(--component-border)"
-                              }`,
+                              border: `2px solid ${isSelected
+                                ? "var(--primary)"
+                                : "var(--component-border)"
+                                }`,
                               borderRadius: "12px",
                               padding: "1.5rem",
                               minHeight: "200px", // consistent size for all
@@ -761,14 +946,15 @@ function ConfirmOrder() {
               backgroundColor: "var(--primary)",
               color: "var(--button-text)",
               border: "none",
-              cursor: confirming ? "not-allowed" : "pointer",
-              opacity: confirming ? 0.6 : 1,
+              cursor: confirming || !selectedPayment ? "not-allowed" : "pointer",
+              opacity: confirming || !selectedPayment ? 0.6 : 1,
             }}
             onClick={handleConfirm}
-            disabled={confirming}
+            disabled={confirming || !selectedPayment}
           >
             {confirming ? "Placing Order..." : "Confirm Order"}
           </button>
+
         </Box>
       )}
     </Box>

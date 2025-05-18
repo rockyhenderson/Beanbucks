@@ -273,8 +273,8 @@ function BaristaSecurePortal() {
         })),
       };
 
-      // console.log("🔍 Sending order payload:", payload);
-
+      console.log("🔍 Sending order payload:", payload);
+debugger
       const res = await fetch(
         "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/mark_order_done.php",
         {

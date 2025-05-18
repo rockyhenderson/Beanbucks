@@ -11,6 +11,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Toast from "../components/Toast"; // Make sure this path is correct
+import { Button } from "@mui/material";
+
 
 function Rewards() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -169,6 +171,54 @@ function Rewards() {
 
             <div className="rewards-header">
                 <h1>Your Rewards</h1>
+                <Button
+  variant="outlined"
+  onClick={async () => {
+    try {
+      const response = await fetch(
+        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/Add1kPoints.php?user_id=${userId}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setToast({
+          type: "success",
+          title: "Points Granted",
+          message: "✅ 1000 loyalty points added!",
+        });
+        retry(); // Refetch updated points
+      } else {
+        throw new Error(data.message || "Failed to add points");
+      }
+    } catch (err) {
+      console.error("Dev points error:", err);
+      setToast({
+        type: "error",
+        title: "Dev Error",
+        message: err.message || "Something went wrong.",
+      });
+    }
+  }}
+  sx={{
+    backgroundColor: "rgba(40, 167, 69, 0.1)",
+    color: "#28a745",
+    fontWeight: "bold",
+    fontSize: "1rem",
+    padding: "0.7rem 1.2rem",
+    borderRadius: "8px",
+    border: "2px solid #28a745",
+    cursor: "pointer",
+    marginLeft: "1rem",
+    "&:hover": {
+      backgroundColor: "#28a745",
+      color: "white",
+      borderColor: "#28a745",
+    },
+  }}
+>
+  Give 1000 Points
+</Button>
+
                 <p className="subtitle">Redeem your loyalty points for delicious treats</p>
             </div>
 

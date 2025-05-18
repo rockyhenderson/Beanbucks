@@ -134,43 +134,39 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
     }
   };
   const handleAddToCart = () => {
+    const isFood = drink.category?.toLowerCase() === "food";
+  
     const cartItem = {
       id: crypto.randomUUID(),
       drinkId: drink.id,
       name: drink.name,
       description: drink.description,
-      size: selectedSize,
-      milk: selectedMilk,
-      beans: selectedBean,
-      shots,
-      syrups: syrupCounts,
-      toppings: selectedToppings,
       price: drink.price || null,
+      category: drink.category?.toLowerCase() || "drink",
       timeAdded: Date.now(),
+      ...(isFood
+        ? {} // No custom options for food
+        : {
+            size: selectedSize,
+            milk: selectedMilk,
+            beans: selectedBean,
+            shots,
+            syrups: syrupCounts,
+            toppings: selectedToppings,
+          }),
     };
-
-    // Get the current cart from localStorage
+  
     const storedCart = localStorage.getItem("beanbucks_cart");
     const cart = storedCart ? JSON.parse(storedCart) : [];
-
-    // Add the new item to the cart
+  
     cart.push(cartItem);
-
-    // Save the updated cart back to localStorage
     localStorage.setItem("beanbucks_cart", JSON.stringify(cart));
-
-    // Log the cart item details to the console
+  
     console.log("Cart item added:", cartItem);
-
-    // Update the cart count using the passed prop function
     setCartItemCount(getCartItemCount());
-
-    // Optional: Debugging logs
-    console.log("Item added to cart. Current cart count:", getCartItemCount());
-
-    // Close the modal
     onClose();
   };
+  
 
 
 
