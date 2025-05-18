@@ -73,7 +73,7 @@ h1 {
 
 /* h2 – Section headers */
 h2 {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Quicksand', sans-serif !important;
   font-size: 2rem;
   font-weight: 600;
   color: var(--heading-color);
@@ -83,7 +83,7 @@ h2 {
 
 /* h3 – Subheadings */
 h3 {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Quicksand', sans-serif !important;
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--heading-color);
@@ -103,11 +103,12 @@ h4 {
 h5,
 h6 {
   color: var(--heading-color);
+  font-family: 'Quicksand', sans-serif !important;
 }
 
 /* ==== Paragraphs ==== */
 p {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Quicksand', sans-serif !important;
   font-size: 1rem;
   color: var(--text);
   margin: 0 0 1rem;
@@ -119,14 +120,16 @@ ul,
 ol {
   padding-left: 1.5rem;
   margin-bottom: 1rem;
+  font-family: 'Quicksand', sans-serif !important;
 }
 
 li {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif !important;
   font-size: 1rem;
   color: var(--list-text);
   margin-bottom: 0.6rem;
   line-height: 1.6;
+
 }
 
 /* ==== Links ==== */

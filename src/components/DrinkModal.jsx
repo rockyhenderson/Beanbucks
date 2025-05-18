@@ -214,14 +214,16 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
 
         <div className="modal-body">
           <div className="modal-left">
-            {fillerImage ? (
-              <img src={fillerImage} alt={drink.name} />
+            {drink.image ? (
+              <img
+                src={drink.image}
+                alt={drink.name}
+                onError={(e) => { e.target.onerror = null; e.target.src = noImage; }}
+              />
             ) : (
-              <div className="no-image-fallback">
-                <CoffeeIcon className="no-image-icon" />
-                <p>Image coming soon!</p>
-              </div>
+              <img src={noImage} alt="Fallback drink image" />
             )}
+
           </div>
 
           <div className="modal-right">

@@ -7,6 +7,8 @@ import "../Order_Style.css";
 import DrinkModal from "../components/DrinkModal";
 import FilterSidebar from "../components/FilterSidebar";
 import Toast from "../components/Toast"; // 🆕 import
+import { useLocation } from "react-router-dom";
+
 
 const categoryMap = {
   hot: "Hot Drinks",
@@ -16,6 +18,7 @@ const categoryMap = {
 
 function OrderCategory({ cartItemCount, setCartItemCount }) {
   console.log("setCartItemCount in OrderCategory:", setCartItemCount); // Debugging log
+  const navigate = useNavigate(); // ⬅️ You were missing this line
 
 
   const { type } = useParams();
@@ -23,7 +26,14 @@ function OrderCategory({ cartItemCount, setCartItemCount }) {
   const [selectedDrink, setSelectedDrink] = useState(null);
   const [activeCategories, setActiveCategories] = useState([]);
   const scrollRefs = useRef({});
-  const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    const passedDrink = location.state?.drink;
+    if (passedDrink) {
+      setSelectedDrink(passedDrink); // Open DrinkModal immediately
+    }
+  }, [location.state]);
+  
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null); // 🆕 toast state
 

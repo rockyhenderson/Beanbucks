@@ -10,27 +10,27 @@ import HowItWorksSteps from "../components/HowItWorksSteps";
 
 function Home() {
   return (
-    <Box className="home" sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
+    <Box className="home" sx={{ display: 'flex', flexDirection: 'column', pb: 8 }}>
       <HeroBanner />
 
-      <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
+      <Box >
         <FeaturedMenuCarousel />
       </Box>
 
-      <Box sx={{ backgroundColor: '#fff8e1', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+      <Box sx={{  py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
         <LoyaltyPreview />
       </Box>
 
-      <Box sx={{ backgroundColor: '#e3f2fd', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+      <Box sx={{  py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
         <AllergenFeatureAdvert />
       </Box>
 
       <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
-        <SocialProof />
+        <HowItWorksSteps />
       </Box>
 
       <Box sx={{ backgroundColor: '#f1f8e9', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
-        <HowItWorksSteps />
+      <SocialProof />
       </Box>
     </Box>
   );

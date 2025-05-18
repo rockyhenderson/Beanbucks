@@ -1,61 +1,112 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button } from "@mui/material";
-import noImage from '../../public/img/Fallback.png'
-import smilingGuy from '../../public/img/happycoffeeman.png'
+import noImage from '../../public/img/Fallback.png';
+import CoffeeBackground from '../../public/img/CoffeeBackground.png';
+import MobileBackground from '../../public/img/backgroundmobile.png';
+import HeroBlob from '../../public/img/background.svg';
+import { useTheme, useMediaQuery } from "@mui/material";
+import CoffeeCup from '../../public/img/CoffeeCup.png';
+
+
 
 function HeroBanner() {
-  const [imgSrc, setImgSrc] = useState(smilingGuy)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [imgSrc, setImgSrc] = useState(isMobile ? MobileBackground : CoffeeBackground);
+
+  useEffect(() => {
+    setImgSrc(isMobile ? MobileBackground : CoffeeBackground);
+  }, [isMobile]);
+
   const handleImageError = () => {
-    setImgSrc(noImage); // ✅ Use the imported image
+    setImgSrc(noImage);
   };
+
   return (
     <Box
       component="section"
       sx={{
-        maxHeight: "600px",
         position: "relative",
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         width: "100%",
         height: { xs: "auto", md: "70vh" },
+        minHeight: { xs: "600px", md: "auto" },
         overflow: "hidden",
         backgroundColor: "var(--background)",
       }}
     >
-      {/* Left Container (no background) */}
+      {/* Background Layer: CoffeeBackground always visible */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundImage: `url(${CoffeeBackground})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          zIndex: 0,
+        }}
+        onError={handleImageError}
+      />
+
+      {/* Overlay: SVG blob (desktop) or solid (mobile) */}
+      {!isMobile ? (
+        <Box
+          component="img"
+          src={HeroBlob}
+          alt="Decorative orange background shape"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'none',
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "70%",
+            backgroundColor: "#dbc1ac", // Adjust this color if needed
+            zIndex: 1,
+          }}
+        />
+      )}
+
+      {/* Content */}
       <Box
         sx={{
           width: { xs: "100%", md: "50%" },
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
-          px: { xs: 0, md: 0 },
           position: "relative",
+          zIndex: 2,
+          height: { xs: "50%", md: "100%" },
         }}
       >
-        {/* Inner Text Block with Background and Clip */}
         <Box
           sx={{
-            position: "relative",
+            width: "100%",
             px: { xs: 4, md: 8 },
             py: { xs: 6, md: 8 },
-            backgroundColor: "var(--accent)",
             color: "#fff",
-            width: { xs: "100%", md: "90%" },
-            height: "100%",
-            clipPath: {
-              md: "ellipse(100% 100% at 0% 50%)",
-              xs: "none",
-            },
-            WebkitClipPath: {
-              md: "ellipse(100% 100% at 0% 50%)",
-              xs: "none",
-            },
             display: "flex",
-            width: "100%",
             flexDirection: "column",
             justifyContent: "center",
-            zIndex: 2,
+            alignItems: { xs: "center", md: "flex-start" },
+            textAlign: { xs: "center", md: "left" },
           }}
         >
           <Box
@@ -65,6 +116,7 @@ function HeroBanner() {
               fontSize: { xs: "2rem", md: "3rem" },
               mb: 2,
               lineHeight: 1.2,
+              color: "#4a2c2a"
             }}
           >
             Sip into <br />
@@ -78,8 +130,10 @@ function HeroBanner() {
             sx={{
               fontSize: { xs: "1rem", md: "1.25rem" },
               mb: 4,
-              maxWidth: "90%",
-              color: "var(--button-text)",
+              maxWidth: { xs: "100%", sm: "90%", md: "90%" },
+              color: "#4a2c2a",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
             }}
           >
             Cool down with our signature Iced Latte — smooth, refreshing, and just what you need.
@@ -106,32 +160,33 @@ function HeroBanner() {
         </Box>
       </Box>
 
-      {/* Right Side: Image */}
-      <Box
-        sx={{
-          width: { xs: "100%", md: "50%" },
-          backgroundColor: "var(--background)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          px: { xs: 4, md: 6 },
-          py: { xs: 6, md: 8 },
-        }}
-      >
+      {/* Right filler (empty on mobile) */}
         <Box
-          component="img"
-          src={imgSrc}
-          onError={handleImageError}
-          alt="Iced Latte"
-          sx={{
-            width: "100%",
-            maxWidth: "480px",
-            height: "auto",
-            borderRadius: 4,
-            boxShadow: "0 6px 24px rgba(0,0,0,0.15)",
-          }}
-        />
-      </Box>
+    sx={{
+      width: { xs: "0", md: "40%" },
+      position: "relative",
+      display: { xs: "none", md: "flex" },
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 2,
+    }}
+  >
+    <Box
+      component="img"
+      src={CoffeeCup}
+      alt="Coffee Cup"
+      sx={{
+        position: "sticky",
+        top: "10vh", // Adjust if you want it lower or higher
+        height: "80vh",
+        maxHeight: 600,
+        maxWidth: "90%",
+        objectFit: "contain",
+      }}
+    />
+  </Box>
+
+
     </Box>
   );
 }
