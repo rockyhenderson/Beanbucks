@@ -27,12 +27,17 @@ function OrderCategory({ cartItemCount, setCartItemCount }) {
   const [activeCategories, setActiveCategories] = useState([]);
   const scrollRefs = useRef({});
   const location = useLocation();
-  useEffect(() => {
-    const passedDrink = location.state?.drink;
-    if (passedDrink) {
-      setSelectedDrink(passedDrink); // Open DrinkModal immediately
-    }
-  }, [location.state]);
+useEffect(() => {
+  const passedDrink = location.state?.drink;
+
+  if (passedDrink && passedDrink.id !== selectedDrink?.id) {
+    setSelectedDrink(passedDrink);
+
+    // Clear drink from location state to prevent repeat triggers on refresh
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+}, [location.state?.drink, selectedDrink?.id, navigate, location.pathname]);
+
   
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null); // 🆕 toast state

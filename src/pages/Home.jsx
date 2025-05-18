@@ -25,11 +25,12 @@ function Home() {
         <AllergenFeatureAdvert />
       </Box>
 
-      <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
+      {/* <Box sx={{ px: { xs: 2, sm: 4, md: 8 } }}>
         <HowItWorksSteps />
-      </Box>
+              <SocialProof />
+      </Box> */}
 
-      <Box sx={{ backgroundColor: '#f1f8e9', py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
+      <Box sx={{  py: 4, px: { xs: 2, sm: 4, md: 8 } }}>
       <SocialProof />
       </Box>
     </Box>

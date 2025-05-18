@@ -36,7 +36,7 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="light"] {
-  --background: #FFF9F4;
+  --background: #ffe9d7;
   --text: #161620;
   --card: #FFFFFF;
   --accent: #5A4A42;

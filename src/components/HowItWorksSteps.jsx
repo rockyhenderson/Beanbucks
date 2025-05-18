@@ -1,33 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LocalCafe as CoffeeIcon } from "@mui/icons-material";
+import { LocalCafe as CoffeeIcon, Store as StoreIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useNavigate } from "react-router-dom";
 
-
-function CoffeeQuiz() {
+function HowItWorksSteps() {
+  const [needsShopSelection, setNeedsShopSelection] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [result, setResult] = useState(null);
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [randomDrinks, setRandomDrinks] = useState([]);
+  const [shops, setShops] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if shop is selected
+    const selectedStoreId = sessionStorage.getItem("selectedStoreId");
+    if (!selectedStoreId) {
+      setNeedsShopSelection(true);
+    }
+
+    // Fetch shops data
+
+
+    // Fetch random drinks
     fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_random_drinks.php")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
           setRandomDrinks(data);
         } else {
-          console.error("Invalid response format:", data);
+          console.error("Invalid drinks response format:", data);
         }
       })
       .catch((err) => {
         console.error("Failed to fetch random drinks:", err);
       });
   }, []);
-
 
   const questions = [
     {
@@ -59,26 +69,6 @@ function CoffeeQuiz() {
     }
   ];
 
-  const drinkRecommendations = {
-
-    "bold-hot-chocolate": ["Espresso", "Espresso Doppio"],
-    "bold-iced-pure": ["Cold Brew Coffee", "Iced Americano"],
-    "bold-nitro-pure": ["Nitro Cold Brew", "Nitro Latte"],
-
-
-    "balanced-hot-pure": ["Caffe Americano", "Blonde Roast Americano"],
-    "balanced-iced-chocolate": ["Iced Mocha", "Iced White Mocha"],
-    "balanced-frappe-chocolate": ["Java Chip Frappuccino", "Mocha Frappuccino"],
-
-    "sweet-hot-spiced": ["Caramel Brulee Latte", "Toasted White Chocolate Mocha"],
-    "sweet-iced-fruity": ["Pink Drink", "Strawberry Açaí Refresher"],
-    "sweet-frappe-chocolate": ["Caramel Ribbon Crunch Frappuccino", "Salted Caramel Frappuccino"],
-
-    "light-iced-fruity": ["Mango Dragonfruit Refresher", "Peach Green Tea Lemonade"],
-    "light-hot-spiced": ["Spiced Chai Latte", "Winter Spice Chai"],
-    "light-nitro-fruity": ["Blood Orange Cold Brew", "Pumpkin Cream Cold Brew"]
-  };
-
   const getRecommendation = () => {
     if (randomDrinks.length === 0) return [];
     const shuffled = [...randomDrinks].sort(() => 0.5 - Math.random());
@@ -92,8 +82,12 @@ function CoffeeQuiz() {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setResult(getRecommendation());
-
     }
+  };
+
+  const handleShopSelect = (shopId) => {
+    sessionStorage.setItem("selectedStoreId", shopId);
+    setNeedsShopSelection(false);
   };
 
   const restartQuiz = () => {
@@ -101,6 +95,10 @@ function CoffeeQuiz() {
     setAnswers([]);
     setResult(null);
   };
+
+  const selectedShopName = shops.find(shop =>
+    shop.id === sessionStorage.getItem("selectedStoreId")
+  )?.shop_name || "your selected store";
 
   return (
     <motion.section
@@ -123,21 +121,113 @@ function CoffeeQuiz() {
         marginBottom: "1.5rem",
         color: "var(--primary)"
       }}>
-        <CoffeeIcon style={{
-          fontSize: isMobile ? "1.8rem" : "2rem",
-          marginRight: "0.5rem"
-        }} />
+        {needsShopSelection ? (
+          <StoreIcon style={{
+            fontSize: isMobile ? "1.8rem" : "2rem",
+            marginRight: "0.5rem"
+          }} />
+        ) : (
+          <CoffeeIcon style={{
+            fontSize: isMobile ? "1.8rem" : "2rem",
+            marginRight: "0.5rem"
+          }} />
+        )}
         <h2 style={{
           fontSize: isMobile ? "1.3rem" : "1.5rem",
           fontWeight: 600,
           margin: 0,
           color: "var(--heading-color)"
         }}>
-          {result ? "Your Perfect Drinks" : "Barista's Choice Quiz"}
+          {needsShopSelection ? "Select Your Shop" :
+            result ? "Your Perfect Drinks" : "Barista's Choice Quiz"}
         </h2>
       </div>
 
-      {!result ? (
+      {needsShopSelection ? (
+        <>
+          <div style={{
+            width: "100%",
+            height: "4px",
+            backgroundColor: "var(--component-border)",
+            borderRadius: "2px",
+            marginBottom: isMobile ? "1.5rem" : "2rem"
+          }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 0.5 }}
+              style={{
+                height: "100%",
+                borderRadius: "2px",
+                backgroundColor: "var(--primary)"
+              }}
+            />
+          </div>
+
+          <h3 style={{
+            fontSize: isMobile ? "1.1rem" : "1.2rem",
+            fontWeight: 600,
+            color: "var(--heading-color)",
+            marginBottom: isMobile ? "1rem" : "1.5rem",
+            textAlign: "center"
+          }}>
+            Please choose a shop location before starting the quiz
+          </h3>
+
+          {/* Add the Change Store button here */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/store")}
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: isMobile ? "0.75rem" : "1rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              textAlign: "center",
+              transition: "all 0.2s ease",
+              fontSize: isMobile ? "0.85rem" : "0.9rem",
+              width: "100%",
+              marginBottom: "1.5rem"
+            }}
+          >
+            Choose Store
+          </motion.button>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: "0.75rem",
+            marginBottom: isMobile ? "1.5rem" : "2rem"
+          }}>
+            {shops.map((shop, index) => (
+              <motion.button
+                key={index}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleShopSelect(shop.id)}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "var(--text)",
+                  border: "2px solid var(--primary)",
+                  borderRadius: "8px",
+                  padding: isMobile ? "0.75rem" : "1rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textAlign: "center",
+                  transition: "all 0.2s ease",
+                  fontSize: isMobile ? "0.85rem" : "0.9rem"
+                }}
+              >
+                {shop.shop_name}
+              </motion.button>
+            ))}
+          </div>
+        </>
+      ) : !result ? (
         <>
           <div style={{
             width: "100%",
@@ -232,7 +322,7 @@ function CoffeeQuiz() {
               margin: 0,
               fontSize: isMobile ? "0.9rem" : "1rem"
             }}>
-              Based on your taste profile
+              Based on your taste profile at {selectedShopName}
             </p>
           </motion.div>
 
@@ -254,6 +344,14 @@ function CoffeeQuiz() {
                   textAlign: "center",
                   cursor: "pointer"
                 }}
+                onClick={() => {
+                  console.log("Drink being sent to Order page:", drink); 
+debugger
+                  navigate(`/order/${drink.category.toLowerCase()}`, {
+                    state: { drink }
+                  });
+                }}
+
               >
                 <div style={{
                   width: "50px",
@@ -276,12 +374,7 @@ function CoffeeQuiz() {
                 }}>
                   {drink.name}
                 </p>
-                <button
-                  onClick={() => {
-                    navigate(`/order/${drink.category.toLowerCase()}`, {
-                      state: { drink } // Pass drink to the page
-                    });
-                  }}
+                <div
                   style={{
                     backgroundColor: "var(--primary)",
                     color: "white",
@@ -291,12 +384,11 @@ function CoffeeQuiz() {
                     fontSize: "0.8rem",
                     fontWeight: 600,
                     marginTop: "0.5rem",
-                    cursor: "pointer"
+                    display: "inline-block"
                   }}
                 >
                   Order Now
-                </button>
-
+                </div>
               </motion.div>
             ))}
           </div>
@@ -328,4 +420,4 @@ function CoffeeQuiz() {
   );
 }
 
-export default CoffeeQuiz;
+export default HowItWorksSteps;

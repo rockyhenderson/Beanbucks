@@ -1,12 +1,85 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, LinearProgress } from "@mui/material";
+import RetryFallback from "../components/RetryFallback";
+import { useNavigate } from "react-router-dom";
+
 
 function LoyaltyHero() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [loyaltyUrl, setLoyaltyUrl] = useState(null);
+  const navigate = useNavigate();
 
-  const currentPoints = 120;
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  // STEP 1: Check sessionStorage for user
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        console.log("✅ Loaded user from sessionStorage:", parsed);
+        if (parsed?.role && parsed?.role !== "none") {
+          setIsLoggedIn(true);
+          setUserId(parsed.id);
+        } else {
+          console.warn("⚠️ Invalid or guest user role:", parsed.role);
+        }
+      } catch (err) {
+        console.error("❌ Failed to parse sessionStorage user:", err);
+      }
+    } else {
+      console.warn("⚠️ No user in sessionStorage");
+    }
+  }, []);
+
+  // STEP 2: Construct URL once we have a userId
+  useEffect(() => {
+    if (userId) {
+      const url = `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`;
+      setLoyaltyUrl(url);
+      console.log("✅ Loyalty URL set:", url);
+    }
+  }, [userId]);
+
+  // STEP 3: Fetch loyalty points when URL is ready
+  useEffect(() => {
+    if (!loyaltyUrl) return;
+
+    console.log("📡 Fetching loyalty data from:", loyaltyUrl);
+    setIsLoading(true);
+    setError(null);
+
+    fetch(loyaltyUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error("Fetch failed");
+        return res.json();
+      })
+      .then((json) => {
+        console.log("✅ Loyalty data received:", json);
+        setData(json);
+      })
+      .catch((err) => {
+        console.error("❌ Error fetching loyalty data:", err);
+        setError(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [loyaltyUrl, retryKey]);
+
+  const retry = () => setRetryKey((prev) => prev + 1);
+
+  const currentPoints = data?.loyalty_points || 0;
   const goal = 150;
-  const progress = (currentPoints / goal) * 100;
+  const progress = Math.min((currentPoints / goal) * 100, 100);
+  const hasReachedGoal = currentPoints >= goal;
+
+  if (error) return <RetryFallback onRetry={retry} />;
+  if (isLoggedIn && isLoading) return <p>Loading...</p>;
 
   return (
     <Box
@@ -20,22 +93,9 @@ function LoyaltyHero() {
         position: "relative",
         overflow: "hidden",
         my: 4,
-        marign: "auto"
+        margin: "auto",
       }}
     >
-      {/* Confetti Layer */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "url(/assets/beans_sparkle_overlay.svg)",
-          backgroundRepeat: "repeat",
-          opacity: 0.08,
-          zIndex: 0
-
-        }}
-      />
-
       {/* Left side - content */}
       <Box
         sx={{
@@ -48,44 +108,20 @@ function LoyaltyHero() {
           zIndex: 2,
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: { xs: "center", md: "space-between" },
-            gap: 2,
-            mb: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <h2 style={{ fontWeight: 800, color: "#4A2C2A", margin: 0 }}>
-            {isLoggedIn ? "You’ve Got BeanPoints!" : "Perks, Just a Sip Away"}
-          </h2>
-
-          <Button
-            onClick={() => setIsLoggedIn(!isLoggedIn)}
-            size="small"
-            variant="outlined"
-            sx={{
-              borderRadius: "999px",
-              textTransform: "none",
-              fontSize: "0.875rem",
-              backgroundColor: "#fff",
-              color: "#4A2C2A",
-              "&:hover": { backgroundColor: "#f7e7d7" },
-            }}
-          >
-            Toggle View
-          </Button>
-        </Box>
+        <h2 style={{ fontWeight: 800, color: "#4A2C2A", marginBottom: "1rem" }}>
+          {isLoggedIn ? "You’ve Got BeanPoints!" : "Perks, Just a Sip Away"}
+        </h2>
 
         {isLoggedIn ? (
           <>
             <p style={{ color: "#5A4A42", marginBottom: "0.5rem" }}>
-              Looks like you’ve brewed up <strong style={{ color: "#ee5c01" }}>{currentPoints} points</strong>.
+              Looks like you’ve brewed up{" "}
+              <strong style={{ color: "#ee5c01" }}>{currentPoints} points</strong>.
             </p>
             <p style={{ color: "#6c4b3b", marginBottom: "1rem" }}>
-              Only {goal - currentPoints} more to go and your next handcrafted drink is on us.
+              {hasReachedGoal
+                ? "You’ve got enough points for a reward! Treat yourself 🍩"
+                : `Only ${goal - currentPoints} more to go and your next handcrafted drink is on us.`}
             </p>
 
             <LinearProgress
@@ -104,6 +140,7 @@ function LoyaltyHero() {
 
             <Button
               variant="contained"
+                    onClick={() => navigate("/rewards")} 
               sx={{
                 backgroundColor: "#ee5c01",
                 color: "#fff",
@@ -127,7 +164,14 @@ function LoyaltyHero() {
             <p style={{ color: "#5A4A42", marginBottom: "0.5rem" }}>
               Sign in to start collecting BeanPoints and enjoy sweet little surprises along the way.
             </p>
-            <ul style={{ color: "#6c4b3b", paddingLeft: "1.25rem", marginBottom: "1rem", listStyle: "disc" }}>
+            <ul
+              style={{
+                color: "#6c4b3b",
+                paddingLeft: "1.25rem",
+                marginBottom: "1rem",
+                listStyle: "disc",
+              }}
+            >
               <li>Earn 1 point for every £1 you spend</li>
               <li>Collect 150 points to enjoy a drink on the house</li>
               <li>Get something extra special on your birthday</li>
@@ -135,6 +179,7 @@ function LoyaltyHero() {
 
             <Button
               variant="contained"
+              onClick={() => navigate("/login")} 
               sx={{
                 backgroundColor: "#ee5c01",
                 color: "#fff",
@@ -152,6 +197,7 @@ function LoyaltyHero() {
             >
               Log In to Start Earning
             </Button>
+
           </>
         )}
       </Box>
@@ -174,7 +220,8 @@ function LoyaltyHero() {
             width: "260px",
             height: "260px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,234,205,0.6) 0%, transparent 70%)",
+            background:
+              "radial-gradient(circle, rgba(255,234,205,0.6) 0%, transparent 70%)",
             zIndex: 1,
           }}
         />

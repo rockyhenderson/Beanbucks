@@ -313,173 +313,186 @@ function AllergenFeatureSection() {
   }
 
   // ✅ Desktop: full 3-card layout
-  return (
-    <Box sx={{ my: 6 }}>
+// Desktop view only - updated return
+return (
+  <Box sx={{ my: 6 }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "stretch", // Ensures equal height
+        gap: 3,
+        flexWrap: "wrap",
+      }}
+    >
+      {/* 1. Allergy-Safe Filtering */}
       <Box
         sx={{
+          flex: 1,
+          minWidth: 300,
+          maxWidth: 360,
+          px: 4,
+          py: 4,
+          borderRadius: "24px",
+          backgroundColor: "#fff7e6",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
           display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          justifyContent: "center",
-          alignItems: "stretch",
-          gap: 3,
-          flexWrap: "wrap",
+          flexDirection: "column",
+          height: "100%", // Force full height
         }}
       >
-        {/* 1. Allergy-Safe Filtering */}
-        <Box
+        <img
+          src="/img/allergenimg.png"
+          alt="Allergy Icon"
+          style={{ width: 80, height: 80, marginBottom: 16 }}
+        />
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#4A2C2A", mb: 1 }}>
+          Allergy-Safe Filtering
+        </Typography>
+        <Typography sx={{ color: "#5A4A42", fontSize: "0.95rem", mb: 2 }}>
+          Choose your dietary needs and we'll help you find drinks that fit.
+        </Typography>
+        <Box component="ul" sx={{ 
+          textAlign: "left", 
+          fontSize: "0.9rem", 
+          color: "#6c4b3b", 
+          pl: 2, 
+          mb: 3, // Extra margin to push button down
+          flexGrow: 1 // Pushes content up
+        }}>
+          <li>Set filters in your profile</li>
+          <li>Hide ingredients you avoid</li>
+          <li>Safe choices across the app</li>
+        </Box>
+        <Button
+          variant="contained"
+          href={sessionStorage.getItem("user") ? "/profile/preferences" : "/login"}
           sx={{
-            flex: 1,
-            maxWidth: 360,
-            px: 4,
-            py: 5,
-            borderRadius: "24px",
-            backgroundColor: "#fff7e6",
-            boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            backgroundColor: "#ee5c01",
+            color: "#fff",
+            borderRadius: "999px",
+            py: 1,
+            width: "100%",
+            mt: "auto", // Pushes button to bottom
+            alignSelf: "flex-end" // Ensures alignment
           }}
         >
-          <img
-            src="/img/allergenimg.png"
-            alt="Bee Icon"
-            style={{ width: 80, height: 80, marginBottom: 16 }}
-          />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#4A2C2A", mb: 1 }}>
-            Allergy-Safe Filtering
-          </Typography>
-          <Typography sx={{ color: "#5A4A42", fontSize: "0.95rem", mb: 2 }}>
-            Choose your dietary needs and we'll help you find drinks that fit — no stress, just sips.
-          </Typography>
-          <Box component="ul" sx={{ textAlign: "left", fontSize: "0.9rem", color: "#6c4b3b", pl: 2, mb: 2 }}>
-            <li>Set filters in your profile</li>
-            <li>Hide ingredients you avoid</li>
-            <li>Safe choices across the app</li>
-          </Box>
-          <Button
-            variant="contained"
-            href="/profile/preferences"
-            sx={{
-              backgroundColor: "#ee5c01",
-              color: "#fff",
-              fontWeight: 500,
-              borderRadius: "999px",
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-              "&:hover": { backgroundColor: "#d24e00" },
-            }}
-          >
-            Set My Preferences
-          </Button>
-        </Box>
+          {sessionStorage.getItem("user") ? "Set Preferences" : "Login to Set Prefs"}
+        </Button>
+      </Box>
 
-        {/* 2. Quick Reorder */}
-        <Box
+      {/* 2. Quick Reorder */}
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 300,
+          maxWidth: 360,
+          px: 4,
+          py: 4,
+          borderRadius: "24px",
+          backgroundColor: "#e6f4ff",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        <img
+          src="/img/coffeeReorder.png"
+          alt="Reorder Icon"
+          style={{ width: 80, height: 80, marginBottom: 16 }}
+        />
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#1a3c5c", mb: 1 }}>
+          Quick Reorder
+        </Typography>
+        <Typography sx={{ color: "#324c63", fontSize: "0.95rem", mb: 2 }}>
+          Loved your last order? Bring it back in one click.
+        </Typography>
+        <Box component="ul" sx={{ 
+          textAlign: "left", 
+          fontSize: "0.9rem", 
+          color: "#3d5466", 
+          pl: 2, 
+          mb: 3,
+          flexGrow: 1
+        }}>
+          <li>Repeat favorite drinks</li>
+          <li>Saves customizations</li>
+          <li>No rebuilding needed</li>
+        </Box>
+        <Button
+          variant="contained"
+          href={sessionStorage.getItem("user") ? "/profile/history" : "/login"}
           sx={{
-            flex: 1,
-            maxWidth: 360,
-            px: 4,
-            py: 5,
-            borderRadius: "24px",
-            backgroundColor: "#e6f4ff",
-            boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            backgroundColor: "#007bba",
+            color: "#fff",
+            borderRadius: "999px",
+            py: 1,
+            width: "100%",
+            mt: "auto"
           }}
         >
-          <img
-            src="/img/coffeeReorder.png"
-            alt="Bee Icon"
-            style={{ width: 80, height: 80, marginBottom: 16 }}
-          />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#1a3c5c", mb: 1 }}>
-            Quick Reorder
-          </Typography>
-          <Typography sx={{ color: "#324c63", fontSize: "0.95rem", mb: 2 }}>
-            Loved your last order? Bring it back in one click — just the way you like it.
-          </Typography>
-          <Box component="ul" sx={{ textAlign: "left", fontSize: "0.9rem", color: "#3d5466", pl: 2, mb: 2 }}>
-            <li>Instantly repeat your favorite drink</li>
-            <li>Applies saved customizations</li>
-            <li>No need to rebuild your order</li>
-          </Box>
-          <Button
-            variant="contained"
-            href="/profile/history"
-            sx={{
-              backgroundColor: "#007bba",
-              color: "#fff",
-              fontWeight: 500,
-              borderRadius: "999px",
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-              "&:hover": { backgroundColor: "#005e95" },
-            }}
-          >
-            Reorder Now
-          </Button>
-        </Box>
+          {sessionStorage.getItem("user") ? "Reorder Now" : "Login to Reorder"}
+        </Button>
+      </Box>
 
-        {/* 3. Featured Drinks */}
-        <Box
+      {/* 3. Featured Drinks (no auth check) */}
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 300,
+          maxWidth: 360,
+          px: 4,
+          py: 4,
+          borderRadius: "24px",
+          backgroundColor: "#ffedf2",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        <img
+          src="/img/featureddrink.png"
+          alt="Featured Icon"
+          style={{ width: 80, height: 80, marginBottom: 16 }}
+        />
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#7b2434", mb: 1 }}>
+          Featured Drinks
+        </Typography>
+        <Typography sx={{ color: "#853947", fontSize: "0.95rem", mb: 2 }}>
+          Weekly spotlight of seasonal drinks.
+        </Typography>
+        <Box component="ul" sx={{ 
+          textAlign: "left", 
+          fontSize: "0.9rem", 
+          color: "#853947", 
+          pl: 2, 
+          mb: 3,
+          flexGrow: 1
+        }}>
+          <li>Handpicked top drinks</li>
+          <li>Rotates weekly</li>
+          <li>Limited time only</li>
+        </Box>
+        <Button
+          variant="contained"
+          href="/menu/featured"
           sx={{
-            flex: 1,
-            maxWidth: 360,
-            px: 4,
-            py: 5,
-            borderRadius: "24px",
-            backgroundColor: "#ffedf2",
-            boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            backgroundColor: "#e53961",
+            color: "#fff",
+            borderRadius: "999px",
+            py: 1,
+            width: "100%",
+            mt: "auto"
           }}
         >
-          <img
-            src="/img/featureddrink.png"
-            alt="Bee Icon"
-            style={{ width: 80, height: 80, marginBottom: 16 }}
-          />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#7b2434", mb: 1 }}>
-            Featured Drinks
-          </Typography>
-          <Typography sx={{ color: "#853947", fontSize: "0.95rem", mb: 2 }}>
-            Every week we spotlight fan-favorite drinks and seasonal sips worth buzzing about.
-          </Typography>
-          <Box component="ul" sx={{ textAlign: "left", fontSize: "0.9rem", color: "#853947", pl: 2, mb: 2 }}>
-            <li>Handpicked top-rated drinks</li>
-            <li>Rotates every Monday</li>
-            <li>Only available for a limited time</li>
-          </Box>
-          <Button
-            variant="contained"
-            href="/menu/featured"
-            sx={{
-              backgroundColor: "#e53961",
-              color: "#fff",
-              fontWeight: 500,
-              borderRadius: "999px",
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-              "&:hover": { backgroundColor: "#c92d50" },
-            }}
-          >
-            See What's Hot
-          </Button>
-        </Box>
+          See Featured
+        </Button>
       </Box>
     </Box>
-  );
+  </Box>
+);
 }
 
 export default AllergenFeatureSection;
