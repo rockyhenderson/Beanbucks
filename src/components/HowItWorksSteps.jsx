@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { LocalCafe as CoffeeIcon, Store as StoreIcon } from "@mui/icons-material";
+import { motion, AnimatePresence } from "framer-motion";
+import { LocalCafe as CoffeeIcon, Store as StoreIcon, Close as CloseIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useNavigate } from "react-router-dom";
 
-function HowItWorksSteps() {
+function HowItWorksSteps({ onClose }) {
   const [needsShopSelection, setNeedsShopSelection] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -14,31 +14,24 @@ function HowItWorksSteps() {
   const [shops, setShops] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch random drinks
   useEffect(() => {
-    // Check if shop is selected
     const selectedStoreId = sessionStorage.getItem("selectedStoreId");
     if (!selectedStoreId) {
       setNeedsShopSelection(true);
     }
 
-    // Fetch shops data
-
-
-    // Fetch random drinks
     fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_random_drinks.php")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
           setRandomDrinks(data);
-        } else {
-          console.error("Invalid drinks response format:", data);
         }
       })
-      .catch((err) => {
-        console.error("Failed to fetch random drinks:", err);
-      });
+      .catch(console.error);
   }, []);
 
+  // All quiz questions
   const questions = [
     {
       question: "What's your coffee personality?",
@@ -66,6 +59,24 @@ function HowItWorksSteps() {
         { text: "Fruity/floral", value: "fruity" },
         { text: "Pure coffee", value: "pure" }
       ]
+    },
+    {
+      question: "How do you take your coffee?",
+      options: [
+        { text: "Black - no additions", value: "black" },
+        { text: "With milk/cream", value: "milk" },
+        { text: "Sweetened", value: "sweetened" },
+        { text: "With flavors/syrups", value: "flavored" }
+      ]
+    },
+    {
+      question: "When do you typically drink coffee?",
+      options: [
+        { text: "Morning wake-up", value: "morning" },
+        { text: "Afternoon pick-me-up", value: "afternoon" },
+        { text: "Evening treat", value: "evening" },
+        { text: "All day long", value: "allDay" }
+      ]
     }
   ];
 
@@ -78,16 +89,12 @@ function HowItWorksSteps() {
   const handleAnswer = (value) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
+    
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setResult(getRecommendation());
     }
-  };
-
-  const handleShopSelect = (shopId) => {
-    sessionStorage.setItem("selectedStoreId", shopId);
-    setNeedsShopSelection(false);
   };
 
   const restartQuiz = () => {
@@ -96,327 +103,287 @@ function HowItWorksSteps() {
     setResult(null);
   };
 
-  const selectedShopName = shops.find(shop =>
-    shop.id === sessionStorage.getItem("selectedStoreId")
-  )?.shop_name || "your selected store";
-
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      style={{
-        maxWidth: "600px",
-        margin: isMobile ? "2rem 1rem" : "3rem auto",
-        padding: isMobile ? "1.5rem" : "2rem",
-        backgroundColor: "var(--card)",
-        borderRadius: "16px",
-        border: "1px solid var(--component-border)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-        fontFamily: "'Quicksand', sans-serif"
-      }}
-    >
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        marginBottom: "1.5rem",
-        color: "var(--primary)"
-      }}>
-        {needsShopSelection ? (
-          <StoreIcon style={{
-            fontSize: isMobile ? "1.8rem" : "2rem",
-            marginRight: "0.5rem"
-          }} />
-        ) : (
-          <CoffeeIcon style={{
-            fontSize: isMobile ? "1.8rem" : "2rem",
-            marginRight: "0.5rem"
-          }} />
-        )}
-        <h2 style={{
-          fontSize: isMobile ? "1.3rem" : "1.5rem",
-          fontWeight: 600,
-          margin: 0,
-          color: "var(--heading-color)"
-        }}>
-          {needsShopSelection ? "Select Your Shop" :
-            result ? "Your Perfect Drinks" : "Barista's Choice Quiz"}
-        </h2>
-      </div>
-
-      {needsShopSelection ? (
-        <>
-          <div style={{
+    <AnimatePresence>
+      {/* Modal Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          zIndex: 1300,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "1rem",
+        }}
+      >
+        {/* Modal Content */}
+        <motion.div
+          initial={{ scale: 0.9, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.9, y: 20, opacity: 0 }}
+          style={{
+            maxWidth: "600px",
             width: "100%",
-            height: "4px",
-            backgroundColor: "var(--component-border)",
-            borderRadius: "2px",
-            marginBottom: isMobile ? "1.5rem" : "2rem"
-          }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 0.5 }}
-              style={{
-                height: "100%",
-                borderRadius: "2px",
-                backgroundColor: "var(--primary)"
-              }}
-            />
-          </div>
-
-          <h3 style={{
-            fontSize: isMobile ? "1.1rem" : "1.2rem",
-            fontWeight: 600,
-            color: "var(--heading-color)",
-            marginBottom: isMobile ? "1rem" : "1.5rem",
-            textAlign: "center"
-          }}>
-            Please choose a shop location before starting the quiz
-          </h3>
-
-          {/* Add the Change Store button here */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate("/store")}
+            backgroundColor: "white",
+            borderRadius: "16px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+            position: "relative",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <button
+            onClick={onClose}
             style={{
-              backgroundColor: "var(--primary)",
-              color: "white",
+              position: "absolute",
+              top: "16px",
+              right: "16px",
+              background: "none",
               border: "none",
-              borderRadius: "8px",
-              padding: isMobile ? "0.75rem" : "1rem",
-              fontWeight: 600,
+              color: "#666",
               cursor: "pointer",
-              textAlign: "center",
+              zIndex: 1,
+              padding: "8px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               transition: "all 0.2s ease",
-              fontSize: isMobile ? "0.85rem" : "0.9rem",
-              width: "100%",
-              marginBottom: "1.5rem"
+              ":hover": {
+                backgroundColor: "#f5f5f5"
+              }
             }}
           >
-            Choose Store
-          </motion.button>
+            <CloseIcon />
+          </button>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: "0.75rem",
-            marginBottom: isMobile ? "1.5rem" : "2rem"
-          }}>
-            {shops.map((shop, index) => (
-              <motion.button
-                key={index}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleShopSelect(shop.id)}
-                style={{
-                  backgroundColor: "transparent",
-                  color: "var(--text)",
-                  border: "2px solid var(--primary)",
-                  borderRadius: "8px",
-                  padding: isMobile ? "0.75rem" : "1rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "center",
-                  transition: "all 0.2s ease",
-                  fontSize: isMobile ? "0.85rem" : "0.9rem"
-                }}
-              >
-                {shop.shop_name}
-              </motion.button>
-            ))}
-          </div>
-        </>
-      ) : !result ? (
-        <>
-          <div style={{
-            width: "100%",
-            height: "4px",
-            backgroundColor: "var(--component-border)",
-            borderRadius: "2px",
-            marginBottom: isMobile ? "1.5rem" : "2rem"
-          }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{
-                width: `${((currentQuestion + 1) / questions.length) * 100}%`,
-                backgroundColor: "var(--primary)"
-              }}
-              transition={{ duration: 0.5 }}
-              style={{
-                height: "100%",
-                borderRadius: "2px"
-              }}
-            />
-          </div>
-
-          <h3 style={{
-            fontSize: isMobile ? "1.1rem" : "1.2rem",
-            fontWeight: 600,
-            color: "var(--heading-color)",
-            marginBottom: isMobile ? "1rem" : "1.5rem"
-          }}>
-            {questions[currentQuestion].question}
-          </h3>
-
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: "0.75rem",
-            marginBottom: isMobile ? "1.5rem" : "2rem"
-          }}>
-            {questions[currentQuestion].options.map((option, index) => (
-              <motion.button
-                key={index}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleAnswer(option.value)}
-                style={{
-                  backgroundColor: "transparent",
-                  color: "var(--text)",
-                  border: "2px solid var(--primary)",
-                  borderRadius: "8px",
-                  padding: isMobile ? "0.75rem" : "1rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "center",
-                  transition: "all 0.2s ease",
-                  fontSize: isMobile ? "0.85rem" : "0.9rem"
-                }}
-              >
-                {option.text}
-              </motion.button>
-            ))}
-          </div>
-
-          <div style={{
-            color: "var(--body-text)",
-            fontSize: "0.85rem",
-            textAlign: "center"
-          }}>
-            Question {currentQuestion + 1} of {questions.length}
-          </div>
-        </>
-      ) : (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              backgroundColor: "var(--primary)",
-              color: "white",
-              padding: isMobile ? "1rem" : "1.5rem",
-              borderRadius: "12px",
-              marginBottom: isMobile ? "1.5rem" : "2rem",
-              textAlign: "center"
-            }}
-          >
-            <h3 style={{
-              fontSize: isMobile ? "1.2rem" : "1.3rem",
-              fontWeight: 700,
-              margin: "0 0 0.5rem"
+          {/* Quiz Content */}
+          <div style={{ padding: "2rem" }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+              color: "var(--primary)"
             }}>
-              We Recommend
-            </h3>
-            <p style={{
-              margin: 0,
-              fontSize: isMobile ? "0.9rem" : "1rem"
-            }}>
-              Based on your taste profile at {selectedShopName}
-            </p>
-          </motion.div>
+              <CoffeeIcon style={{
+                fontSize: "2rem",
+                marginRight: "0.5rem"
+              }} />
+              <h2 style={{
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                margin: 0,
+                color: "#333"
+              }}>
+                {result ? "Your Perfect Match" : "Coffee Quiz"}
+              </h2>
+            </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: "1rem",
-            marginBottom: isMobile ? "1.5rem" : "2rem"
-          }}>
-            {result.map((drink, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -5 }}
-                style={{
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--component-border)",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  textAlign: "center",
-                  cursor: "pointer"
-                }}
-                onClick={() => {
-                  console.log("Drink being sent to Order page:", drink); 
-debugger
-                  navigate(`/order/${drink.category.toLowerCase()}`, {
-                    state: { drink }
-                  });
-                }}
-
-              >
+            {!result ? (
+              <>
                 <div style={{
-                  width: "50px",
-                  height: "50px",
-                  backgroundColor: "var(--primary)",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 0.5rem",
-                  color: "white"
+                  width: "100%",
+                  height: "6px",
+                  backgroundColor: "#eee",
+                  borderRadius: "3px",
+                  marginBottom: "2rem",
+                  overflow: "hidden"
                 }}>
-                  <CoffeeIcon style={{ fontSize: "1.5rem" }} />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${((currentQuestion + 1) / questions.length) * 100}%`
+                    }}
+                    transition={{ duration: 0.5 }}
+                    style={{
+                      height: "100%",
+                      borderRadius: "3px",
+                      backgroundColor: "var(--primary)"
+                    }}
+                  />
                 </div>
-                <p style={{
+
+                <h3 style={{
+                  fontSize: "1.2rem",
                   fontWeight: 600,
-                  color: "var(--heading-color)",
-                  margin: "0.25rem 0",
-                  fontSize: "0.95rem"
+                  color: "#333",
+                  marginBottom: "1.5rem"
                 }}>
-                  {drink.name}
-                </p>
-                <div
+                  {questions[currentQuestion].question}
+                </h3>
+
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                  gap: "1rem",
+                  marginBottom: "2rem"
+                }}>
+                  {questions[currentQuestion].options.map((option, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleAnswer(option.value)}
+                      style={{
+                        backgroundColor: "white",
+                        color: "#333",
+                        border: "2px solid var(--primary)",
+                        borderRadius: "8px",
+                        padding: "1rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        textAlign: "center",
+                        transition: "all 0.2s ease",
+                        fontSize: "1rem"
+                      }}
+                    >
+                      {option.text}
+                    </motion.button>
+                  ))}
+                </div>
+
+                <div style={{
+                  color: "var(--body-text)",
+                  fontSize: "0.85rem",
+                  textAlign: "center"
+                }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  backgroundColor: "var(--primary)",
+                  color: "white",
+                  padding: "1.5rem",
+                  borderRadius: "12px",
+                  marginBottom: "2rem",
+                  textAlign: "center"
+                }}>
+                  <h3 style={{
+                    fontSize: "1.3rem",
+                    fontWeight: 700,
+                    margin: "0 0 0.5rem"
+                  }}>
+                    We Found Your Match!
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    fontSize: "1rem"
+                  }}>
+                    Based on your coffee personality
+                  </p>
+                </div>
+
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
+                  gap: "1.5rem",
+                  marginBottom: "2rem"
+                }}>
+                  {result.map((drink, index) => (
+                    <motion.div
+                      key={index}
+                      whileHover={{ y: -5 }}
+                      style={{
+                        backgroundColor: "#f9f9f9",
+                        border: "1px solid #eee",
+                        borderRadius: "12px",
+                        padding: "1.5rem",
+                        textAlign: "center",
+                        cursor: "pointer"
+                      }}
+                      onClick={() => {
+                        navigate(`/order/${drink.category.toLowerCase()}`, {
+                          state: { drink }
+                        });
+                        onClose();
+                      }}
+                    >
+                      <div style={{
+                        width: "60px",
+                        height: "60px",
+                        backgroundColor: "var(--primary)",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        margin: "0 auto 1rem",
+                        color: "white"
+                      }}>
+                        <CoffeeIcon style={{ fontSize: "1.75rem" }} />
+                      </div>
+                      <h4 style={{
+                        fontWeight: 700,
+                        color: "#333",
+                        margin: "0.5rem 0",
+                        fontSize: "1.1rem"
+                      }}>
+                        {drink.name}
+                      </h4>
+                      <p style={{
+                        color: "#666",
+                        margin: "0.5rem 0",
+                        fontSize: "0.9rem"
+                      }}>
+                        {drink.description || "Delicious specialty coffee"}
+                      </p>
+                      <div
+                        style={{
+                          backgroundColor: "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "999px",
+                          padding: "0.5rem 1.25rem",
+                          fontSize: "0.9rem",
+                          fontWeight: 600,
+                          marginTop: "1rem",
+                          display: "inline-block"
+                        }}
+                      >
+                        Order Now
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={restartQuiz}
                   style={{
-                    backgroundColor: "var(--primary)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "999px",
-                    padding: "0.25rem 0.75rem",
-                    fontSize: "0.8rem",
+                    backgroundColor: "white",
+                    color: "var(--primary)",
+                    border: "2px solid var(--primary)",
+                    borderRadius: "8px",
+                    padding: "0.75rem 1.5rem",
                     fontWeight: 600,
-                    marginTop: "0.5rem",
-                    display: "inline-block"
+                    cursor: "pointer",
+                    display: "block",
+                    margin: "0 auto",
+                    width: "100%",
+                    maxWidth: "200px",
+                    fontSize: "1rem"
                   }}
                 >
-                  Order Now
-                </div>
-              </motion.div>
-            ))}
+                  Take Quiz Again
+                </motion.button>
+              </>
+            )}
           </div>
-
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={restartQuiz}
-            style={{
-              backgroundColor: "transparent",
-              color: "var(--primary)",
-              border: "2px solid var(--primary)",
-              borderRadius: "8px",
-              padding: isMobile ? "0.6rem" : "0.75rem 1.5rem",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "block",
-              margin: "0 auto",
-              width: "100%",
-              maxWidth: "200px",
-              fontSize: isMobile ? "0.85rem" : "0.9rem"
-            }}
-          >
-            Try Again
-          </motion.button>
-        </>
-      )}
-    </motion.section>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

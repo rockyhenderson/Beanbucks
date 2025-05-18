@@ -126,7 +126,7 @@ ol {
 li {
   font-family: 'Quicksand', sans-serif !important;
   font-size: 1rem;
-  color: var(--list-text);
+color:  #333333;
   margin-bottom: 0.6rem;
   line-height: 1.6;
 

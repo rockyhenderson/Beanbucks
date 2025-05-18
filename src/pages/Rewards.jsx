@@ -59,7 +59,7 @@ function Rewards() {
     }
 
     if (error) return <RetryFallback onRetry={retry} />;
-    if (isLoading) return <p>Loading...</p>;
+    if (isLoading) return <div className="loading-spinner">Loading...</div>;
     if (!data) return null;
 
     const loyaltyPoints = data.loyalty_points;
@@ -78,16 +78,19 @@ function Rewards() {
     const CustomPrevArrow = ({ onClick }) => (
         <IconButton
             onClick={onClick}
-            style={{
+            sx={{
                 position: "absolute",
-                left: "0",
+                left: "-25px",
                 top: "50%",
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "var(--primary)",
-                color: "#fff",
+                transform: "translateY(-50%)",
+                backgroundColor: "#ee5c01",
+                color: "white",
                 zIndex: 2,
                 width: "40px",
                 height: "40px",
+                "&:hover": {
+                    backgroundColor: "#d45301",
+                },
             }}
         >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -97,16 +100,19 @@ function Rewards() {
     const CustomNextArrow = ({ onClick }) => (
         <IconButton
             onClick={onClick}
-            style={{
+            sx={{
                 position: "absolute",
-                right: "0",
+                right: "-25px",
                 top: "50%",
-                transform: "translate(50%, -50%)",
-                backgroundColor: "var(--primary)",
-                color: "#fff",
+                transform: "translateY(-50%)",
+                backgroundColor: "#ee5c01",
+                color: "white",
                 zIndex: 2,
                 width: "40px",
                 height: "40px",
+                "&:hover": {
+                    backgroundColor: "#d45301",
+                },
             }}
         >
             <ArrowForwardIosIcon fontSize="small" />
@@ -117,100 +123,68 @@ function Rewards() {
         dots: true,
         infinite: true,
         speed: 500,
-        slidesToShow: 4,
+        slidesToShow: 3,
         slidesToScroll: 1,
         nextArrow: <CustomNextArrow />,
         prevArrow: <CustomPrevArrow />,
         responsive: [
             {
-                breakpoint: 1280,
-                settings: {
-                    slidesToShow: 3,
-                },
-            },
-            {
-                breakpoint: 960,
+                breakpoint: 1024,
                 settings: {
                     slidesToShow: 2,
                 },
             },
             {
-                breakpoint: 600,
+                breakpoint: 768,
                 settings: {
                     slidesToShow: 1,
+                    arrows: false,
                 },
             },
         ],
     };
 
     return (
-        <div
-            className="rewards"
-            style={{ padding: "2rem 1rem", maxWidth: "1200px", margin: "auto" }}
-        >
-            <h1 style={{ fontSize: "2.25rem", marginBottom: "1rem" }}>Rewards</h1>
+        <div className="rewards-container">
+            <div className="rewards-header">
+                <h1>Your Rewards</h1>
+                <p className="subtitle">Redeem your loyalty points for delicious treats</p>
+            </div>
 
             {/* POINTS SUMMARY CARD */}
-            <div
-                style={{
-                    backgroundColor: "var(--card)",
-                    border: "2px solid var(--primary)",
-                    borderRadius: "12px",
-                    padding: "1rem 1.5rem",
-                    marginBottom: "2rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexWrap: "wrap",
-                }}
-            >
-                <div>
-                    <p
-                        style={{
-                            fontSize: "1.5rem",
-                            fontWeight: "bold",
-                            color: "var(--primary)",
-                            margin: 0,
-                        }}
-                    >
-                        {loyaltyPoints} pts
-                    </p>
-                    <p style={{ margin: 0 }}>Your current balance</p>
+            <div className="points-card">
+                <div className="points-content">
+                    <div className="points-value">
+                        <span className="points-number">{loyaltyPoints}</span>
+                        <span className="points-label">points</span>
+                    </div>
+                    <div className="points-description">
+                        <p>Current balance</p>
+                        <Tooltip 
+                            title="You earn 1 point for every £1 spent. Redeem points for drinks and snacks!" 
+                            arrow
+                            placement="top"
+                        >
+                            <IconButton aria-label="how it works" size="small">
+                                <HelpOutlineIcon className="help-icon" />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
                 </div>
-                <Tooltip title="You earn 1 point for every £1 spent. Redeem points for drinks and snacks!">
-                    <IconButton aria-label="how it works">
-                        <HelpOutlineIcon style={{ color: "var(--primary)" }} />
-                    </IconButton>
-                </Tooltip>
+                <div className="progress-container">
+                    <div 
+                        className="progress-bar" 
+                        style={{ width: `${Math.min(100, (loyaltyPoints / 600) * 100)}%` }}
+                    />
+                </div>
             </div>
 
             {/* REWARDS CAROUSEL */}
-            <div
-                className="card"
-                style={{
-                    backgroundColor: "var(--card)",
-                    borderRadius: "16px",
-                    padding: "2rem 2rem 3rem",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                    overflow: "hidden",
-                    position: "relative",
-                }}
-            >
-                <h2 style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-                    Available Rewards
-                </h2>
-                <p
-                    style={{
-                        textAlign: "center",
-                        fontStyle: "italic",
-                        color: "var(--body-text)",
-                        marginBottom: "2rem",
-                    }}
-                >
-                    Only one reward can be redeemed per purchase.
-                </p>
-
-                <div style={{ padding: "0 1rem", boxSizing: "border-box" }}>
+            <div className="rewards-section">
+                <h2>Available Rewards</h2>
+                <p className="section-subtitle">Only one reward can be redeemed per purchase</p>
+                
+                <div className="slider-container">
                     <Slider {...sliderSettings}>
                         {rewardMilestones.map((milestone, i) => {
                             const progress = getProgress(loyaltyPoints, milestone.points);
@@ -232,111 +206,33 @@ function Rewards() {
                             };
 
                             return (
-                                <div
-                                    key={i}
-                                    onClick={handleClick}
-                                    style={{ padding: "0 15px", outline: "none" }}
-                                >
-                                    <div
-                                        style={{
-                                            maxWidth: "200px",
-                                            margin: "0 auto",
-                                            aspectRatio: "4 / 5",
-                                            backgroundColor: isSelected ? "#ffe8d9" : "var(--card)",
-                                            borderRadius: "12px",
-                                            padding: "0.75rem",
-                                            border: `2px solid ${isSelected
-                                                    ? "var(--primary)"
-                                                    : isUnlocked
-                                                        ? "var(--primary)"
-                                                        : "#ccc"
-                                                }`,
-                                            boxShadow: isSelected
-                                                ? "0 6px 16px rgba(0,0,0,0.1)"
-                                                : "0 2px 8px rgba(0,0,0,0.03)",
-                                            transition: "all 0.2s ease",
-                                            transform: isSelected ? "scale(1.02)" : "scale(1)",
-                                            cursor: isUnlocked ? "pointer" : "not-allowed",
-                                            textAlign: "center",
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <h3
-                                            style={{
-                                                fontSize: "1rem",
-                                                margin: 0,
-                                                color: isSelected ? "#000" : "var(--body-text)",
-                                            }}
-                                        >
-                                            {milestone.reward}
-                                        </h3>
-
-                                        <p
-                                            style={{
-                                                margin: "0.25rem 0 0.75rem",
-                                                fontSize: "0.85rem",
-                                                color: isSelected ? "#000" : "var(--body-text)",
-                                            }}
-                                        >
-                                            {milestone.points} pts
-                                        </p>
-
-
-                                        <div
-                                            style={{
-                                                width: "100%",
-                                                height: "8px",
-                                                backgroundColor: "#eee",
-                                                borderRadius: "6px",
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    width: `${progress}%`,
-                                                    height: "100%",
-                                                    backgroundColor: "var(--primary)",
-                                                    borderRadius: "6px",
-                                                    transition: "width 0.3s",
-                                                }}
-                                            />
-                                        </div>
-
-                                        {!isUnlocked && (
-                                            <p
-                                                style={{
-                                                    fontSize: "0.75rem",
-                                                    marginTop: "0.5rem",
-                                                    color: "#555",
-                                                }}
+                                <div key={i} onClick={handleClick}>
+                                    <div className={`reward-card ${isSelected ? "selected" : ""} ${isUnlocked ? "unlocked" : "locked"}`}>
+                                        <div className="reward-content">
+                                            <h3>{milestone.reward}</h3>
+                                            <p className="points-required">{milestone.points} pts</p>
+                                            
+                                            <div className="progress-wrapper">
+                                                <div className="progress-track">
+                                                    <div 
+                                                        className="progress-thumb" 
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                                {!isUnlocked && (
+                                                    <p className="points-remaining">
+                                                        {milestone.points - loyaltyPoints} pts to go
+                                                    </p>
+                                                )}
+                                            </div>
+                                            
+                                            <button 
+                                                className={`redeem-button ${isSelected ? "selected" : ""}`}
+                                                disabled={!isUnlocked}
                                             >
-                                                {milestone.points - loyaltyPoints} pts to go
-                                            </p>
-                                        )}
-
-                                        <button
-                                            disabled={!isUnlocked}
-                                            style={{
-                                                marginTop: "1rem",
-                                                padding: "0.4rem 0.8rem",
-                                                fontSize: "0.8rem",
-                                                backgroundColor: isUnlocked
-                                                    ? "var(--primary)"
-                                                    : "#ccc",
-                                                color: "#fff",
-                                                border: "none",
-                                                borderRadius: "8px",
-                                                cursor: isUnlocked ? "pointer" : "not-allowed",
-                                                fontWeight: 600,
-                                            }}
-                                        >
-                                            {isSelected
-                                                ? "Selected"
-                                                : isUnlocked
-                                                    ? "Redeem"
-                                                    : "Locked"}
-                                        </button>
+                                                {isSelected ? "Selected" : isUnlocked ? "Redeem Now" : "Locked"}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -349,3 +245,307 @@ function Rewards() {
 }
 
 export default Rewards;
+
+// Add this CSS to your stylesheet
+const styles = `
+:root {
+    --primary: #ee5c01;
+    --primary-dark: #d45301;
+    --primary-light: #ff7b33;
+    --primary-extra-light: #ffe8d9;
+    --text-dark: #2c3e50;
+    --text-medium: #7f8c8d;
+    --text-light: #95a5a6;
+    --background-light: #f5f5f5;
+    --border-light: #e0e0e0;
+}
+
+.rewards-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-dark);
+}
+
+.rewards-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.rewards-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    margin: 0;
+}
+
+/* Points Card */
+.points-card {
+    background: linear-gradient(135deg, #fff8f5 0%, #ffddd1 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--primary-extra-light);
+}
+
+.points-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.points-value {
+    display: flex;
+    align-items: baseline;
+}
+
+.points-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.points-label {
+    font-size: 1.2rem;
+    color: var(--text-medium);
+}
+
+.points-description {
+    display: flex;
+    align-items: center;
+}
+
+.points-description p {
+    margin: 0 0.5rem 0 0;
+    color: var(--text-medium);
+}
+
+.help-icon {
+    color: var(--text-medium);
+    transition: color 0.2s;
+}
+
+.help-icon:hover {
+    color: var(--primary);
+}
+
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-light), var(--primary));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Rewards Section */
+.rewards-section {
+    background-color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.rewards-section h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    margin-bottom: 2rem;
+}
+
+.slider-container {
+    padding: 0 2rem;
+    position: relative;
+}
+
+/* Reward Cards */
+.reward-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 0 10px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.reward-card.unlocked:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.reward-card.selected {
+    background-color: var(--primary-extra-light);
+    border: 2px solid var(--primary);
+    box-shadow: 0 8px 20px rgba(238, 92, 1, 0.15);
+}
+
+.reward-card.locked {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.reward-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.reward-card h3 {
+    font-size: 1.3rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.points-required {
+    font-size: 1rem;
+    color: var(--text-medium);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.progress-wrapper {
+    margin: 1rem 0;
+}
+
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-thumb {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-light), var(--primary));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.points-remaining {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.redeem-button {
+    margin-top: auto;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.reward-card.unlocked .redeem-button {
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    color: white;
+}
+
+.reward-card.unlocked .redeem-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(238, 92, 1, 0.2);
+}
+
+.reward-card.selected .redeem-button {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.reward-card.locked .redeem-button {
+    background-color: #e0e0e0;
+    color: var(--text-light);
+    cursor: not-allowed;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+/* Slick Carousel Customizations */
+.slick-dots li button:before {
+    color: var(--text-light);
+    font-size: 10px;
+}
+
+.slick-dots li.slick-active button:before {
+    color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .rewards-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .rewards-header h1 {
+        font-size: 2rem;
+    }
+    
+    .points-card {
+        padding: 1rem;
+    }
+    
+    .points-number {
+        font-size: 2rem;
+    }
+    
+    .rewards-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .slider-container {
+        padding: 0;
+    }
+    
+    .reward-card {
+        height: 280px;
+        padding: 1.2rem;
+    }
+}
+`;
+
+// Inject styles
+const styleElement = document.createElement("style");
+styleElement.textContent = styles;
+document.head.appendChild(styleElement);

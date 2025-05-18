@@ -94,6 +94,7 @@ function LoyaltyHero() {
         overflow: "hidden",
         my: 4,
         margin: "auto",
+        maxWidth: "1800px",
       }}
     >
       {/* Left side - content */}

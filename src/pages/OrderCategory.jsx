@@ -18,7 +18,7 @@ const categoryMap = {
 
 function OrderCategory({ cartItemCount, setCartItemCount }) {
   console.log("setCartItemCount in OrderCategory:", setCartItemCount); // Debugging log
-  const navigate = useNavigate(); // ⬅️ You were missing this line
+  const navigate = useNavigate(); 
 
 
   const { type } = useParams();

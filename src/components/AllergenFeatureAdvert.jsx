@@ -315,16 +315,16 @@ function AllergenFeatureSection() {
   // ✅ Desktop: full 3-card layout
 // Desktop view only - updated return
 return (
-  <Box sx={{ my: 6 }}>
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "stretch", // Ensures equal height
-        gap: 3,
-        flexWrap: "wrap",
-      }}
-    >
+<Box sx={{ maxWidth: "1400px", mx: "auto", px: 2 }}>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "stretch",
+      gap: 3,
+      flexWrap: "wrap",
+    }}
+  >
       {/* 1. Allergy-Safe Filtering */}
       <Box
         sx={{
@@ -338,7 +338,9 @@ return (
           boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
           display: "flex",
           flexDirection: "column",
-          height: "100%", // Force full height
+          minHeight: 420,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <img
@@ -394,7 +396,9 @@ return (
           boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
           display: "flex",
           flexDirection: "column",
-          height: "100%",
+          minHeight: 420,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <img
@@ -449,7 +453,9 @@ return (
           boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
           display: "flex",
           flexDirection: "column",
-          height: "100%",
+          minHeight: 420,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <img

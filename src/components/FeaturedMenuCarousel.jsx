@@ -124,24 +124,21 @@ function FeaturedMenuCarousel() {
   sx={{
     p: 4,
     maxHeight: "950px",
-    background: "linear-gradient(90deg, #ee5c01 0%,rgb(248, 207, 162) 100%)",
-    color: "var(--text)", // optional, ensures text stays readable
+    color: "var(--text)",
+    maxWidth: "2400px",
+    margin: "auto"
   }}
 >
-
-      <Grid
-        container
-
-        direction={"row"}
-        alignItems="center"
-        sx={{
-          maxHeight: "950px",
-
-          margin: "auto",
-          maxWidth: { xs: 400, md: "none" },
-        }}
-
-      >
+  <Grid
+    container
+    direction={"row"}
+    alignItems="center"
+    sx={{
+      maxHeight: "950px",
+      margin: "auto",
+      maxWidth: { xs: 400, md: "none" },
+    }}
+  >
         {/* Image on the left (desktop), below on mobile */}
         <Grid
           item
@@ -174,11 +171,20 @@ function FeaturedMenuCarousel() {
 
         {/* Text + Carousel */}
         <Grid item xs={12} md sx={{ flexGrow: 1, minWidth: 0, }}>
-          <Box sx={{ textAlign: "center", mb: 3 }}>
-            <h1>
-              Trending Now
-            </h1>
-          </Box>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+  <Typography
+    variant="h3"
+    sx={{
+      fontWeight: 700,
+      color: "var(--heading-text)",
+      fontFamily: "inherit", 
+      letterSpacing: 1,
+    }}
+  >
+    Trending Now
+  </Typography>
+</Box>
+
 
           <Box sx={{ position: "relative", px: 4, width: "100%" }}>
             <Slider {...sliderSettings}>

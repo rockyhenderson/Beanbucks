@@ -30,7 +30,7 @@ function HeroBanner() {
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         width: "100%",
-        height: { xs: "auto", md: "70vh" },
+        height: { xs: "80vh", md: "70vh" },
         minHeight: { xs: "600px", md: "auto" },
         overflow: "hidden",
         backgroundColor: "var(--background)",
@@ -52,8 +52,8 @@ function HeroBanner() {
         }}
         onError={handleImageError}
       />
-
-      {/* Overlay: SVG blob (desktop) or solid (mobile) */}
+  
+      {/* Overlay: SVG blob (desktop) or solid with curved bottom (mobile) */}
       {!isMobile ? (
         <Box
           component="img"
@@ -78,12 +78,16 @@ function HeroBanner() {
             left: 0,
             width: "100%",
             height: "70%",
-            backgroundColor: "#dbc1ac", // Adjust this color if needed
+            backgroundColor: "#dbc1ac",
             zIndex: 1,
+            maxHeight: "550px",
+            borderBottomLeftRadius: "100% 40%",
+            borderBottomRightRadius: "100% 40%",
+            overflow: "hidden",
           }}
         />
       )}
-
+  
       {/* Content */}
       <Box
         sx={{
@@ -113,7 +117,7 @@ function HeroBanner() {
             component="h1"
             sx={{
               fontWeight: "bold",
-              fontSize: { xs: "2rem", md: "3rem" },
+              fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" }, // Increased mobile size
               mb: 2,
               lineHeight: 1.2,
               color: "#4a2c2a"
@@ -124,11 +128,11 @@ function HeroBanner() {
               serenity
             </Box>
           </Box>
-
+  
           <Box
             component="p"
             sx={{
-              fontSize: { xs: "1rem", md: "1.25rem" },
+              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.25rem" }, // Increased mobile size
               mb: 4,
               maxWidth: { xs: "100%", sm: "90%", md: "90%" },
               color: "#4a2c2a",
@@ -138,15 +142,15 @@ function HeroBanner() {
           >
             Cool down with our signature Iced Latte — smooth, refreshing, and just what you need.
           </Box>
-
+  
           <Button
             variant="contained"
             sx={{
               backgroundColor: "var(--primary)",
               color: "#fff",
-              fontSize: "1rem",
+              fontSize: { xs: "1.1rem", md: "1rem" }, // Slightly larger on mobile
               px: 4,
-              py: 1.25,
+              py: 1.5, // Slightly more padding
               borderRadius: "24px",
               width: "fit-content",
               textTransform: "none",
@@ -159,34 +163,48 @@ function HeroBanner() {
           </Button>
         </Box>
       </Box>
-
+  
       {/* Right filler (empty on mobile) */}
-        <Box
+      <Box
+  sx={{
+    width: { xs: "100%", md: "40%" },
+    position: "relative",
+    display: "flex",
+    alignItems: { xs: "flex-end", md: "center" },
+    justifyContent: "center",
+    zIndex: 2,
+    order: { xs: 1, md: 0 },
+    height: { xs: "auto", md: "auto" },
+    marginBottom: { xs: "-120px", md: 0 }, // Force -120px bottom margin on mobile
+  }}
+>
+  <Box
+    component="img"
+    src={CoffeeCup}
+    alt="Coffee Cup"
     sx={{
-      width: { xs: "0", md: "40%" },
-      position: "relative",
-      display: { xs: "none", md: "flex" },
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 2,
+      position: { xs: "relative", md: "sticky" },
+      top: { md: "10vh" },
+      height: { 
+        xs: "400px", // Much larger on mobile
+        sm: "450px", 
+        md: "80vh" 
+      },
+      maxHeight: { xs: "none", md: 600 },
+      width: { 
+        xs: "95%", // Wider on mobile
+        sm: "85%", 
+        md: "auto" 
+      },
+      maxWidth: "90%",
+      objectFit: "contain",
+      transform: { 
+        xs: "translateY(60px)", // Push down further
+        md: "none" 
+      },
     }}
-  >
-    <Box
-      component="img"
-      src={CoffeeCup}
-      alt="Coffee Cup"
-      sx={{
-        position: "sticky",
-        top: "10vh", // Adjust if you want it lower or higher
-        height: "80vh",
-        maxHeight: 600,
-        maxWidth: "90%",
-        objectFit: "contain",
-      }}
-    />
-  </Box>
-
-
+  />
+</Box>
     </Box>
   );
 }
