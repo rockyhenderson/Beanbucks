@@ -10,10 +10,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import Toast from "../components/Toast"; // Make sure this path is correct
 
 function Rewards() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [toast, setToast] = useState(null);
     const navigate = useNavigate();
     const [selectedRewardId, setSelectedRewardId] = useState(() => {
         const stored = localStorage.getItem("SelectedReward");
@@ -146,6 +148,25 @@ function Rewards() {
 
     return (
         <div className="rewards-container">
+            {/* Toast Notification */}
+            {toast && (
+                <div style={{
+                    position: "fixed",
+                    top: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+
+                    zIndex: 9999
+                }}>
+                    <Toast
+                        type={toast.type}
+                        title={toast.title}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
+
             <div className="rewards-header">
                 <h1>Your Rewards</h1>
                 <p className="subtitle">Redeem your loyalty points for delicious treats</p>
@@ -160,8 +181,8 @@ function Rewards() {
                     </div>
                     <div className="points-description">
                         <p>Current balance</p>
-                        <Tooltip 
-                            title="You earn 1 point for every £1 spent. Redeem points for drinks and snacks!" 
+                        <Tooltip
+                            title="You earn 1 point for every £1 spent. Redeem points for drinks and snacks!"
                             arrow
                             placement="top"
                         >
@@ -172,8 +193,8 @@ function Rewards() {
                     </div>
                 </div>
                 <div className="progress-container">
-                    <div 
-                        className="progress-bar" 
+                    <div
+                        className="progress-bar"
                         style={{ width: `${Math.min(100, (loyaltyPoints / 600) * 100)}%` }}
                     />
                 </div>
@@ -183,7 +204,7 @@ function Rewards() {
             <div className="rewards-section">
                 <h2>Available Rewards</h2>
                 <p className="section-subtitle">Only one reward can be redeemed per purchase</p>
-                
+
                 <div className="slider-container">
                     <Slider {...sliderSettings}>
                         {rewardMilestones.map((milestone, i) => {
@@ -201,7 +222,11 @@ function Rewards() {
                                         JSON.stringify({ id: i + 1, reward: milestone.reward })
                                     );
                                     setSelectedRewardId(i + 1);
-                                    alert(`Redeemed: ${milestone.reward}`);
+                                    setToast({
+                                        type: "success",
+                                        title: "Reward Selected",
+                                        message: `${milestone.reward} has been selected for your next purchase!`
+                                    });
                                 }
                             };
 
@@ -211,11 +236,11 @@ function Rewards() {
                                         <div className="reward-content">
                                             <h3>{milestone.reward}</h3>
                                             <p className="points-required">{milestone.points} pts</p>
-                                            
+
                                             <div className="progress-wrapper">
                                                 <div className="progress-track">
-                                                    <div 
-                                                        className="progress-thumb" 
+                                                    <div
+                                                        className="progress-thumb"
                                                         style={{ width: `${progress}%` }}
                                                     />
                                                 </div>
@@ -225,8 +250,8 @@ function Rewards() {
                                                     </p>
                                                 )}
                                             </div>
-                                            
-                                            <button 
+
+                                            <button
                                                 className={`redeem-button ${isSelected ? "selected" : ""}`}
                                                 disabled={!isUnlocked}
                                             >

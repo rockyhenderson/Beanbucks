@@ -6,6 +6,8 @@ import MobileBackground from '../../public/img/backgroundmobile.png';
 import HeroBlob from '../../public/img/background.svg';
 import { useTheme, useMediaQuery } from "@mui/material";
 import CoffeeCup from '../../public/img/CoffeeCup.png';
+import { useNavigate } from "react-router-dom";
+
 
 
 
@@ -13,6 +15,24 @@ function HeroBanner() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [imgSrc, setImgSrc] = useState(isMobile ? MobileBackground : CoffeeBackground);
+  const navigate = useNavigate();
+
+  const icedLatteDrink = {
+    id: 4,
+    name: "Iced Caffe Latte",
+    description: "Espresso meets cold milk and ice in this Iced Caffe Latte — smooth, refreshing, and just what you need.",
+    price: 3.38,
+    category: "cold",
+    stock_status: 1,
+    image: "filler.png",
+    template_id: 0,
+    is_default: 0,
+    is_active: 1,
+    created_at: "2025-03-17 09:36:31",
+    allergen: "1,12",
+    tags: "latte",
+    editable: 1
+  };
 
   useEffect(() => {
     setImgSrc(isMobile ? MobileBackground : CoffeeBackground);
@@ -52,7 +72,7 @@ function HeroBanner() {
         }}
         onError={handleImageError}
       />
-  
+
       {/* Overlay: SVG blob (desktop) or solid with curved bottom (mobile) */}
       {!isMobile ? (
         <Box
@@ -87,7 +107,7 @@ function HeroBanner() {
           }}
         />
       )}
-  
+
       {/* Content */}
       <Box
         sx={{
@@ -128,7 +148,7 @@ function HeroBanner() {
               serenity
             </Box>
           </Box>
-  
+
           <Box
             component="p"
             sx={{
@@ -142,15 +162,19 @@ function HeroBanner() {
           >
             Cool down with our signature Iced Latte — smooth, refreshing, and just what you need.
           </Box>
-  
           <Button
             variant="contained"
+            onClick={() =>
+              navigate(`/order/${icedLatteDrink.category}`, {
+                state: { drink: icedLatteDrink }
+              })
+            }
             sx={{
               backgroundColor: "var(--primary)",
               color: "#fff",
-              fontSize: { xs: "1.1rem", md: "1rem" }, // Slightly larger on mobile
+              fontSize: { xs: "1.1rem", md: "1rem" },
               px: 4,
-              py: 1.5, // Slightly more padding
+              py: 1.5,
               borderRadius: "24px",
               width: "fit-content",
               textTransform: "none",
@@ -161,50 +185,51 @@ function HeroBanner() {
           >
             View Iced Latte
           </Button>
+
         </Box>
       </Box>
-  
+
       {/* Right filler (empty on mobile) */}
       <Box
-  sx={{
-    width: { xs: "100%", md: "40%" },
-    position: "relative",
-    display: "flex",
-    alignItems: { xs: "flex-end", md: "center" },
-    justifyContent: "center",
-    zIndex: 2,
-    order: { xs: 1, md: 0 },
-    height: { xs: "auto", md: "auto" },
-    marginBottom: { xs: "-120px", md: 0 }, // Force -120px bottom margin on mobile
-  }}
->
-  <Box
-    component="img"
-    src={CoffeeCup}
-    alt="Coffee Cup"
-    sx={{
-      position: { xs: "relative", md: "sticky" },
-      top: { md: "10vh" },
-      height: { 
-        xs: "400px", // Much larger on mobile
-        sm: "450px", 
-        md: "80vh" 
-      },
-      maxHeight: { xs: "none", md: 600 },
-      width: { 
-        xs: "95%", // Wider on mobile
-        sm: "85%", 
-        md: "auto" 
-      },
-      maxWidth: "90%",
-      objectFit: "contain",
-      transform: { 
-        xs: "translateY(60px)", // Push down further
-        md: "none" 
-      },
-    }}
-  />
-</Box>
+        sx={{
+          width: { xs: "100%", md: "40%" },
+          position: "relative",
+          display: "flex",
+          alignItems: { xs: "flex-end", md: "center" },
+          justifyContent: "center",
+          zIndex: 2,
+          order: { xs: 1, md: 0 },
+          height: { xs: "auto", md: "auto" },
+          marginBottom: { xs: "-120px", md: 0 }, // Force -120px bottom margin on mobile
+        }}
+      >
+        <Box
+          component="img"
+          src={CoffeeCup}
+          alt="Coffee Cup"
+          sx={{
+            position: { xs: "relative", md: "sticky" },
+            top: { md: "10vh" },
+            height: {
+              xs: "400px", // Much larger on mobile
+              sm: "450px",
+              md: "80vh"
+            },
+            maxHeight: { xs: "none", md: 600 },
+            width: {
+              xs: "95%", // Wider on mobile
+              sm: "85%",
+              md: "auto"
+            },
+            maxWidth: "90%",
+            objectFit: "contain",
+            transform: {
+              xs: "translateY(60px)", // Push down further
+              md: "none"
+            },
+          }}
+        />
+      </Box>
     </Box>
   );
 }

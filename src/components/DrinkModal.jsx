@@ -267,16 +267,15 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                       <h3>Size</h3>
                       <div className="size-options">
                         {[
-                          { label: "Small", size: "1.5rem" },
-                          { label: "Medium", size: "2.2rem" },
-                          { label: "Large", size: "3rem" },
-                        ].map(({ label, size }) => {
-                          const disabled = !isOptionEnabled("size", label);
+                          { label: "Small", backendName: "Small Cup", size: "1.5rem" },
+                          { label: "Medium", backendName: "Medium Cup", size: "2.2rem" },
+                          { label: "Large", backendName: "Large Cup", size: "3rem" },
+                        ].map(({ label, backendName, size }) => {
+                          const disabled = !isOptionEnabled("size", backendName);
                           return (
                             <button
                               key={label}
-                              className={`size-btn ${selectedSize === label ? "selected" : ""
-                                } ${disabled ? "disabled" : ""}`}
+                              className={`size-btn ${selectedSize === label ? "selected" : ""} ${disabled ? "disabled" : ""}`}
                               onClick={() => {
                                 if (!disabled) setSelectedSize(label);
                               }}
@@ -289,7 +288,8 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                               <span>{label}</span>
                             </button>
                           );
-                        })}
+                        })
+                        }
                       </div>
                     </div>
                     <div className="edit-options-wrapper">
@@ -326,12 +326,12 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                             <h3>Milk</h3>
                             <div className="milk-options">
                               {[
-                                { label: "Whole", Icon: AgricultureIcon },
-                                { label: "Oat", Icon: SpaIcon },
-                                { label: "Soy", Icon: SpaIcon },
-                                { label: "Almond", Icon: EmojiNatureIcon },
-                              ].map(({ label, Icon }) => {
-                                const disabled = !isOptionEnabled("milk", label);
+                                { label: "Whole", backendName: "Whole Milk", Icon: AgricultureIcon },
+                                { label: "Oat", backendName: "Oat Milk", Icon: SpaIcon },
+                                { label: "Soy", backendName: "Soy Milk", Icon: SpaIcon },
+                                { label: "Almond", backendName: "Almond Milk", Icon: EmojiNatureIcon },
+                              ].map(({ label, Icon, backendName }) => {
+                                const disabled = !isOptionEnabled("milk", backendName);
                                 return (
                                   <button
                                     key={label}
@@ -358,10 +358,11 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                             <h3>Beans</h3>
                             <div className="bean-options">
                               {[
-                                { label: "Normal", Icon: CoffeeIcon },
-                                { label: "Decaf", Icon: LocalCafeIcon },
-                              ].map(({ label, Icon }) => {
-                                const disabled = !isOptionEnabled("beans", label);
+                                { label: "Normal", backendName: "Coffee Beans", Icon: CoffeeIcon },
+                                { label: "Decaf", backendName: "Decaf Coffee Beans", Icon: LocalCafeIcon },
+
+                              ].map(({ label, Icon, backendName }) => {
+                                const disabled = !isOptionEnabled("beans", backendName);
                                 return (
                                   <button
                                     key={label}
@@ -401,19 +402,25 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                             <div className="option-group">
                               <h3>Syrup</h3>
                               <div className="syrup-stepper-list">
-                                {Object.keys(syrupCounts).map(
-                                  (syrup) =>
-                                    isOptionEnabled("syrup", syrup) && (
-                                      <div key={syrup} className="syrup-stepper-item">
-                                        <span>{syrup}</span>
-                                        <div className="stepper">
-                                          <button onClick={() => decreaseSyrup(syrup)}>-</button>
-                                          <span>{syrupCounts[syrup]}</span>
-                                          <button onClick={() => increaseSyrup(syrup)}>+</button>
-                                        </div>
+                                {[
+                                  { label: "Vanilla", backendName: "Vanilla Syrup" },
+                                  { label: "Caramel", backendName: "Caramel Syrup" },
+                                  { label: "Hazelnut", backendName: "Hazelnut Syrup" },
+                                  { label: "Mocha", backendName: "Mocha Syrup" },
+                                  { label: "Pumpkin Spice", backendName: "Pumpkin Spice" },
+                                ].map(({ label, backendName }) =>
+                                  isOptionEnabled("syrup", backendName) && (
+                                    <div key={label} className="syrup-stepper-item">
+                                      <span>{label}</span>
+                                      <div className="stepper">
+                                        <button onClick={() => decreaseSyrup(label)}>-</button>
+                                        <span>{syrupCounts[label]}</span>
+                                        <button onClick={() => increaseSyrup(label)}>+</button>
                                       </div>
-                                    )
+                                    </div>
+                                  )
                                 )}
+
                               </div>
                             </div>
                           )}
@@ -424,13 +431,14 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
                               <h3>Toppings</h3>
                               <div className="topping-boxes">
                                 {[
-                                  { label: "Whipped Cream", Icon: IcecreamIcon },
-                                  { label: "Flakes", Icon: AcUnitIcon },
-                                  { label: "Marshmallows", Icon: EmojiEmotionsIcon },
-                                  { label: "Cinnamon", Icon: SpaIcon },
-                                  { label: "Chocolate Chips", Icon: CookieIcon },
-                                ].map(({ label, Icon }) => {
-                                  const disabled = !isOptionEnabled("topping", label);
+                                  { label: "Whipped Cream", backendName: "Whipped Cream", Icon: IcecreamIcon },
+                                  { label: "Flakes", backendName: "Flakes", Icon: AcUnitIcon },
+                                  { label: "Marshmallows", backendName: "Marshmallows", Icon: EmojiEmotionsIcon },
+                                  { label: "Cinnamon", backendName: "Cinnamon", Icon: SpaIcon },
+                                  { label: "Chocolate Chips", backendName: "Java Chips", Icon: CookieIcon },
+
+                                ].map(({ label, Icon, backendName }) => {
+                                  const disabled = !isOptionEnabled("topping", backendName);
                                   return (
                                     !disabled && (
                                       <button
