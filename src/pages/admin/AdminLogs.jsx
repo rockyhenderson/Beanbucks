@@ -1,241 +1,157 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import useFetchWithRetry from "../../utils/useFetchWithRetry";
+import RetryFallback from "../../components/RetryFallback";
+import Toast from "../../components/Toast";
+import { Box, Typography, TextField } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import AdminLogModal from "../../components/AdminLogModal"; // add this
 
-const AdminContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--background);
-  color: var(--text);
-`;
+function AdminLogs() {
+  const [toast, setToast] = useState(null);
+  const [search, setSearch] = useState("");
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const [selectedLog, setSelectedLog] = useState(null);
 
-const MainContent = styled.main`
-  flex-grow: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
+  const {
+    data: logs,
+    error,
+    retry,
+    isLoading,
+  } = useFetchWithRetry(
+   
+      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/read_admin_logs.php"
+        
+  );
 
-const Header = styled.header`
-  margin-bottom: 2.5rem;
-  
-  h1 {
-    color: var(--heading-color);
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  p {
-    color: var(--body-text);
-    font-size: 1.1rem;
-    margin: 0;
-  }
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-`;
-
-const StatCard = styled.div`
-  background: var(--card);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  h3 {
-    color: var(--accent);
-    font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  p {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0.5rem 0;
-    color: var(--text);
-  }
-  
-  button {
-    background: var(--primary);
-    color: var(--button-text);
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    margin-top: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    
-    &:hover {
-      background: color-mix(in srgb, var(--primary), black 15%);
+  useEffect(() => {
+    if (error) {
+      console.error("❌ AdminLogs fetch error:", error);
+      setToast({
+        type: "error",
+        title: "Server Error",
+        message: "Failed to fetch admin logs. Please try again.",
+      });
     }
-  }
-`;
+  }, [error]);
 
-const GuideCard = styled.div`
-  background: var(--card);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
-  
-  h2 {
-    color: var(--heading-color);
-    font-size: 1.75rem;
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    font-size: 1.1rem;
-    line-height: 1.5;
-    
-    strong {
-      color: var(--accent);
-      font-weight: 600;
-    }
-  }
-`;
 
-const StatHighlight = styled.span`
-  color: var(--primary);
-  font-weight: 700;
-`;
 
-function Admin() {
+  const columns = [
+    { field: "id", headerName: "ID", flex: 0.5 },
+    {
+      field: "admin_email",
+      headerName: "Admin",
+      flex: 1.5,
+    },
+    {
+      field: "action_type",
+      headerName: "Action",
+      flex: 1,
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      flex: 2,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+    },
+    {
+      field: "created_at",
+      headerName: "Timestamp",
+      flex: 1.5,
+    },
+  ];
+
+  const filteredRows = Array.isArray(logs)
+    ? logs.filter((log) =>
+      Object.values(log).some((value) =>
+        String(value).toLowerCase().includes(search.toLowerCase())
+      )
+    )
+    : [];
+
   return (
-    <AdminContainer>
-      <MainContent>
-        <Header>
-          <h1>
-            <span>Admin Dashboard</span>
-            <span style={{ color: 'var(--primary)' }}>🔧</span>
-          </h1>
-          <p>Overview and quick actions for store management</p>
-        </Header>
+    <Box sx={{ padding: 4 }}>
+      <h1>Admin Logs</h1>
+      <Typography sx={{ marginBottom: 3 }}>
+        This section provides a detailed log of administrative activity within
+        the system.
+      </Typography>
 
-        <StatsGrid>
-          <StatCard>
-            <h3>💰 Money Taken This Week</h3>
-            <p>£<StatHighlight>1,234</StatHighlight>.56</p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--body-text)' }}>↑ 12% from last week</p>
-          </StatCard>
-          
-          <StatCard>
-            <h3>🛒 Orders Placed</h3>
-            <p><StatHighlight>342</StatHighlight> orders</p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--body-text)' }}>↗ 8% from last week</p>
-          </StatCard>
-          
-          <StatCard>
-            <h3>🥇 Top-Selling Drink</h3>
-            <p>Caramel Iced Latte</p>
-            <p><StatHighlight>76</StatHighlight> sold this week</p>
-          </StatCard>
-          
-          <StatCard>
-            <h3>📉 Low Stock Items</h3>
-            <p><StatHighlight>5</StatHighlight> items need attention</p>
-            <button>View Stock</button>
-          </StatCard>
-          
-          <StatCard>
-            <h3>🏪 Store Status</h3>
-            <p><StatHighlight>2</StatHighlight> stores closed</p>
-            <button>Manage Stores</button>
-          </StatCard>
-          
-          <StatCard>
-            <h3>👥 New Customers</h3>
-            <p><StatHighlight>28</StatHighlight> this week</p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--body-text)' }}>Total: 1,842</p>
-          </StatCard>
-        </StatsGrid>
+      {isLoading ? (
+        <p>Loading logs...</p>
+      ) : error ? (
+        <RetryFallback onRetry={retry} />
+      ) : (
+        <>
+          <Box sx={{ marginBottom: 2, maxWidth: 300 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search logs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Box>
 
-        <GuideCard>
-          <h2>🧭 Quick Navigation Guide</h2>
-          <ul>
-            <li>
-              <span>🍹</span>
-              <div>
-                <strong>Manage Menu</strong><br />
-                Edit drink items and pricing
-              </div>
-            </li>
-            <li>
-              <span>👤</span>
-              <div>
-                <strong>User Management</strong><br />
-                Manage staff and customers
-              </div>
-            </li>
-            <li>
-              <span>☕</span>
-              <div>
-                <strong>Barista Portal</strong><br />
-                Live order view and management
-              </div>
-            </li>
-            <li>
-              <span>🏪</span>
-              <div>
-                <strong>Store Options</strong><br />
-                Set hours, open/close stores
-              </div>
-            </li>
-            <li>
-              <span>📦</span>
-              <div>
-                <strong>Inventory</strong><br />
-                View/update stock levels
-              </div>
-            </li>
-            <li>
-              <span>📜</span>
-              <div>
-                <strong>Activity Logs</strong><br />
-                View admin activity history
-              </div>
-            </li>
-          </ul>
-        </GuideCard>
-      </MainContent>
-    </AdminContainer>
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            autoHeight
+            getRowId={(row) => row.id}
+            pageSize={8}
+            rowsPerPageOptions={[8, 15, 25]}
+            disableSelectionOnClick
+            onRowClick={(params) => setSelectedLog(params.row)}
+            sx={{
+              cursor:"pointer",
+              backgroundColor: "var(--card)",
+              borderColor: "var(--component-border)",
+              color: "var(--text)",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "var(--accent)",
+                fontWeight: "bold",
+                color: "var(--text)",
+              },
+              "& .MuiDataGrid-row": {
+                borderBottom: "1px solid var(--component-border)",
+              },
+            }}
+          />
+
+        </>
+      )}
+
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            animation: "slideDown 0.3s ease-out",
+          }}
+        >
+          <Toast
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
+      <AdminLogModal
+        open={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+        log={selectedLog}
+      />
+
+    </Box>
   );
 }
 
-export default Admin;
+export default AdminLogs;

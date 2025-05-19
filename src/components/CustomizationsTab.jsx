@@ -419,6 +419,7 @@ function CustomizationsTab() {
                             return;
                         }
 
+                        const adminId = 1; // Replace with actual admin ID from the session or context
 
                         try {
                             const res = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_customization.php", {
@@ -427,8 +428,8 @@ function CustomizationsTab() {
                                 body: JSON.stringify({
                                     store_id: 1,
                                     customization_option_id: customization.id,
-                                    enabled: confirmTarget.reason === "manual" ? 0 : 1
-
+                                    enabled: confirmTarget.reason === "manual" ? 0 : 1,
+                                    admin_id: adminId // Send the admin ID
                                 })
                             });
 
@@ -448,9 +449,7 @@ function CustomizationsTab() {
                                     title: "Toggle Failed",
                                     message: result.message || "An unknown error occurred while toggling."
                                 });
-
                             }
-
 
                         } catch (err) {
                             console.error(err);
@@ -459,11 +458,12 @@ function CustomizationsTab() {
                                 title: "Network Error",
                                 message: err.message || "Could not reach the server."
                             });
-
                         }
 
                         setConfirmTarget(null);
                     }}
+
+
 
                     onCancel={() => setConfirmTarget(null)}
                 />
@@ -523,7 +523,7 @@ function CustomizationsTab() {
                             return;
                         }
 
-                        const newStatus = activeCustomizations[confirmTarget.key] ? 0 : 1;
+                        const adminId = 1; // Replace with actual admin ID from the session or context
 
                         try {
                             const res = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_customization.php", {
@@ -532,18 +532,20 @@ function CustomizationsTab() {
                                 body: JSON.stringify({
                                     store_id: 1,
                                     customization_option_id: customization.id,
-                                    enabled: newStatus
+                                    enabled: confirmTarget.reason === "manual" ? 0 : 1,
+                                    admin_id: adminId // Send the admin ID
                                 })
                             });
 
                             const result = await res.json();
 
                             if (res.ok && result.success) {
-                                setActiveCustomizations(prev => ({ ...prev, [confirmTarget.key]: !!newStatus }));
+                                const isEnabling = confirmTarget.reason === "manual-enable";
+                                setActiveCustomizations(prev => ({ ...prev, [confirmTarget.key]: isEnabling }));
                                 setToast({
                                     type: "success",
-                                    title: newStatus ? "Customization Enabled" : "Customization Disabled",
-                                    message: `"${name}" has been successfully ${newStatus ? "enabled" : "disabled"} for this store.`
+                                    title: isEnabling ? "Customization Enabled" : "Customization Disabled",
+                                    message: `"${name}" has been successfully ${isEnabling ? "enabled" : "disabled"} for this store.`
                                 });
                             } else {
                                 setToast({
@@ -564,6 +566,7 @@ function CustomizationsTab() {
 
                         setConfirmTarget(null);
                     }}
+
                     onCancel={() => setConfirmTarget(null)}
                 />
 
