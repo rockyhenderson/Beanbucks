@@ -72,8 +72,7 @@ function FeaturedMenuCarousel() {
   const navigate = useNavigate();
 
 useEffect(() => {
-  fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_featured_drinks.php")
-
+  fetch("/api/public/get_featured_drinks.php")
     .then((res) => {
       // Log the response to inspect it
       console.log("Response Status:", res.status); // Check status code
@@ -82,7 +81,7 @@ useEffect(() => {
     })
     .then((data) => {
       console.log("Response Body (as Text):", data); // Log raw response text
-      
+      debugger
       try {
         const jsonData = JSON.parse(data); // Try to parse it as JSON
         setFeaturedDrinks(jsonData); // Update state with JSON if successful
