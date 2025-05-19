@@ -72,7 +72,8 @@ function FeaturedMenuCarousel() {
   const navigate = useNavigate();
 
 useEffect(() => {
-  fetch("/api/public/get_featured_drinks.php")
+  fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_featured_drinks.php")
+
     .then((res) => {
       // Log the response to inspect it
       console.log("Response Status:", res.status); // Check status code
