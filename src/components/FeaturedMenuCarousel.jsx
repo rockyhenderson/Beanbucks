@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -9,36 +9,10 @@ import {
 } from "@mui/material";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import Slider from "react-slick";
+import { useNavigate } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-const featuredDrinks = [
-  {
-    name: "Espresso Delight",
-    desc: "Rich & bold.",
-    img: "https://source.unsplash.com/300x450/?espresso",
-  },
-  {
-    name: "Matcha Madness",
-    desc: "Earthy and energizing.",
-    img: "https://source.unsplash.com/300x450/?matcha",
-  },
-  {
-    name: "Caramel Dream",
-    desc: "Sweet & creamy.",
-    img: "https://source.unsplash.com/300x450/?caramel-coffee",
-  },
-  {
-    name: "Vanilla Bliss",
-    desc: "Smooth vanilla flavor.",
-    img: "https://source.unsplash.com/300x450/?vanilla-coffee",
-  },
-  {
-    name: "Choco Chill",
-    desc: "Icy chocolate treat.",
-    img: "https://source.unsplash.com/300x450/?iced-coffee",
-  },
-];
+import FeaturedDrinkCard from "../components/FeaturedDrinkCard";
 
 const ArrowLeft = ({ onClick }) => (
   <IconButton
@@ -65,8 +39,6 @@ const ArrowLeft = ({ onClick }) => (
   </IconButton>
 );
 
-
-
 const ArrowRight = ({ onClick }) => (
   <IconButton
     onClick={onClick}
@@ -92,11 +64,21 @@ const ArrowRight = ({ onClick }) => (
   </IconButton>
 );
 
-
 function FeaturedMenuCarousel() {
   const [imgSrc, setImgSrc] = useState("/img/happycoffeeman.png");
+  const [featuredDrinks, setFeaturedDrinks] = useState([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(
+      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_featured_drinks.php"
+    )
+      .then((res) => res.json())
+      .then((data) => setFeaturedDrinks(data))
+      .catch((err) => console.error("Error fetching featured drinks:", err));
+  }, []);
 
   const sliderSettings = {
     dots: false,
@@ -115,31 +97,36 @@ function FeaturedMenuCarousel() {
       { breakpoint: 1100, settings: { slidesToShow: 2 } },
       { breakpoint: 1000, settings: { slidesToShow: 1 } },
       { breakpoint: 600, settings: { slidesToShow: 1 } },
-      { breakpoint: 1, settings: { slidesToShow: 1 } },
     ],
   };
 
+  const handleCardClick = (drink) => {
+    navigate(`/order/${drink.category}`, {
+      state: { drink },
+    });
+  };
+
   return (
-<Box
-  sx={{
-    p: 4,
-    maxHeight: "950px",
-    color: "var(--text)",
-    maxWidth: "2400px",
-    margin: "auto"
-  }}
->
-  <Grid
-    container
-    direction={"row"}
-    alignItems="center"
-    sx={{
-      maxHeight: "950px",
-      margin: "auto",
-      maxWidth: { xs: 400, md: "none" },
-    }}
-  >
-        {/* Image on the left (desktop), below on mobile */}
+    <Box
+      sx={{
+        p: 4,
+        maxHeight: "950px",
+        color: "var(--text)",
+        maxWidth: "2400px",
+        margin: "auto",
+      }}
+    >
+      <Grid
+        container
+        direction={"row"}
+        alignItems="center"
+        sx={{
+          maxHeight: "950px",
+          margin: "auto",
+          maxWidth: { xs: 400, md: "none" },
+        }}
+      >
+        {/* Left Image */}
         <Grid
           item
           xs={12}
@@ -147,10 +134,9 @@ function FeaturedMenuCarousel() {
           sx={{
             width: { md: 350 },
             flexShrink: 0,
-            display: { xs: "none", md: "block" }, // <-- add this line
+            display: { xs: "none", md: "block" },
           }}
         >
-
           <Box
             component="img"
             src={imgSrc}
@@ -164,83 +150,46 @@ function FeaturedMenuCarousel() {
               display: "block",
               borderRadius: "16px",
               objectFit: "cover",
-
             }}
           />
         </Grid>
 
-        {/* Text + Carousel */}
-        <Grid item xs={12} md sx={{ flexGrow: 1, minWidth: 0, }}>
-        <Box sx={{ textAlign: "center", mb: 4 }}>
-  <Typography
-    variant="h3"
-    sx={{
-      fontWeight: 700,
-      color: "var(--heading-text)",
-      fontFamily: "inherit", 
-      letterSpacing: 1,
-    }}
-  >
-    Trending Now
-  </Typography>
-</Box>
-
+        {/* Right Content */}
+        <Grid item xs={12} md sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Box sx={{ textAlign: "center", mb: 4 }}>
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 700,
+                color: "var(--heading-text)",
+                fontFamily: "inherit",
+                letterSpacing: 1,
+              }}
+            >
+              Trending Now
+            </Typography>
+          </Box>
 
           <Box sx={{ position: "relative", px: 4, width: "100%" }}>
             <Slider {...sliderSettings}>
               {featuredDrinks.map((drink, index) => (
-                <Box key={index} sx={{ px: 1 }}>
-                  <Box
-                    sx={{
-                      backgroundColor: "var(--card)",
-                      borderRadius: "16px",
-                      boxShadow: "0 4x 12px rgba(0, 0, 0, 0.1)",
-                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                      cursor: "pointer",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: "0 6px 18px rgba(0, 0, 0, 0.15)",
-                      },
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      p: 2,
-                      width: "100%",
-                      maxWidth: 280,
-                      height: 350,
-                      textAlign: "center",
-                      mx: "auto",
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={drink.img}
-                      alt={drink.name}
-                      sx={{
-                        width: "100%",
-                        height: "auto",
-                        maxHeight: 180,
-                        objectFit: "contain",
-                        borderRadius: "12px",
-                        mb: 2,
-                      }}
-                      onError={(e) => {
-                        e.target.src = "/img/Fallback.png";
-                      }}
-                    />
-                    <Typography
-                      variant="h6"
-                      sx={{ fontWeight: 600, color: "var(--accent)" }}
-                    >
-                      {drink.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "var(--body-text)", mt: 0.5 }}
-                    >
-                      {drink.desc}
-                    </Typography>
-                  </Box>
+                <Box
+                  key={index}
+                  sx={{
+                    px: 1,
+                    display: "flex",
+                    justifyContent: "center",
+                    "&:hover": {
+                      transform: "scale(1.03)",
+                      transition: "transform 0.2s ease-in-out",
+                    },
+                  }}
+                  onClick={() => handleCardClick(drink)}
+                >
+                  <FeaturedDrinkCard
+                    drink={drink}
+                    onOrderClick={() => handleCardClick(drink)}
+                  />
                 </Box>
               ))}
             </Slider>

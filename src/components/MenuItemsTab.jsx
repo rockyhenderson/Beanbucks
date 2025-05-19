@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import useFetchWithRetry from "../utils/useFetchWithRetry";
-import { Box, Collapse, TextField } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Paper,
+  Collapse,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  TextField,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Add } from "@mui/icons-material";
 import TwoChoicesModal from "./TwoChoices";
@@ -86,17 +98,23 @@ function MenuItemsTab({ storeId, setToast }) {
 
   return (
     <>
-      <Collapse in={true} timeout="auto" unmountOnExit>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "stretch", sm: "center" },
-            marginBottom: 2,
-            gap: { xs: 2, sm: 0 },
-          }}
-        >
+<Collapse in={true} timeout="auto" unmountOnExit>
+<Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+  Manage Menu Items
+</Typography>
+
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "column", sm: "row" },
+      justifyContent: "space-between",
+      alignItems: { xs: "stretch", sm: "center" },
+      marginBottom: 2,
+      gap: { xs: 2, sm: 0 },
+    }}
+  >
+    {/* ...Search Field and Buttons */}
+
           <TextField
             size="small"
             placeholder="Search drinks..."
@@ -126,32 +144,7 @@ function MenuItemsTab({ storeId, setToast }) {
           />
 
           <Box sx={{ flexShrink: 0 }}>
-            <button
-              className="btn btn--primary"
-              onClick={() =>
-                setToast({
-                  type: "info",
-                  title: "Feature Coming Soon",
-                  message: "Adding new drinks will be available shortly!",
-                })
-              }
-              style={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "var(--primary)",
-                color: "white",
-                padding: "10px 18px",
-                fontSize: "1rem",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: 600,
-                gap: "8px",
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              <Add /> Add Drink
-            </button>
+
           </Box>
         </Box>
 

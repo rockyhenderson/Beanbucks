@@ -36,7 +36,7 @@ function Footer() {
 
         {/* Quick Links */}
         <Grid item xs={6} md={2}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 ,color: "#FD6100"}}>
             Quick Links
           </Typography>
           <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
@@ -60,7 +60,7 @@ function Footer() {
 
         {/* Legal Links */}
         <Grid item xs={6} md={2}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600,color: "#FD6100" }}>
             Legal
           </Typography>
           <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
@@ -78,7 +78,7 @@ function Footer() {
 
         {/* Contact & Social */}
         <Grid item xs={12} md={4}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 ,color: "#FD6100"}}>
             Contact
           </Typography>
           <Typography variant="body2" sx={{ mt: 1, color: "#CCC" }}>

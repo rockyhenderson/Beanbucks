@@ -27,6 +27,8 @@ const storeId = sessionStorage.getItem("selectedStoreId");
 
 const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCount }) => {
 
+  
+
   const [showOptions, setShowOptions] = useState(false);
   const [allergenWarning, setAllergenWarning] = useState(null);
   const [showAllergenModal, setShowAllergenModal] = useState(false);
@@ -179,6 +181,7 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
   }, [drink]);
 
   if (!drink) return null;
+  const editable = parseInt(drink.editable ?? 0); // force convert
 
   return (
     <div className="drink-modal-overlay" onClick={showAllergenModal ? undefined : onClose}>
@@ -226,7 +229,7 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
             <div className="drink-info-container">
               <h2 className="drink-title">{drink.name}</h2>
               <div className="tag-container" style={{ marginBottom: "1rem" }}>
-                {drink.editable === 1 && <span className="tag">Customizable</span>}
+                {editable === 1 && <span className="tag">Customizable</span>}
 
                 {(() => {
                   if (drink.allergen) {
@@ -248,7 +251,7 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
               )}
 
             </div>
-            {drink.editable === 1 && (
+            {editable === 1 && (
               <>
                 {customizationsError ? (
                   <RetryFallback

@@ -5,6 +5,10 @@ import Toast from "../../components/Toast";
 import TwoChoicesModal from "../../components/TwoChoices";
 import MenuItemsTab from "../../components/MenuItemsTab"; 
 import TemplateTab from "../../components/TemplateTab";
+import FeaturedDrinksTab from "../../components/FeaturedDrinksTab";
+import CustomizationsTab from "../../components/CustomizationsTab";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import {
   Box,
   Select,
@@ -199,36 +203,7 @@ function ManageMenu() {
             Manage your store's drink menu, customizations, and seasonal
             templates here.
           </Typography>
-          <ul>
-            <li>
-              <strong>Menu Items tab</strong>
-              <ul>
-                <li>View all drinks</li>
-                <li>Search drinks</li>
-                <li>Toggle drink availability</li>
-                <li>Create new drink</li>
-                <li>Edit existing drink</li>
-              </ul>
-            </li>
-            <li>
-              <strong>Featured tab</strong>
-              <ul>
-                <li>Toggle drinks between featured and normal</li>
-              </ul>
-            </li>
-            <li>
-              <strong>Customisations tab</strong>
-              <ul>
-                <li>Manage available add-ons like syrups, milks, toppings</li>
-              </ul>
-            </li>
-            <li>
-              <strong>Templates tab</strong>
-              <ul>
-                <li>Switch between saved menu templates</li>
-              </ul>
-            </li>
-          </ul>
+         
 
           {toast && (
             <div
@@ -429,25 +404,10 @@ function ManageMenu() {
                 <MenuItemsTab storeId={storeId} setToast={setToast} />
               )}
 
-              {activeTab === 1 && (
-                <>
-                  <h2>Manage Customizations</h2>
-                  <p>
-                    This section allows you to manage the availability of drink
-                    customizations like milk options, syrups, and toppings.
-                  </p>
-                </>
-              )}
+{activeTab === 1 && <FeaturedDrinksTab />}
 
-              {activeTab === 2 && (
-                <>
-                  <h2>Manage Seasonal Templates</h2>
-                  <p>
-                    This section allows managers to switch between different
-                    seasonal menus (e.g., winter menu, spring menu).
-                  </p>
-                </>
-              )}
+{activeTab === 2 && <CustomizationsTab />}
+
               {activeTab === 3 && (
                 <>
                   <TemplateTab storeId={storeId} setToast={setToast} />

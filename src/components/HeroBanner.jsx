@@ -164,11 +164,15 @@ function HeroBanner() {
           </Box>
           <Button
             variant="contained"
-            onClick={() =>
+            onClick={() => {
+              console.log("PAYLOAD BEING SENT:", icedLatteDrink);
+
+            
               navigate(`/order/${icedLatteDrink.category}`, {
                 state: { drink: icedLatteDrink }
-              })
-            }
+              });
+            }}
+            
             sx={{
               backgroundColor: "var(--primary)",
               color: "#fff",

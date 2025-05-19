@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon, Close as CloseIcon } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
+import UserProfileCard from "./UserProfileCard"; 
 
 function AdminNavbar() {
   const [open, setOpen] = useState(false);
@@ -23,7 +24,7 @@ function AdminNavbar() {
 
   const navItems = [
     { text: "Overview ❌", path: "/admin" },
-    { text: "Manage Menu 🔵", path: "/admin/managemenu" },
+    { text: "Manage Menu ", path: "/admin/managemenu" },
     { text: "Users", path: "/admin/manageusers" },
     { text: "BaristaPortal", path: "/admin/baristaPortal" },
     { text: "Store Options", path: "/admin/managestores" },
@@ -123,19 +124,28 @@ function AdminNavbar() {
 
         {/* MOBILE Drawer */}
         {isMobile && (
-          <Drawer
-            anchor="left"
-            open={open}
-            onClose={toggleDrawer}
-            PaperProps={{
-              sx: {
-                height: "100%",
-                backgroundColor: "var(--background)",
-              },
-            }}
-          >
-            <NavContent onClick={toggleDrawer} />
-          </Drawer>
+        <Drawer
+        anchor="left"
+        open={open}
+        onClose={toggleDrawer}
+        PaperProps={{
+          sx: {
+            height: "100%",
+            backgroundColor: "var(--background)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          },
+        }}
+      >
+        <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+          <NavContent onClick={toggleDrawer} />
+        </Box>
+        <Box sx={{ padding: "20px" }}>
+          <UserProfileCard />
+        </Box>
+      </Drawer>
+      
         )}
 
         {/* DESKTOP Spacer Layer */}
@@ -152,18 +162,26 @@ function AdminNavbar() {
         {/* DESKTOP Fixed Sidebar on top */}
         {!isMobile && (
           <Box
-            sx={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "250px",
-              height: "100vh",
-              borderRight: "1px solid #444",
-              zIndex: 1000,
-            }}
-          >
-            <NavContent />
-          </Box>
+  sx={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "250px",
+    height: "100vh",
+    borderRight: "1px solid #444",
+    zIndex: 1000,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    backgroundColor: "var(--background)",
+  }}
+>
+  <NavContent />
+  <Box sx={{ padding: "20px" }}>
+    <UserProfileCard />
+  </Box>
+</Box>
+
         )}
       </>
     </>
