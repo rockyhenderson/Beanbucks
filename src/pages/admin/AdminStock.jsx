@@ -75,7 +75,7 @@ function AdminStock() {
     retry: retryStores,
     isLoading: storesLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php`
+    `/api/public/read_stores.php`
   );
   const [anchorEl, setAnchorEl] = useState(null);
   const selectedStore =
@@ -99,7 +99,7 @@ function AdminStock() {
     retry: retryStock,
     isLoading: stockLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/read_stock_for_store.php?store_id=${storeId}`
+    `/api/admin/stock/read_stock_for_store.php?store_id=${storeId}`
   );
 
   const [search, setSearch] = useState("");
@@ -248,7 +248,7 @@ function AdminStock() {
 
     try {
       // 1. Update stock
-      const res1 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_stock_quantity.php", {
+      const res1 = await fetch("/api/admin/stock/update_stock_quantity.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -263,7 +263,7 @@ function AdminStock() {
       if (!data1.success) throw new Error("Failed to update stock.");
 
       // 2. Update threshold
-      const res2 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_threshold.php", {
+      const res2 = await fetch("/api/admin/stock/update_threshold.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -279,7 +279,7 @@ function AdminStock() {
 
       // 3. Update expiry date
       const expiryDate = updatedItem.stock === 0 ? null : updatedItem.expiry_date;
-      const res3 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_expiry_date.php", {
+      const res3 = await fetch("/api/admin/stock/update_expiry_date.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -294,7 +294,7 @@ function AdminStock() {
       if (!data3.success) throw new Error("Failed to update expiry date.");
 
       // 4. Update out-of-stock flag
-      const res4 = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_out_of_stock.php", {
+      const res4 = await fetch("/api/admin/stock/update_out_of_stock.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -432,7 +432,7 @@ function AdminStock() {
         admin_id: admin_id,  // Add admin_id to the payload
       };
 
-      const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/jettison_stock.php", {
+      const response = await fetch("/api/admin/stock/jettison_stock.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -485,7 +485,7 @@ function AdminStock() {
       const store_ingredient_ids = expired.map((item) => item.id); // These are BB_Store_Ingredients IDs
 
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/mass_jettison_stock.php",
+        "/api/admin/stock/mass_jettison_stock.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -544,7 +544,7 @@ function AdminStock() {
           onClick={async () => {
             try {
               const response = await fetch(
-                `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/simulate_stock_issues.php?store_id=${storeId}`
+                `/api/admin/stock/simulate_stock_issues.php?store_id=${storeId}`
               );
               const data = await response.json();
           

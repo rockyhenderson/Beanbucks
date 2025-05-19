@@ -50,7 +50,7 @@ function ConfirmOrder() {
     retry: retryLoyalty,
     isLoading: loadingLoyalty,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`
+    `/api/public/read_loyalty_points.php?id=${userId}`
   );
   const {
     data: storeData,
@@ -58,7 +58,7 @@ function ConfirmOrder() {
     retry: retryStore,
     isLoading: storeLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_store.php?id=${selectedStore}`
+    `/api/public/read_store.php?id=${selectedStore}`
   );
 
   const showToast = (type, title, message) => {
@@ -208,7 +208,7 @@ function ConfirmOrder() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/CORE_ORDER_DRINK.php",
+        "/api/public/CORE_ORDER_DRINK.php",
         {
           method: "POST",
           headers: {
@@ -232,7 +232,7 @@ function ConfirmOrder() {
 
         console.log("🧾 Loyalty Payload:", loyaltyPayload);
 
-        fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_loyalty_points.php", {
+        fetch("/api/public/update_loyalty_points.php", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

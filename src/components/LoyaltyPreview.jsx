@@ -39,7 +39,7 @@ function LoyaltyHero() {
   // STEP 2: Construct URL once we have a userId
   useEffect(() => {
     if (userId) {
-      const url = `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`;
+      const url = `/api/public/read_loyalty_points.php?id=${userId}`;
       setLoyaltyUrl(url);
       console.log("✅ Loyalty URL set:", url);
     }

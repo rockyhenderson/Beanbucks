@@ -28,7 +28,7 @@ function ActiveOrderWidget() {
     const poll = async () => {
       try {
         const response = await fetch(
-          `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/poll_pickup_time.php?order_id=${activeOrder.orderId}`
+          `/api/public/poll_pickup_time.php?order_id=${activeOrder.orderId}`
         );
         const result = await response.json();
   

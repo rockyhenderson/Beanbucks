@@ -127,7 +127,7 @@ function CustomizationsTab() {
     const [outOfStockList, setOutOfStockList] = useState([]);
 
     useEffect(() => {
-        fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/read_store_customizations.php?store_id=1")
+        fetch("/api/admin/drinks/read_store_customizations.php?store_id=1")
             .then(res => res.json())
             .then(data => {
                 const updated = {};
@@ -422,7 +422,7 @@ function CustomizationsTab() {
                         const adminId = 1; // Replace with actual admin ID from the session or context
 
                         try {
-                            const res = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_customization.php", {
+                            const res = await fetch("/api/admin/drinks/toggle_customization.php", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({
@@ -526,7 +526,7 @@ function CustomizationsTab() {
                         const adminId = 1; // Replace with actual admin ID from the session or context
 
                         try {
-                            const res = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_customization.php", {
+                            const res = await fetch("/api/admin/drinks/toggle_customization.php", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({

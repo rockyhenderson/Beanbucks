@@ -59,7 +59,7 @@ const OrderHistoryModal = ({ userId, onClose }) => {
 
   useEffect(() => {
     fetch(
-      `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_user_order_history.php?id=${userId}`
+      `/api/public/get_user_order_history.php?id=${userId}`
     )
       .then((res) => res.json())
       .then((data) => {

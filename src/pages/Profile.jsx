@@ -287,7 +287,7 @@ function Profile() {
               }
 
               fetch(
-                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_email.php",
+                "/api/public/update_email.php",
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

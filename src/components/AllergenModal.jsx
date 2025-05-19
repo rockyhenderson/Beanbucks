@@ -53,7 +53,7 @@ const AllergenModal = ({ open, onClose, onSave }) => {
   const handleSave = () => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_allergens.php",
+      "/api/public/update_allergens.php",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

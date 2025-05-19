@@ -69,7 +69,7 @@ function BaristaSecurePortal() {
   const fetchLowStockData = async (storeId) => {
     try {
       const response = await fetch(
-        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/lowest_stock.php?store_id=${storeId}`
+        `/api/admin/portal/lowest_stock.php?store_id=${storeId}`
       );
 
       // Check if the response is ok (status 200)
@@ -93,7 +93,7 @@ function BaristaSecurePortal() {
   };
 
   const { data, error, retry, isLoading } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/request_drinks.php?store_id=${sessionStorage.getItem(
+    `/api/admin/portal/request_drinks.php?store_id=${sessionStorage.getItem(
       "selectedStoreId"
     )}`
   );
@@ -155,7 +155,7 @@ function BaristaSecurePortal() {
       try {
         // console.log("✅ Fetching store names...");
         const response = await fetch(
-          "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/read_store_names.php"
+          "/api/admin/portal/read_store_names.php"
         );
         const data = await response.json();
         // console.log("✅ Store names fetched:", data);
@@ -276,7 +276,7 @@ function BaristaSecurePortal() {
       console.log("🔍 Sending order payload:", payload);
 
       const res = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/mark_order_done.php",
+        "/api/admin/portal/mark_order_done.php",
         {
           method: "POST",
           headers: {
@@ -414,7 +414,7 @@ function BaristaSecurePortal() {
       };
 
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/portal/delay_order.php",
+        "/api/admin/portal/delay_order.php",
         {
           method: "POST",
           headers: {

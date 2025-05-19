@@ -30,7 +30,7 @@ function MenuItemsTab({ storeId, setToast }) {
     isLoading,
   } = useFetchWithRetry(
     storeId
-      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/read_drinks.php?store_id=${storeId}`
+      ? `/api/admin/drinks/read_drinks.php?store_id=${storeId}`
       : null
   );
 
@@ -57,7 +57,7 @@ function MenuItemsTab({ storeId, setToast }) {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_drink.php",
+        "/api/admin/drinks/toggle_drink.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -19,7 +19,7 @@ function AdminLogs() {
     isLoading,
   } = useFetchWithRetry(
    
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/read_admin_logs.php"
+      "/api/admin/users/read_admin_logs.php"
         
   );
 

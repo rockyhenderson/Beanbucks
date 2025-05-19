@@ -113,7 +113,7 @@ function TemplateTab({ setToast }) {
     error: fetchError,
     isLoading,
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_all_drinks_grouped_by_template.php"
+    "/api/admin/drinks/get_all_drinks_grouped_by_template.php"
   );
   useEffect(() => {
     if (drinkData) {
@@ -147,7 +147,7 @@ const toggleTemplate = (id, newStatus) => {
     return;
   }
 
-  fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_template.php", {
+  fetch("/api/admin/drinks/toggle_template.php", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -185,7 +185,7 @@ const toggleTemplate = (id, newStatus) => {
 };
 
   useEffect(() => {
-    fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_active_templates.php")
+    fetch("/api/admin/drinks/get_active_templates.php")
       .then((res) => res.json())
       .then((data) => {
         // Always include default (ID 1) as active

@@ -21,7 +21,7 @@ function HowItWorksSteps({ onClose }) {
       setNeedsShopSelection(true);
     }
 
-    fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_random_drinks.php")
+    fetch("/api/public/get_random_drinks.php")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

@@ -57,7 +57,7 @@ useEffect(() => {
     isLoading,
   } = useFetchWithRetry(
     selectedStoreId
-      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_drinks.php?store_id=${selectedStoreId}`
+      ? `/api/public/read_drinks.php?store_id=${selectedStoreId}`
       : null
   );
 

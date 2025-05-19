@@ -54,7 +54,7 @@ function ManageStores() {
     isLoading,
     retry,
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/read_store_staff.php"
+    "/api/admin/stores/read_store_staff.php"
   );
   const {
     data: pendingRequests,
@@ -62,7 +62,7 @@ function ManageStores() {
     isLoading: pendingLoading,
     retry: retryPending,
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/read_store_close_requests.php"
+    "/api/admin/stores/read_store_close_requests.php"
   );
   const isCloseRequestPending = (storeId) =>
     pendingRequests?.requests?.some(
@@ -139,7 +139,7 @@ function ManageStores() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/update_user_store.php",
+        "/api/admin/stores/update_user_store.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -205,7 +205,7 @@ function ManageStores() {
 
       try {
         const response = await fetch(
-          "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/request_store_close.php",
+          "/api/admin/stores/request_store_close.php",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -241,7 +241,7 @@ function ManageStores() {
     // Otherwise, proceed with direct toggle (for managers or self-admins)
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/update_store_status.php",
+        "/api/admin/stores/update_store_status.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -304,7 +304,7 @@ function ManageStores() {
     console.log("Admin ID:", admin_id); // Log the admin ID for debugging
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/update_store_hours.php",
+        "/api/admin/stores/update_store_hours.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -356,7 +356,7 @@ function ManageStores() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/approve_store_close.php",
+        "/api/admin/stores/approve_store_close.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -411,7 +411,7 @@ function ManageStores() {
     try {
       // Use the new endpoint to close the store
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stores/manager_approve_close.php", // New endpoint
+        "/api/admin/stores/manager_approve_close.php", // New endpoint
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

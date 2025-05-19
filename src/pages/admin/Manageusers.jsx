@@ -259,7 +259,7 @@ function ManageUsers() {
   }, [roleStr, roleNum, navigate]);
 
   const { data, error, retry, isLoading } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/read_user.php?role=${roleNum}`
+    `/api/admin/users/read_user.php?role=${roleNum}`
   );
 
   // useEffect(() => {
@@ -297,7 +297,7 @@ function ManageUsers() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/update_user.php",
+        "/api/admin/users/update_user.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -360,7 +360,7 @@ function ManageUsers() {
       console.log("📦 [DeleteUser] Payload:", payload);
 
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/delete_user.php",
+        "/api/admin/users/delete_user.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -423,7 +423,7 @@ function ManageUsers() {
       const admin_id = user?.id;
 
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/users/create_user.php",
+        "/api/admin/users/create_user.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -270,7 +270,7 @@ function AdminDashboard() {
     retry: retryStores,
     isLoading: storesLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php`
+    `/api/public/read_stores.php`
   );
   const {
     data: stats,
@@ -279,7 +279,7 @@ function AdminDashboard() {
     retry: retryStats,
   } = useFetchWithRetry(
     storeId
-      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/get_admin_dashboard_stats.php?store_id=${storeId}`
+      ? `/api/admin/get_admin_dashboard_stats.php?store_id=${storeId}`
       : null
   );
   const {
@@ -288,7 +288,7 @@ function AdminDashboard() {
     isLoading: topProductsLoading,
     retry: retryTopProducts
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/get_top_products.php"
+    "/api/admin/get_top_products.php"
   );
 
   const {
@@ -297,7 +297,7 @@ function AdminDashboard() {
     isLoading: recentLogsLoading,
     retry: retryRecentLogs
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/get_recent_admin_logs.php"
+    "/api/admin/get_recent_admin_logs.php"
   );
 
   const formatChange = (change) => {

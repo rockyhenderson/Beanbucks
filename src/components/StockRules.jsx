@@ -96,7 +96,7 @@ const StockRules = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/get_stock_rules.php?store_id=${storeId}`
+        `/api/admin/stock/get_stock_rules.php?store_id=${storeId}`
       );
       const result = await response.json();
 

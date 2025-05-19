@@ -76,7 +76,7 @@ const toggleFeatured = async (id) => {
   }
 
   try {
-    const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_featured.php", {
+    const response = await fetch("/api/admin/drinks/toggle_featured.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -118,7 +118,7 @@ const toggleFeatured = async (id) => {
   useEffect(() => {
     const fetchDrinks = async () => {
       try {
-        const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_active_drinks.php");
+        const response = await fetch("/api/admin/drinks/get_active_drinks.php");
         if (!response.ok) throw new Error("Failed to fetch drinks");
         const data = await response.json();
 

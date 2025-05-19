@@ -42,7 +42,7 @@ function ResetPassword() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/reset_password.php",
+        "/api/public/reset_password.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ function ResetPassword() {
       
           // Attempt login
           const loginRes = await fetch(
-            "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
+            "/api/public/login.php",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

@@ -12,7 +12,7 @@ const PreferredStoreCard = () => {
     if (!id) return;
 
     fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
+      "/api/public/read_stores.php"
     )
       .then((res) => res.json())
       .then((data) => {

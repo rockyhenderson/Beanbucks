@@ -87,7 +87,7 @@ function VerifyCode() {
 
       try {
         const response = await fetch(
-          "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/request_reset_code.php",
+          "/api/public/request_reset_code.php",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -124,7 +124,7 @@ function VerifyCode() {
     e.preventDefault();
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/verify_reset_code.php",
+        "/api/public/verify_reset_code.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
