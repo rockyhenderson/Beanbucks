@@ -72,9 +72,8 @@ function FeaturedMenuCarousel() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_featured_drinks.php"
-    )
+   fetch("/api/public/get_featured_drinks.php")
+
       .then((res) => res.json())
       .then((data) => setFeaturedDrinks(data))
       .catch((err) => console.error("Error fetching featured drinks:", err));
