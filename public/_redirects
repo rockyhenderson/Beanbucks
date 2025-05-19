@@ -1,2 +1,2 @@
-/api/*  /api/:splat  200
+/api/*  http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/:splat  200
 /*  /index.html  200
