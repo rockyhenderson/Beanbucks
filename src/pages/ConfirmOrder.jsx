@@ -18,7 +18,7 @@ import Toast from "../components/Toast";
 import useFetchWithRetry from "../utils/useFetchWithRetry";
 import RetryFallback from "../components/RetryFallback";
 import { useMemo } from "react";
-
+import TwoChoices from "../components/TwoChoices";
 
 function ConfirmOrder() {
   const navigate = useNavigate();
@@ -32,7 +32,28 @@ function ConfirmOrder() {
   const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
   const [cardProcessing, setCardProcessing] = useState(false);
   let discountApplied = false;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+useEffect(() => {
+  const storedUser = sessionStorage.getItem("user");
+  if (storedUser) {
+    try {
+      const parsed = JSON.parse(storedUser);
+      if (parsed.role && parsed.role !== "none") {
+        setIsLoggedIn(true);
+      }
+    } catch {
+      setIsLoggedIn(false);
+    }
+  } else {
+    setIsLoggedIn(false);
+  }
+
+  document.body.style.overflow = isLoggedIn ? "auto" : "hidden";
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [isLoggedIn]);
   const [cardDetails, setCardDetails] = useState({
     name: "",
     number: "",
@@ -348,6 +369,18 @@ function ConfirmOrder() {
   if (selectedReward === "free-combo") {
     window.__comboState = { food: false, drink: false };
   }
+  if (!isLoggedIn) {
+  return (
+    <TwoChoicesModal
+      title="Please log in to confirm your order"
+      confirmLabel="Login"
+      cancelLabel="Register"
+      onConfirm={() => navigate("/login")}
+      onCancel={() => navigate("/register")}
+    />
+  );
+}
+
   return (
     <Box sx={{ maxWidth: "900px", margin: "2rem auto", padding: "1rem" }}>
       <Box
