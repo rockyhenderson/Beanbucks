@@ -269,7 +269,7 @@ function AllergenFeatureSection() {
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
-              href="/menu/featured"
+              href="/order"
               sx={{
                 backgroundColor: "#e53961",
                 color: "#fff",
@@ -483,7 +483,7 @@ return (
         </Box>
         <Button
           variant="contained"
-          href="/menu/featured"
+          href="/order"
           sx={{
             backgroundColor: "#e53961",
             color: "#fff",
