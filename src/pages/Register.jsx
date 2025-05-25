@@ -27,7 +27,7 @@ console.log("Wrote test_write:", sessionStorage.getItem("test_write"));
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/register.php",
+        "/api/public/register.php",
         {
           method: "POST",
           headers: {

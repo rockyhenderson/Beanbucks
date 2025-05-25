@@ -115,7 +115,7 @@ function DevToolsPanel() {
       >
         <Typography
           variant="subtitle1"
-          sx={{ fontWeight: "bold", fontSize: "14px", mb: 1 }}
+          sx={{ fontWeight: "bold", fontSize: "14px", mb: 1, color: "#FFFFFF" }}
         >
           Dev Tools
         </Typography>

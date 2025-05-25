@@ -71,14 +71,30 @@ function FeaturedMenuCarousel() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch(
-      "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_featured_drinks.php"
-    )
-      .then((res) => res.json())
-      .then((data) => setFeaturedDrinks(data))
-      .catch((err) => console.error("Error fetching featured drinks:", err));
-  }, []);
+useEffect(() => {
+  fetch("/api/public/get_featured_drinks.php")
+    .then((res) => {
+      // Log the response to inspect it
+      console.log("Response Status:", res.status); // Check status code
+      console.log("Response Headers:", res.headers); // Inspect headers
+      return res.text(); // Read the response as text
+    })
+    .then((data) => {
+      console.log("Response Body (as Text):", data); // Log raw response text
+      debugger
+      try {
+        const jsonData = JSON.parse(data); // Try to parse it as JSON
+        setFeaturedDrinks(jsonData); // Update state with JSON if successful
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        // You can also display this error to the user if needed
+      }
+    })
+    .catch((err) => {
+      console.error("Error fetching featured drinks:", err);
+    });
+}, []);
+
 
   const sliderSettings = {
     dots: false,

@@ -64,7 +64,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
           boxShadow: "none",
         }}
       >
-        <Container maxWidth="xl" sx={{ maxWidth: "1500px" }}>
+        <Container maxWidth="xl" sx={{ maxWidth: "1200px" }}>
           <Toolbar
             sx={{
               justifyContent: "space-between",
@@ -75,7 +75,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
             {/* MOBILE */}
             <Box
               sx={{
-                display: { xs: "flex", md: "none" },
+                display: { xs: "flex", sm: "flex", md: "none" },
                 width: "100%",
                 alignItems: "center",
               }}
@@ -100,12 +100,13 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                   whiteSpace: { xs: "pre-line", md: "nowrap" },
                   fontFamily: "'Quicksand', sans-serif",
                   letterSpacing: "1px",
-                  fontSize: { xs: "32px", sm: "36px", md: "40px", lg: "44px" },
+                  fontSize: { xs: "32px", sm: "36px", md: "40px", lg: "44px" }, // Adjust for smaller sizes
                   color: "#FFF",
                 }}
               >
                 Bean{"\n"}Bucks
               </Typography>
+
 
               <Box
                 component={Link}
@@ -161,7 +162,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
             {/* DESKTOP */}
             <Box
               sx={{
-                display: { xs: "none", md: "flex" },
+                display: { xs: "none",sm: "none", md: "flex" },
                 alignItems: "center",
                 gap: 3,
                 width: "100%",
@@ -316,6 +317,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
             justifyContent: "start",
             height: "100%",
             paddingX: "36px",
+            paddingLeft: "0px",
           }}
         >
           <Box
@@ -332,6 +334,7 @@ function Navbar({ cartItemCount, setCartItemCount }) {
                 fontWeight: 700,
                 fontFamily: "'Quicksand', sans-serif",
                 color: "var(--drawer-text)",
+
               }}
             >
               BeanBucks

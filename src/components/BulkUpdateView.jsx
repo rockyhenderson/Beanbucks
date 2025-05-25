@@ -28,7 +28,7 @@ function BulkUpdateView({ onBulkSave }) {
 
 
     const { data, error, isLoading, retry } = useFetchWithRetry(
-        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/read_grouped_ingredients.php?store_id=${storeId}`
+        `/api/admin/stock/read_grouped_ingredients.php?store_id=${storeId}`
     );
 
     const [orderQuantities, setOrderQuantities] = useState({});
@@ -111,7 +111,7 @@ function BulkUpdateView({ onBulkSave }) {
 
         try {
             const response = await fetch(
-                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_bulk_stock.php",
+                "/api/admin/stock/update_bulk_stock.php",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

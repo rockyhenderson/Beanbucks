@@ -1,12 +1,54 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 function AdminLogModal({ open, onClose, log }) {
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
   if (!open || !log) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="profile__logout-modal" style={{ maxWidth: 500 }}>
-        <h2>Admin Log Details</h2>
+    <div
+      className="modal-overlay"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        zIndex: 9999,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="profile__logout-modal"
+        style={{
+          backgroundColor: "var(--card)",
+          padding: "2rem",
+          borderRadius: "12px",
+          maxWidth: "500px",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+        }}
+      >
+        <h2 style={{ marginTop: 0 }}>Admin Log Details</h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <LogDetail label="ID" value={log.id} />
@@ -33,7 +75,7 @@ function LogDetail({ label, value }) {
       <span style={{ fontWeight: "bold", fontSize: "0.95rem", color: "var(--accent)" }}>
         {label}
       </span>
-      <span style={{ fontSize: "1rem", color: "var(--text)" }}>
+      <span style={{ fontSize: "1rem", color: "var(--text)", whiteSpace: "pre-wrap" }}>
         {value || "—"}
       </span>
     </div>

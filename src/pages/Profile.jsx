@@ -5,6 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Brightness4Icon from "@mui/icons-material/Brightness4"; // mon
 import Brightness7Icon from "@mui/icons-material/Brightness7"; // sun
+import { Link } from "react-router-dom";
 
 import "../Profile_Style.css";
 import Toast from "../components/Toast";
@@ -229,16 +230,17 @@ function Profile() {
           <h2 className="profile__card-title">Support & Legal</h2>
           <ul className="profile__list">
             <li>
-              <a href="#">Terms and Conditions ❌</a>
+              <Link to="/terms">Terms and Conditions</Link>
             </li>
             <li>
-              <a href="#">Cookie Policy ❌</a>
+              <Link to="/cookies">Cookie Policy</Link>
             </li>
             <li>
-              <a href="#">Privacy Policy ❌</a>
+              <Link to="/privacy">Privacy Policy</Link>
             </li>
           </ul>
         </div>
+
         {showOrderHistoryModal && (
           <OrderHistoryModal
             userId={JSON.parse(sessionStorage.getItem("user"))?.id}
@@ -285,7 +287,7 @@ function Profile() {
               }
 
               fetch(
-                "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_email.php",
+                "/api/public/update_email.php",
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -363,9 +365,8 @@ function Profile() {
         {/* Promotions Modal */}
         {showPromoModal && (
           <TwoChoicesModal
-            title={`Subscribe with ${
-              JSON.parse(sessionStorage.getItem("user"))?.email || "your email"
-            }`}
+            title={`Subscribe with ${JSON.parse(sessionStorage.getItem("user"))?.email || "your email"
+              }`}
             confirmLabel="Subscribe"
             cancelLabel="Unsubscribe"
             onConfirm={() => {

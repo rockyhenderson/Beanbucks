@@ -52,7 +52,7 @@ const DrinkModal = ({ drink, onClose, setToast, setCartItemCount, getCartItemCou
     isLoading: isLoadingCustomizations,
   } = useFetchWithRetry(
     storeId
-      ? `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/get_store_customizations.php?store_id=${storeId}`
+      ? `/api/public/get_store_customizations.php?store_id=${storeId}`
       : null
   );
   const allergenMap = {

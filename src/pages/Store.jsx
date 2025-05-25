@@ -14,10 +14,12 @@ function Store() {
     retry,
     isLoading,
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php"
+    "/api/public/read_stores.php"
   );
   const [toast, setToast] = useState(null);
   const [justSelectedStore, setJustSelectedStore] = useState(null);
+  const selectedStoreIdFromSession = sessionStorage.getItem("selectedStoreId");
+  console.log("Selected store ID from session:", selectedStoreIdFromSession);
 
   const isDesktop = useMediaQuery("(min-width: 900px)");
   const [selectedStore, setSelectedStore] = useState(null);
@@ -40,6 +42,7 @@ function Store() {
 
     const openMinutes = openHour * 60 + openMinute;
     const closeMinutes = closeHour * 60 + closeMinute;
+
 
     return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
   };
@@ -92,6 +95,8 @@ function Store() {
 
           {stores.map((store) => {
             const isOpenNow = isStoreCurrentlyOpen(store);
+            const isSelected = store.id.toString() === selectedStoreIdFromSession;
+
             return (
               <div
                 key={store.id}
@@ -117,55 +122,70 @@ function Store() {
                   {store.open_time} - {store.close_time}
                 </p>
                 <p>{store.address}</p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    marginTop: "0.75rem",
-                  }}
-                >
-                  <button
-                    className="btn btn--outline"
-                    onClick={() => store.is_open && setSelectedStore(store)}
-                    disabled={!isStoreCurrentlyOpen(store)}
+
+                {isSelected ? (
+                  <div
                     style={{
-                      opacity: isStoreCurrentlyOpen(store) ? 1 : 0.5,
-                      cursor: isStoreCurrentlyOpen(store)
-                        ? "pointer"
-                        : "not-allowed",
+                      marginTop: "0.75rem",
+                      padding: "0.5rem 1rem",
+                      backgroundColor: "#d4f7d4", // light green
+                      border: "2px solid #2e7d32", // dark green
+                      borderRadius: "6px",
+                      fontWeight: 600,
+                      textAlign: "center",
+                      color: "#2e7d32", // dark green text to match border
                     }}
                   >
-                    Learn More
-                  </button>
+                    ✅ Already Selected
+                  </div>
 
-                  <button
-                    className="btn btn--primary"
-                    disabled={!isStoreCurrentlyOpen(store)}
-                    onClick={() => {
-                      localStorage.removeItem("beanbucks_cart");
-
-                      sessionStorage.setItem("selectedStoreId", store.id);
-                      setToast({
-                        type: "success",
-                        title: "Store Selected!",
-                        message: `You selected ${store.store_name}!`,
-                      });
-                      setSelectedStore(null);
-                      setJustSelectedStore(store);
-                    }}
+                ) : (
+                  <div
                     style={{
-                      opacity: isStoreCurrentlyOpen(store) ? 1 : 0.5,
-                      cursor: isStoreCurrentlyOpen(store)
-                        ? "pointer"
-                        : "not-allowed",
+                      display: "flex",
+                      gap: "0.75rem",
+                      marginTop: "0.75rem",
                     }}
                   >
-                    Select This Store
-                  </button>
-                </div>
+                    <button
+                      className="btn btn--outline"
+                      onClick={() => store.is_open && setSelectedStore(store)}
+                      disabled={!isOpenNow}
+                      style={{
+                        opacity: isOpenNow ? 1 : 0.5,
+                        cursor: isOpenNow ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      Learn More
+                    </button>
+
+                    <button
+                      className="btn btn--primary"
+                      disabled={!isOpenNow}
+                      onClick={() => {
+                        localStorage.removeItem("beanbucks_cart");
+                        sessionStorage.setItem("selectedStoreId", store.id);
+                        setToast({
+                          type: "success",
+                          title: "Store Selected!",
+                          message: `You selected ${store.store_name}!`,
+                        });
+                        setSelectedStore(null);
+                        setJustSelectedStore(store);
+                      }}
+                      style={{
+                        opacity: isOpenNow ? 1 : 0.5,
+                        cursor: isOpenNow ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      Select This Store
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
+
         </div>
       )}
 
@@ -187,7 +207,7 @@ function Store() {
             margin: 0,
             width: isDesktop ? "300px" : "calc(100% - 2rem)", // Keep width as per device size
             left: isDesktop ? "1rem" : undefined, // Align left on desktop
-            right: isDesktop ? undefined : "1rem", // Add 1rem margin on mobile
+            
             marginLeft: isDesktop ? 0 : "1rem", // 1rem margin for left on mobile
             marginRight: isDesktop ? 0 : "1rem", // 1rem margin for right on mobile
             justifyContent: "space-between", // Space out the search bar and button properly

@@ -27,7 +27,7 @@ const EditExpiryModal = ({ open, onClose, rule, onSave, setToast }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/stock/update_stock_rule.php",
+        "/api/admin/stock/update_stock_rule.php",
         {
           method: "POST",
           headers: {

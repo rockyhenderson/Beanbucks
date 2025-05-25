@@ -48,7 +48,7 @@ function ManageMenu() {
     retry: retryStores,
     isLoading: storesLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_stores.php`
+    `/api/public/read_stores.php`
   );
 
   const handleOpenMenu = (event) => {
@@ -95,7 +95,7 @@ function ManageMenu() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_drink.php",
+        "/api/admin/drinks/toggle_drink.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -151,7 +151,7 @@ function ManageMenu() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_drink.php",
+        "/api/admin/drinks/toggle_drink.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

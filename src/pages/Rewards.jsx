@@ -47,7 +47,7 @@ function Rewards() {
     }, [isLoggedIn]);
 
     const { data, error, retry, isLoading } = useFetchWithRetry(
-        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`
+        `/api/public/read_loyalty_points.php?id=${userId}`
     );
 
     if (!isLoggedIn) {
@@ -176,7 +176,7 @@ function Rewards() {
   onClick={async () => {
     try {
       const response = await fetch(
-        `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/Add1kPoints.php?user_id=${userId}`
+        `/api/public/Add1kPoints.php?user_id=${userId}`
       );
       const data = await response.json();
 

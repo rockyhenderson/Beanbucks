@@ -58,49 +58,67 @@ function FeaturedDrinksTab() {
     (currentPage - 1) * drinksPerPage,
     currentPage * drinksPerPage
   );
-  const toggleFeatured = async (id) => {
-    const current = allDrinks.find(d => d.id === id);
-    const newStatus = !current.featured;
+const toggleFeatured = async (id) => {
+  const current = allDrinks.find(d => d.id === id);
+  const newStatus = !current.featured;
 
-    try {
-      const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_featured.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ drink_id: id, featured: newStatus })
-      });
+  // Get admin ID from session storage
+  const admin = JSON.parse(sessionStorage.getItem("user"));
+  const adminId = admin?.id;
 
-      if (!response.ok) throw new Error("Failed to toggle featured status");
+  if (!adminId) {
+    setToast({
+      type: "error",
+      title: "Admin Not Logged In",
+      message: "Unable to update featured status without admin credentials.",
+    });
+    return;
+  }
 
-      const result = await response.json();
+  try {
+    const response = await fetch("/api/admin/drinks/toggle_featured.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        drink_id: id, 
+        featured: newStatus, 
+        admin_id: adminId  // Pass the admin ID here
+      })
+    });
 
-      setAllDrinks(prev =>
-        prev.map(drink =>
-          drink.id === id ? { ...drink, featured: newStatus } : drink
-        )
-      );
+    if (!response.ok) throw new Error("Failed to toggle featured status");
 
-      setToast({
-        type: "success",
-        title: "Updated",
-        message: result.message || "Drink status updated",
-      });
+    const result = await response.json();
 
-    } catch (err) {
-      console.error("Toggle error:", err);
-      setToast({
-        type: "error",
-        title: "Update Failed",
-        message: err.message || "Could not update featured status",
-      });
-    }
-  };
+    setAllDrinks(prev =>
+      prev.map(drink =>
+        drink.id === id ? { ...drink, featured: newStatus } : drink
+      )
+    );
+
+    setToast({
+      type: "success",
+      title: "Updated",
+      message: result.message || "Drink status updated",
+    });
+
+  } catch (err) {
+    console.error("Toggle error:", err);
+    setToast({
+      type: "error",
+      title: "Update Failed",
+      message: err.message || "Could not update featured status",
+    });
+  }
+};
+
 
 
 
   useEffect(() => {
     const fetchDrinks = async () => {
       try {
-        const response = await fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_active_drinks.php");
+        const response = await fetch("/api/admin/drinks/get_active_drinks.php");
         if (!response.ok) throw new Error("Failed to fetch drinks");
         const data = await response.json();
 

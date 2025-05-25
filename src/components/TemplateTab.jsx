@@ -113,7 +113,7 @@ function TemplateTab({ setToast }) {
     error: fetchError,
     isLoading,
   } = useFetchWithRetry(
-    "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_all_drinks_grouped_by_template.php"
+    "/api/admin/drinks/get_all_drinks_grouped_by_template.php"
   );
   useEffect(() => {
     if (drinkData) {
@@ -134,44 +134,58 @@ function TemplateTab({ setToast }) {
       });
     }
   }, [fetchError]);
-  const toggleTemplate = (id, newStatus) => {
-    fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/toggle_template.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        template_id: id,
-        new_status: newStatus
-      })
+const toggleTemplate = (id, newStatus) => {
+  const admin = JSON.parse(sessionStorage.getItem("user"));  // Retrieve admin info from session storage
+  const adminId = admin?.id;  // Get the admin ID
+
+  if (!adminId) {
+    setToast({
+      type: "error",
+      title: "Admin Not Logged In",
+      message: "You must be logged in as an admin to make this change.",
+    });
+    return;
+  }
+
+  fetch("/api/admin/drinks/toggle_template.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      template_id: id,
+      new_status: newStatus,
+      admin_id: adminId  // Include admin ID in the request payload
     })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.message || "Unknown error");
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) throw new Error(data.message || "Unknown error");
 
-        const updated = newStatus === 1
-          ? [...activeTemplateIds, id]
-          : activeTemplateIds.filter(tid => tid !== id && tid !== 1);
+    const updated = newStatus === 1
+      ? [...activeTemplateIds, id]
+      : activeTemplateIds.filter(tid => tid !== id && tid !== 1);
 
-        setActiveTemplateIds(updated);
+    setActiveTemplateIds(updated);
 
-        setToast({
-          type: newStatus === 1 ? "success" : "info",
-          title: newStatus === 1 ? "Template Activated" : "Template Deactivated",
-          message: `The "${PREDEFINED_TEMPLATES.find(t => t.id === id).name}" template is now ${newStatus === 1 ? "active" : "inactive"}.`
-        });
-      })
-      .catch(err => {
-        console.error("Toggle error:", err);
-        setToast({
-          type: "error",
-          title: "Failed to Toggle Template",
-          message: err.message || "Something went wrong when updating the template status."
-        });
-      });
-  };
+    setToast({
+      type: newStatus === 1 ? "success" : "info",
+      title: newStatus === 1 ? "Template Activated" : "Template Deactivated",
+      message: `The "${PREDEFINED_TEMPLATES.find(t => t.id === id).name}" template is now ${newStatus === 1 ? "active" : "inactive"}.`
+    });
+  })
+  .catch(err => {
+    console.error("Toggle error:", err);
+    setToast({
+      type: "error",
+      title: "Failed to Toggle Template",
+      message: err.message || "Something went wrong when updating the template status."
+    });
+  });
+};
+
   useEffect(() => {
-    fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/admin/drinks/get_active_templates.php")
+    fetch("/api/admin/drinks/get_active_templates.php")
       .then((res) => res.json())
       .then((data) => {
         // Always include default (ID 1) as active

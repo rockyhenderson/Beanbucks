@@ -18,7 +18,7 @@ import Toast from "../components/Toast";
 import useFetchWithRetry from "../utils/useFetchWithRetry";
 import RetryFallback from "../components/RetryFallback";
 import { useMemo } from "react";
-
+import TwoChoices from "../components/TwoChoices";
 
 function ConfirmOrder() {
   const navigate = useNavigate();
@@ -32,7 +32,28 @@ function ConfirmOrder() {
   const [showStoreChangeModal, setShowStoreChangeModal] = useState(false);
   const [cardProcessing, setCardProcessing] = useState(false);
   let discountApplied = false;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+useEffect(() => {
+  const storedUser = sessionStorage.getItem("user");
+  if (storedUser) {
+    try {
+      const parsed = JSON.parse(storedUser);
+      if (parsed.role && parsed.role !== "none") {
+        setIsLoggedIn(true);
+      }
+    } catch {
+      setIsLoggedIn(false);
+    }
+  } else {
+    setIsLoggedIn(false);
+  }
+
+  document.body.style.overflow = isLoggedIn ? "auto" : "hidden";
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [isLoggedIn]);
   const [cardDetails, setCardDetails] = useState({
     name: "",
     number: "",
@@ -50,7 +71,7 @@ function ConfirmOrder() {
     retry: retryLoyalty,
     isLoading: loadingLoyalty,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_loyalty_points.php?id=${userId}`
+    `/api/public/read_loyalty_points.php?id=${userId}`
   );
   const {
     data: storeData,
@@ -58,7 +79,7 @@ function ConfirmOrder() {
     retry: retryStore,
     isLoading: storeLoading,
   } = useFetchWithRetry(
-    `http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/read_store.php?id=${selectedStore}`
+    `/api/public/read_store.php?id=${selectedStore}`
   );
 
   const showToast = (type, title, message) => {
@@ -208,7 +229,7 @@ function ConfirmOrder() {
 
     try {
       const response = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/CORE_ORDER_DRINK.php",
+        "/api/public/CORE_ORDER_DRINK.php",
         {
           method: "POST",
           headers: {
@@ -232,7 +253,7 @@ function ConfirmOrder() {
 
         console.log("🧾 Loyalty Payload:", loyaltyPayload);
 
-        fetch("http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/update_loyalty_points.php", {
+        fetch("/api/public/update_loyalty_points.php", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -348,6 +369,18 @@ function ConfirmOrder() {
   if (selectedReward === "free-combo") {
     window.__comboState = { food: false, drink: false };
   }
+  if (!isLoggedIn) {
+  return (
+    <TwoChoicesModal
+      title="Please log in to confirm your order"
+      confirmLabel="Login"
+      cancelLabel="Register"
+      onConfirm={() => navigate("/login")}
+      onCancel={() => navigate("/register")}
+    />
+  );
+}
+
   return (
     <Box sx={{ maxWidth: "900px", margin: "2rem auto", padding: "1rem" }}>
       <Box

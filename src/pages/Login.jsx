@@ -30,7 +30,7 @@ function Login() {
   
     try {
       const loginRes = await fetch(
-        "http://webdev.edinburghcollege.ac.uk/HNCWEBMR10/yearTwo/semester2/BeanBucks-API/api/public/login.php",
+        "/api/public/login.php",
         {
           method: "POST",
           headers: {

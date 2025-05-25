@@ -23,7 +23,7 @@ function AdminNavbar() {
   };
 
   const navItems = [
-    { text: "Overview ❌", path: "/admin" },
+    { text: "Overview", path: "/admin" },
     { text: "Manage Menu ", path: "/admin/managemenu" },
     { text: "Users", path: "/admin/manageusers" },
     { text: "BaristaPortal", path: "/admin/baristaPortal" },
