@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 
 function AdminLogModal({ open, onClose, log }) {
+
+  // Prevent background scroll and close modal on Escape key
   useEffect(() => {
     if (!open) return;
 
@@ -16,12 +18,14 @@ function AdminLogModal({ open, onClose, log }) {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [open, onClose]);
-
+// Don't render anything if modal isn't open or log is missing
   if (!open || !log) return null;
 
-  return (
-    <div
-      className="modal-overlay"
+// Overlay and modal container for viewing full admin log details
+return (
+  <div
+    className="modal-overlay"
+
       style={{
         position: "fixed",
         top: 0,
@@ -51,7 +55,9 @@ function AdminLogModal({ open, onClose, log }) {
         <h2 style={{ marginTop: 0 }}>Admin Log Details</h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <LogDetail label="ID" value={log.id} />
+// Render each log detail with label + value
+<LogDetail label="ID" value={log.id} />
+
           <LogDetail label="Admin Email" value={log.admin_email} />
           <LogDetail label="Action Type" value={log.action_type} />
           <LogDetail label="Description" value={log.description} />
@@ -69,7 +75,9 @@ function AdminLogModal({ open, onClose, log }) {
   );
 }
 
+// Small reusable component for displaying a single log field
 function LogDetail({ label, value }) {
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <span style={{ fontWeight: "bold", fontSize: "0.95rem", color: "var(--accent)" }}>

@@ -56,20 +56,29 @@ import AdminStock from "./pages/admin/AdminStock";
 import "./global.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+
+// Main application content container that handles global layout, routing, and shared logic
 function AppContent() {
+  // Toast state for showing global feedback messages from anywhere in the app
   const [globalToast, setGlobalToast] = useState(null);
+
+  // Get current route to determine if we're on admin or portal views
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isPortalRoute = location.pathname.startsWith("/portal");
-  const isDesktop = useMediaQuery("(min-width:900px)");
-const [showCookieModal, setShowCookieModal] = useState(false);
 
-useEffect(() => {
-  const consent = localStorage.getItem("cookieConsent");
-  if (consent !== "true" && consent !== "false") {
-    setShowCookieModal(true);
-  }
-}, []);
+  // Detect if the screen is large enough to render admin layout
+  const isDesktop = useMediaQuery("(min-width:900px)");
+
+  const [showCookieModal, setShowCookieModal] = useState(false);
+
+  // Helper to read the cart from localStorage and count total items
+  useEffect(() => {
+    const consent = localStorage.getItem("cookieConsent");
+    if (consent !== "true" && consent !== "false") {
+      setShowCookieModal(true);
+    }
+  }, []);
 
   const getCartItemCount = () => {
     const stored = localStorage.getItem("beanbucks_cart");
@@ -84,6 +93,8 @@ useEffect(() => {
   const updateCartItemCount = () => {
     setCartItemCount(getCartItemCount());
   };
+
+  // Expose a global function to trigger toast notifications from anywhere (used by other components)
   useEffect(() => {
     window.showGlobalToast = ({ type, title, message }) => {
       setGlobalToast({ type, title, message });
@@ -94,6 +105,8 @@ useEffect(() => {
       }, 4000);
     };
   }, []);
+
+  // Check for a one-time toast stored in sessionStorage (used for redirect flows)
   useEffect(() => {
     const toastData = sessionStorage.getItem("redirectToast");
     if (toastData) {
@@ -102,9 +115,11 @@ useEffect(() => {
     }
   }, []);
 
+  // Hide navigation and footer on special fullscreen views like the secure barista portal
   const shouldShowUI = !isPortalRoute;
 
   return isAdminRoute && isDesktop ? (
+    // Layout for admin routes on desktop: sidebar + main view
     <div style={{ display: "flex" }}>
       {shouldShowUI && (
         <AdminNavbar
@@ -148,7 +163,7 @@ useEffect(() => {
           <Route path="/order-success" element={<ConfirmSuccess />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
-<Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
 
           {/* Admin Routes */}
           <Route
@@ -209,8 +224,11 @@ useEffect(() => {
           />
           <Route path="/quarry" element={<Quarry />} />
         </Routes>
+        // Conditionally render footer (hidden on portal views)
         {shouldShowUI && <Footer />}
         {shouldShowUI && <DevToolsPanel />}
+
+        // Show the persistent active order widget for users with ongoing orders
         {!isAdminRoute &&
           !isPortalRoute &&
           sessionStorage.getItem("activeOrder") && <ActiveOrderWidget />}
@@ -268,7 +286,7 @@ useEffect(() => {
         <Route path="/rewards" element={<Reward />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsAndConditions />} />
-<Route path="/cookies" element={<CookiePolicy />} />
+        <Route path="/cookies" element={<CookiePolicy />} />
 
         {/* Admin Routes */}
         <Route
@@ -334,6 +352,8 @@ useEffect(() => {
       {!isAdminRoute &&
         !isPortalRoute &&
         sessionStorage.getItem("activeOrder") && <ActiveOrderWidget />}
+        
+        // Global toast renderer — appears at the top of the screen for 4 seconds
       {globalToast && (
         <Box
           sx={{
@@ -350,23 +370,26 @@ useEffect(() => {
             message={globalToast.message}
             onClose={() => setGlobalToast(null)}
           />
-    
+
 
         </Box>
       )}
-            {showCookieModal && (
-  <CookieConsentModal onClose={() => setShowCookieModal(false)} />
-)}
+
+      // Show cookie consent modal if the user hasn't made a choice yet
+      {showCookieModal && (
+        <CookieConsentModal onClose={() => setShowCookieModal(false)} />
+      )}
     </>
   );
 }
 
+// Wrap everything in React Router
 function App() {
   return (
     <Router>
       <AppContent />
     </Router>
-    
+
   );
 }
 

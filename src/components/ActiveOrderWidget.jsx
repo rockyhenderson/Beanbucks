@@ -10,28 +10,39 @@ function ActiveOrderWidget() {
   const [hasAlerted, setHasAlerted] = useState(false);
   const navigate = useNavigate();
 
+
+  // Retrieve active order from sessionStorage on initial mount
   useEffect(() => {
     const stored = sessionStorage.getItem("activeOrder");
     if (stored) setActiveOrder(JSON.parse(stored));
   }, []);
 
   useEffect(() => {
+    const stored = sessionStorage.getItem("activeOrder");
+    if (stored) setActiveOrder(JSON.parse(stored));
+  }, []);
+
+
+  // Disable pulse animation after initial 2s
+  useEffect(() => {
     const timer = setTimeout(() => setAnimate(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // ⏱ Poll every 10s to keep widget synced
-
+  // ⏱ Poll every 10s to keep widget syncedf
   useEffect(() => {
     if (!activeOrder) return;
-  
+
     const poll = async () => {
       try {
         const response = await fetch(
           `/api/public/poll_pickup_time.php?order_id=${activeOrder.orderId}`
         );
         const result = await response.json();
-  
+
+
+        // If order no longer found, it's ready for pickup
+        // Trigger sound + toast once
         if (
           result?.success === false &&
           result?.error === "No orders found" &&
@@ -40,14 +51,14 @@ function ActiveOrderWidget() {
           setTimeLeft("Ready for pickup!");
           setHasAlerted(true);
           sessionStorage.removeItem("activeOrder");
-  
+
           // 🔔 Sound
           const sound = new Audio("/sounds/OrderReady.mp3");
           sound.volume = 1;
           sound.play().catch((err) =>
             console.warn("🔇 Could not play sound:", err)
           );
-  
+
           // ✅ Toast
           if (window?.showGlobalToast) {
             window.showGlobalToast({
@@ -60,7 +71,7 @@ function ActiveOrderWidget() {
           const now = new Date();
           const pickup = new Date(result.pickup_time.replace(" ", "T"));
           const diffMs = pickup - now;
-  
+
           if (diffMs < 0) {
             const lateBy = Math.abs(Math.floor(diffMs / 60000));
             setTimeLeft(`Late by ${lateBy} min${lateBy === 1 ? "" : "s"}`);
@@ -76,13 +87,13 @@ function ActiveOrderWidget() {
         console.error("Error polling pickup time:", err);
       }
     };
-  
+
     // Initial poll and every 10s
     poll();
     const interval = setInterval(poll, 10000);
     return () => clearInterval(interval);
   }, [activeOrder, hasAlerted]);
-  
+
 
 
 
@@ -132,8 +143,8 @@ function ActiveOrderWidget() {
                 color: timeLeft.includes("Late")
                   ? "var(--danger)"
                   : timeLeft === "Ready for pickup!"
-                  ? "#2e7d32"
-                  : "#388e3c",
+                    ? "#2e7d32"
+                    : "#388e3c",
                 fontWeight: 600,
               }}
             >
