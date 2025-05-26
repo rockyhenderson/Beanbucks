@@ -23,7 +23,7 @@ import {
   Menu,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import Collapse from "@mui/material/Collapse"; // add this at top
+import Collapse from "@mui/material/Collapse"; 
 import {
   Inventory2Outlined,
   WarningAmberOutlined,
@@ -153,7 +153,7 @@ function AdminStock() {
       .filter((item) => item.id != null)
       .map((item) => ({
         id: item.id, // This is BB_Store_Ingredients.id
-        ingredient_id: item.ingredient_id, // Add this line
+        ingredient_id: item.ingredient_id, 
         name: item.ingredient_name || "Unnamed",
         stock: parseInt(item.stock_quantity ?? "0", 10),
         unit: item.unit || "unit",

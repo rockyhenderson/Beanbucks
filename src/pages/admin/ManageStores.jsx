@@ -372,7 +372,7 @@ function ManageStores() {
           title: "Store Closed",
           message: "Store successfully closed and request marked approved.",
         });
-        setConfirmCloseRequest(null); // <-- ADD THIS LINE to CLOSE the modal
+        setConfirmCloseRequest(null); 
         retry(); // Refresh stores
         retryPending(); // Refresh requests
       } else {

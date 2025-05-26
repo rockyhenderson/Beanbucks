@@ -357,7 +357,7 @@ function ManageMenu() {
                   }}
                 >
                   <MenuItem value={0}>Menu Items</MenuItem>
-                  <MenuItem value={1}>Featured</MenuItem> {/* 🆕 ADD THIS */}
+                  <MenuItem value={1}>Featured</MenuItem> 
                   <MenuItem value={2}>Customizations</MenuItem>
                   <MenuItem value={3}>Templates</MenuItem>
                 </Select>
@@ -393,7 +393,7 @@ function ManageMenu() {
                   }}
                 >
                   <Tab label="Menu Items" />
-                  <Tab label="Featured" /> {/* 🆕 ADD THIS */}
+                  <Tab label="Featured" /> 
                   <Tab label="Customizations" />
                   <Tab label="Templates" />
                 </Tabs>

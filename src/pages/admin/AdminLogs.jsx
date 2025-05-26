@@ -4,7 +4,7 @@ import RetryFallback from "../../components/RetryFallback";
 import Toast from "../../components/Toast";
 import { Box, Typography, TextField } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import AdminLogModal from "../../components/AdminLogModal"; // add this
+import AdminLogModal from "../../components/AdminLogModal"; 
 
 function AdminLogs() {
   const [toast, setToast] = useState(null);

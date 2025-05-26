@@ -321,7 +321,6 @@ function Rewards() {
 
 export default Rewards;
 
-// Add this CSS to your stylesheet
 const styles = `
 :root {
     --primary: #ee5c01;
